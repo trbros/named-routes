@@ -653,7 +653,7 @@
   font-weight: 500;
   white-space: nowrap;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--action-ink);
   border-radius: 10px;
   padding: 3px 6px;
 }
@@ -2799,6 +2799,7 @@
   overflow-x: auto;
   flex-wrap: nowrap;
   scrollbar-width: none;
+  scrollbar-color: var(--line) var(--bg);
 }
 .framework-switch::-webkit-scrollbar {
   display: none;

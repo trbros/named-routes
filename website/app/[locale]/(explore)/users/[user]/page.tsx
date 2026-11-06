@@ -1,4 +1,4 @@
-import { Destination } from "../../../components/destination";
+import { Destination } from "../../../../../components/destination";
 export default async function Page({
   params,
   searchParams,

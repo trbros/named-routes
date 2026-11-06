@@ -14,7 +14,7 @@ export interface Story {
   url: string;
   color?: string;
 }
-export const STATIONS = ["name", "params", "locale", "url"] as const;
+export const STATIONS = ["name", "locale", "params", "url"] as const;
 export type Station = (typeof STATIONS)[number];
 
 /** Formats real params as a compact object literal for display. */
@@ -26,7 +26,7 @@ export function formatParams(params: Record<string, unknown>) {
 
 /**
  * Plays how a route is born: folders and the page file are created one by
- * one, then the name, params, locale and URL stations light up along a thin
+ * one, then the name, locale, params and URL stations light up along a thin
  * line. Reduced motion shows the finished story at once.
  */
 export function RouteStoryboard({
@@ -87,8 +87,8 @@ export function RouteStoryboard({
       style={{ "--lc": story.color ?? "var(--accent)", "--progress": progress } as CSSProperties}
     >
       <p className="visually-hidden">
-        {story.file} → {story.name} → {story.params}
-        {story.locale ? ` → ${story.locale}` : ""} → {story.url}
+        {story.file} → {story.name}
+        {story.locale ? ` → ${story.locale}` : ""} → {story.params} → {story.url}
       </p>
       <ol className="story-tree" aria-hidden="true">
         {segments.map((segment, index) => {

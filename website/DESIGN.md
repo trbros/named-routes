@@ -33,3 +33,11 @@ The logo is a metro line drawn as an "N" (Named): origin station, accent diagona
 ## Languages
 
 EN, PT, ES and JA come from docs/locales.json. Interface strings live in messages/<code>.json, documentation in ../docs/content.json. Run `pnpm locales` / `pnpm locales:check` at the repository root after editing English text. Japanese uses CJK fallback fonts, zero letter-spacing on headings and `word-break: auto-phrase` (app/transit.css).
+
+## Page height and missing destinations
+
+The shared `.workspace.site-shell` is a flex column with `min-height: 100dvh` (100svh fallback). Its content grows to fill short pages; document scrolling remains natural for long content. Header and footer keep their intrinsic height. Avoid fixed viewport heights or clipping page overflow. The shared 404 uses a broken transit rail and a typographic 404, translated recovery copy and links to playground, documentation and home. It stacks on narrow screens and inherits existing theme tokens.
+
+## Tailwind CSS v4
+
+`app/globals.css` is the single CSS entry point. It imports Tailwind theme/utilities and the existing foundation, landing, reference and transit styles in their established order inside the components layer. The existing reset is retained instead of Preflight to preserve the documentation layout. Utilities can override component rules. CSS-first `@theme inline` maps font and semantic color utilities to the runtime tokens; `dark:` follows next-themes' `data-theme="dark"`. PostCSS uses `@tailwindcss/postcss`; class discovery is scoped to website sources. Keep complex transit animation and diagram styles in CSS, and use utilities for component-level styling.

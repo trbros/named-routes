@@ -1,24 +1,23 @@
 "use client";
 import { useLocale as useIntlLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "../i18n/navigation";
 import { useState, useTransition } from "react";
-import { changeLocale } from "../i18n/actions";
 import type { Locale } from "../lib/locales";
 export type { Locale } from "../lib/locales";
-// Shared controls consume next-intl; language changes refresh the server tree.
+// Locale navigation preserves the current page, query and hash.
 export function useSiteLocale() {
   const locale = useIntlLocale() as Locale;
   const t = useTranslations("ui");
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState(false);
   function setLocale(next: Locale) {
     if (next === locale || pending) return;
     setError(false);
-    startTransition(async () => {
+    startTransition(() => {
       try {
-        await changeLocale(next);
-        router.refresh();
+        router.replace(pathname + window.location.search + window.location.hash, { locale: next });
       } catch {
         setError(true);
       }

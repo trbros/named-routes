@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from "../i18n/navigation";
+import { usePathname } from "../i18n/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { docHref } from "../lib/docs";
@@ -23,11 +23,7 @@ const explore = [
   { message: "releases_8fa41d", routeName: "releases", href: route("releases") },
 ] as const;
 
-type Section = "home" | "docs" | "explore";
-function sectionOf(pathname: string): Section {
-  if (pathname === route("home")) return "home";
-  return pathname.split("/")[1] === "docs" ? "docs" : "explore";
-}
+type Section = "home" | "docs" | "explore" | "content";
 
 function SiteHeader({ section }: { section: Section }) {
   const { t, locale, setLocale, pending, error } = useSiteLocale();
@@ -153,9 +149,8 @@ function ExploreSide() {
   );
 }
 
-export function Workspace({ children }: { children: React.ReactNode }) {
+export function Workspace({ children, section }: { children: React.ReactNode; section: Section }) {
   const { t } = useSiteLocale();
-  const section = sectionOf(usePathname());
   const skip = (
     <a className="skip" href="#main">
       {t("skip_to_content_0a4470")}
@@ -177,7 +172,7 @@ export function Workspace({ children }: { children: React.ReactNode }) {
       {skip}
       <SiteHeader section={section} />
       <div className="doc-window">
-        {section === "docs" ? (
+        {section !== "explore" ? (
           <main id="main">{children}</main>
         ) : (
           <div className="reference-grid explore-grid">

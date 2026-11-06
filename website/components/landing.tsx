@@ -1,6 +1,6 @@
 "use client";
 import { createRoutes } from "@triooo/named-routes";
-import Link from "next/link";
+import Link from "../i18n/navigation";
 import { type CSSProperties, useState } from "react";
 import { docHref } from "../lib/docs";
 import { release } from "../lib/release";

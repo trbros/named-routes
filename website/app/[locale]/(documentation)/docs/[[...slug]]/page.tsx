@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Documentation } from "../../../components/documentation";
-import { getDoc } from "../../../lib/docs";
-import { getLocale } from "../../../lib/locale";
+import { Documentation } from "../../../../../components/documentation";
+import { getDoc } from "../../../../../lib/docs";
+import { getLocale } from "../../../../../lib/locale";
 import { getTranslations } from "next-intl/server";
-import { plainText } from "../../../components/rich-text";
+import { plainText } from "../../../../../components/rich-text";
 
 type Props = { params: Promise<{ slug?: string[] }> };
 /** /docs is the index; /docs/<topic> is one topic. Deeper paths do not exist. */

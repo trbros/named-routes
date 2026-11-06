@@ -1,4 +1,4 @@
-import { Destination } from "../../../components/destination";
+import { Destination } from "../../../../../components/destination";
 export default async function Page({
   params,
   searchParams,
@@ -8,14 +8,14 @@ export default async function Page({
 }) {
   return (
     <Destination
-      name="user.profile"
-      file="user/profile/page.tsx"
+      name="guides.$slug"
+      file="guides/[[...slug]]/page.tsx"
       title={{
-        message: "your_profile_in_the_right_place_9c0f63",
+        message: "every_level_one_name_8794e4",
       }}
       description={{
         message:
-          "a_static_route_discovered_from_the_folder_structure_alo_50c695",
+          "an_optional_catch_all_accepts_several_segments_or_none__90b20a",
       }}
       params={await params}
       query={await searchParams}

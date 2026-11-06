@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "../i18n/navigation";
 import type { CSSProperties } from "react";
 import { docHref } from "../lib/docs";
 import { release } from "../lib/release";
@@ -9,6 +9,7 @@ import { route } from "../src/routes.generated";
 import { BrandMark } from "./brand-mark";
 import { CopyButton } from "./copy-button";
 import { useSiteLocale } from "./use-site-locale";
+import { TrioooLogo } from "./triooo-logo";
 
 const NPM_URL = `https://www.npmjs.com/package/${release.name}`;
 
@@ -99,8 +100,7 @@ export function SiteFooter() {
             <code>{release.name}</code>
             <a className="footer-maker" href="https://triooo.com.br" target="_blank" rel="noreferrer" aria-label={t("built_by_triooo_6a0bf7")}>
               <span>{t("built_by_5d150c")}</span>
-              <Image loading="eager" className="triooo-light" src="/brand/triooo-light.svg" alt="triooo" width={84} height={23} />
-              <Image loading="eager" className="triooo-dark" src="/brand/triooo-dark.svg" alt="triooo" width={84} height={23} />
+              <TrioooLogo className="w-14" />
             </a>
           </span>
         </div>

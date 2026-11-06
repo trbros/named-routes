@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from "../i18n/navigation";
+import { getPathname, usePathname } from "../i18n/navigation";
 import { docHref } from "../lib/docs";
 import { route } from "../src/routes.generated";
 import { CodeBlock } from "./code-block";
@@ -26,14 +26,14 @@ export function Destination({
   params?: Record<string, string | string[] | undefined>;
   query?: Record<string, string | string[] | undefined>;
 }) {
-  const { t } = useSiteLocale();
+  const { t, locale } = useSiteLocale();
   const pathname = usePathname();
   const search = new URLSearchParams(
     Object.entries(query).flatMap(([key, value]) =>
       (Array.isArray(value) ? value : value === undefined ? [] : [value]).map((item) => [key, item]),
     ),
   ).toString();
-  const url = `${pathname}${search ? `?${search}` : ""}`;
+  const url = `${getPathname({ locale, href: pathname })}${search ? `?${search}` : ""}`;
   return (
     <article className="doc-article page-article destination-page">
       <div className="doc-breadcrumb">
@@ -44,7 +44,7 @@ export function Destination({
       <section id="introduction">
         <div className="doc-title-meta">
           <span className="doc-eyebrow">{t("destination_reached_808622")}</span>
-          <code className="page-file">app/{file}</code>
+          <code className="page-file">app/[locale]/{file}</code>
         </div>
         <div className="arrival" aria-hidden="true">
           <span className="arrival-track" />
@@ -66,7 +66,7 @@ export function Destination({
       <section>
         <h2>{t("how_this_url_was_built_4d2a9c")}</h2>
         <RouteStoryboard
-          story={{ file: `app/${file}`, name, params: formatParams(params), url }}
+          story={{ file: `app/[locale]/${file}`, name, params: formatParams(Object.fromEntries(Object.entries(params).filter(([key]) => key !== "locale"))), locale, url }}
           playKey={url}
         />
       </section>

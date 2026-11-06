@@ -29,4 +29,5 @@ export default withNamedRoutes(
 		// The guide is shared with the package README, outside this example directory.
 		turbopack: { root: path.resolve(__dirname, "..") },
 	}),
+	{ i18n: { locales: ["en", "pt", "es", "ja"], defaultLocale: "en", localePrefix: "always" } },
 );

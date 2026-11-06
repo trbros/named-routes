@@ -1,8 +1,8 @@
 "use client";
 import { plainText } from "./rich-text";
-import Link from "next/link";
+import Link from "../i18n/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "../i18n/navigation";
 import { docSections, docHref } from "../lib/docs";
 import { useSiteLocale } from "./use-site-locale";
 import { Icon } from "./icon";

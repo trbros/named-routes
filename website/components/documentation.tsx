@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "../i18n/navigation";
 import { release } from "../lib/release";
 import { docGroups, docSections, docHref, getDoc } from "../lib/docs";
 import { route } from "../src/routes.generated";

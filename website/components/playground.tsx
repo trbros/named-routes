@@ -1,7 +1,7 @@
 "use client";
 import { NamedRouteError } from "@triooo/named-routes";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "../i18n/navigation";
+import { getPathname, useRouter } from "../i18n/navigation";
 import { useEffect, useState } from "react";
 import { docHref } from "../lib/docs";
 import { type RouteName, route, routes } from "../src/routes.generated";
@@ -37,7 +37,7 @@ function useSettled<T>(value: T, delay = 550) {
 }
 
 export function Playground() {
-  const { t } = useSiteLocale();
+  const { t, locale } = useSiteLocale();
   const router = useRouter();
   const [selected, setSelected] = useState(0);
   const [value, setValue] = useState<string>(scenarios[0].initial);
@@ -72,23 +72,26 @@ export function Playground() {
   const params = scenario.parameter
     ? { [scenario.parameter]: scenario.id === "guides" ? (value ? value.split("/") : []) : value }
     : {};
-  const settledHref = useSettled(href);
-  const call = `route(${JSON.stringify(scenario.name)}, ${JSON.stringify(params)}${query || hash ? `, ${JSON.stringify({ ...(query ? { query: { tab: query } } : {}), ...(hash ? { hash } : {}) })}` : ""})`;
+  const localizedHref = error ? "" : getPathname({ locale, href });
+  const settledHref = useSettled(localizedHref);
+  const call = `route(${JSON.stringify(scenario.name)}, ${JSON.stringify(params)}, ${JSON.stringify({ locale, ...(query ? { query: { tab: query } } : {}), ...(hash ? { hash } : {}) })})`;
+  const resolvedCall = `const href = ${call};${error ? "" : ` // ${localizedHref}`}`;
   const code =
     view === "link"
       ? `import Link from 'next/link';
 import { route } from './routes.generated';
 
-<Link href={${call}}>${t("open_page_9ee309")}</Link>`
+${resolvedCall}
+
+<Link href={href}>${t("open_page_9ee309")}</Link>`
       : `'use client';
 import { useRouter } from 'next/navigation';
 import { route } from './routes.generated';
 
 export function OpenPage() {
   const router = useRouter();
-  return <button onClick={() => router.push(
-    ${call}
-  )}>${t("open_page_9ee309")}</button>;
+  ${resolvedCall}
+  return <button onClick={() => router.push(href)}>${t("open_page_9ee309")}</button>;
 }`;
   function choose(index: number) {
     setSelected(index);
@@ -121,17 +124,17 @@ export function OpenPage() {
         <h2>{t("from_file_to_destination_05928d")}</h2>
         <p>{t("change_it_see_the_code_follow_a_real_route_4b853e")}</p>
         <RouteStoryboard
-          story={{ file: `app/${scenario.file}`, name: scenario.name, params: formatParams(params), url: error ? "—" : settledHref }}
+          story={{ file: `app/[locale]/${scenario.file}`, name: scenario.name, params: formatParams(params), locale, url: error ? "—" : settledHref }}
           playKey={`${scenario.id}:${settledHref}`}
         />
       </section>
       <section className="playground" aria-label={t("route_explorer_ecc2d7")}>
         <aside className="file-panel">
           <div className="panel-title">
-            <Icon name="folder" size={16} /> EXPLORER <span>app/</span>
+            <Icon name="folder" size={16} /> EXPLORER <span>app/[locale]/</span>
           </div>
           <div className="file-tree">
-            <div className="tree-root">⌄ app</div>
+            <div className="tree-root">⌄ app/[locale]</div>
             <div className="tree-home">
               <Icon name="code" size={14} />
               page.tsx <small>home</small>
@@ -146,7 +149,7 @@ export function OpenPage() {
               >
                 <span className="file-folder">
                   <Icon name="folder" size={15} />
-                  {item.file.split("/").slice(0, -1).join("/")}
+                  {`[locale]/${item.file.split("/").slice(0, -1).join("/")}`}
                 </span>
                 <span className="file-page">
                   <span>TSX</span>page.tsx
@@ -211,7 +214,7 @@ export function OpenPage() {
             <CodeBlock code={code} language="tsx" lineNumbers label={t("integration_code_d516e0")} />
           </div>
           <div className="url-result">
-            <span key={href} className="url-train" aria-hidden="true" />
+            <span key={localizedHref} className="url-train" aria-hidden="true" />
             <div>
               <span className="eyebrow">{t("generated_url_0eb6e2")}</span>
               {error ? (
@@ -220,7 +223,7 @@ export function OpenPage() {
                 </p>
               ) : (
                 <code className="url-value" aria-live="polite">
-                  <FlapText text={href} />
+                  <FlapText text={localizedHref} />
                 </code>
               )}
             </div>

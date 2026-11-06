@@ -1823,6 +1823,9 @@
 .explore-side .doc-topic-nav summary {
   color: var(--text);
 }
+.explore-side .doc-topic-nav a[aria-current="page"] {
+  color: var(--accent);
+}
 
 /* Mobile fixes: the docs sidebar height rule must not apply, legacy footer nav placement is reset, explore nav becomes chips. */
 @media (max-width: 900px) {
@@ -1887,8 +1890,7 @@
 }
 /* Lime badges are lime in both themes: always dark ink on them. */
 .workspace .brand-icon,
-.workspace .doc-primary-links > a > span,
-.workspace .doc-topic-nav a > small {
+.workspace .doc-primary-links > a > span {
   color: var(--action-ink);
 }
 
@@ -1968,4 +1970,147 @@ html[lang="ja"] .workspace :is(p, li) {
 .doc-table code {
   font-size: 12px;
   white-space: nowrap;
+}
+
+/* The shell fills short viewports and grows with long pages. */
+.workspace.site-shell {
+  @apply flex flex-col;
+  min-height: 100svh;
+  @apply min-h-dvh;
+}
+.site-shell > .site-header,
+.site-shell > footer {
+  flex-shrink: 0;
+}
+.site-shell > .landing-main,
+.site-shell > .doc-window {
+  flex: 1;
+  min-height: 0;
+}
+.site-shell > .doc-window {
+  display: flex;
+  flex-direction: column;
+}
+.site-shell > .doc-window > main {
+  flex: 1;
+}
+
+/* A missed destination on the same transit system as the rest of the site. */
+.not-found-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 96px);
+  width: var(--container);
+  max-width: 1120px;
+  min-height: 60svh;
+  margin: 0 auto;
+  padding: clamp(48px, 8vw, 112px) 0;
+}
+.not-found-signal {
+  color: var(--accent);
+  min-width: 0;
+}
+.not-found-code {
+  display: block;
+  font-family: JetBrains, monospace;
+  font-size: clamp(100px, 14vw, 200px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.08em;
+}
+.not-found-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 2px;
+  margin: 36px 0 24px;
+  background: linear-gradient(to right, var(--accent) 0 43%, transparent 43% 57%, var(--line) 57%);
+}
+.not-found-track > span {
+  width: 13px;
+  height: 13px;
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+  background: var(--bg);
+}
+.not-found-track > span:last-child {
+  border-color: var(--muted);
+}
+.not-found-signal > code {
+  color: var(--muted);
+  font-size: 12px;
+}
+.not-found-signal > code > span {
+  margin-inline: 12px;
+  color: var(--accent);
+}
+.not-found-copy .eyebrow {
+  margin: 0 0 20px;
+  color: var(--accent);
+  font-size: 11px;
+}
+.not-found-copy h1 {
+  margin: 0;
+  max-width: 15ch;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.not-found-description {
+  margin: 20px 0 28px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.not-found-copy > .button {
+  min-height: 44px;
+}
+.not-found-links {
+  display: grid;
+  gap: 4px;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.not-found-links a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.not-found-links a > span {
+  flex: 1;
+}
+.not-found-links a:hover,
+.not-found-links a:focus-visible {
+  color: var(--accent);
+}
+@media (max-width: 680px) {
+  .not-found-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+    min-height: 0;
+    padding-block: 48px 64px;
+  }
+  .not-found-signal {
+    max-width: 260px;
+  }
+  .not-found-code {
+    font-size: 112px;
+  }
+  .not-found-track {
+    margin-top: 24px;
+  }
+}
+:root[data-theme="light"] .not-found-code,
+:root[data-theme="light"] .not-found-copy .eyebrow,
+:root[data-theme="light"] .not-found-signal > code > span,
+:root[data-theme="light"] .not-found-links a:hover,
+:root[data-theme="light"] .not-found-links a:focus-visible {
+  color: var(--accent-ink);
 }
