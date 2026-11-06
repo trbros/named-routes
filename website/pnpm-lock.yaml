@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@triooo/next-named-routes':
+      '@triooo/named-routes':
         specifier: link:..
         version: link:..
       next:

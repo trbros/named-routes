@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@triooo/next-named-routes':
+      '@triooo/named-routes':
         specifier: file:../..
         version: file:../..
       astro:
@@ -516,7 +516,7 @@ packages:
   '@shikijs/vscode-textmate@10.1.0':
     resolution: {integrity: sha512-cVBuhDQjBZaNMTwBquYfPydrUP+E3hE6oYGasx8h6ZrODIM7/r+gxLDXdd66oszbrggZHEntdE6j+5gYIVyMWQ==}
 
-  '@triooo/next-named-routes@file:../..':
+  '@triooo/named-routes@file:../..':
     resolution: {directory: ../.., type: directory}
     engines: {node: '>=20.19'}
     hasBin: true
@@ -1634,7 +1634,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.1.0': {}
 
-  '@triooo/next-named-routes@file:../..': {}
+  '@triooo/named-routes@file:../..': {}
 
   '@tybys/wasm-util@0.10.4':
     dependencies:

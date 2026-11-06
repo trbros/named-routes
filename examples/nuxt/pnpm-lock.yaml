@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@triooo/next-named-routes':
+      '@triooo/named-routes':
         specifier: file:../..
         version: file:../..
       nuxt:
@@ -858,7 +858,7 @@ packages:
   '@speed-highlight/core@1.2.24':
     resolution: {integrity: sha512-qeW2e1l78afw8VhRPfPQ1Gjj+KU5XFQ/OFV5ti6eTa9bruO7mJyZtA4vw0ofqmA3tKCkROE9xLk3VZoeRc98nw==}
 
-  '@triooo/next-named-routes@file:../..':
+  '@triooo/named-routes@file:../..':
     resolution: {directory: ../.., type: directory}
     engines: {node: '>=20.19'}
     hasBin: true
@@ -3840,7 +3840,7 @@ snapshots:
 
   '@speed-highlight/core@1.2.24': {}
 
-  '@triooo/next-named-routes@file:../..': {}
+  '@triooo/named-routes@file:../..': {}
 
   '@types/estree@1.0.10': {}
 

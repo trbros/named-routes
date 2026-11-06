@@ -1,4 +1,4 @@
-# @triooo/next-named-routes
+# @triooo/named-routes
 
 [English](README.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md)
 
@@ -45,13 +45,13 @@ Instale o pacote com o gerenciador que preferir. Ele não tem dependências de r
 Depois conecte uma única vez: withNamedRoutes no next.config para Next.js, ou o plugin Vite namedRoutes() nos frameworks baseados em Vite. Também é possível usar a CLI named-routes (generate, check, watch) em qualquer projeto.
 
 ```sh
-npm install @triooo/next-named-routes
+npm install @triooo/named-routes
 # pnpm
-pnpm add @triooo/next-named-routes
+pnpm add @triooo/named-routes
 # Yarn
-yarn add @triooo/next-named-routes
+yarn add @triooo/named-routes
 # Bun
-bun add @triooo/next-named-routes
+bun add @triooo/named-routes
 ```
 
 <a id="quick-start"></a>
@@ -66,7 +66,7 @@ O alias @/routes.generated abaixo pressupõe que @/* aponta para src/*. Se ele a
 
 ```ts
 // next.config.ts
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
+import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
 
 // In your application:
@@ -79,7 +79,7 @@ route("users.$user", { user: "ana" });
 
 ## Outros frameworks (plugin Vite)
 
-Adicione namedRoutes() de @triooo/next-named-routes/vite aos plugins Vite do Nuxt (vite.plugins no nuxt.config), Vue, SvelteKit, Astro (vite.plugins no astro.config), React Router ou TanStack Router. Ele gera ao iniciar ou compilar o Vite e regenera quando arquivos são criados, removidos ou renomeados, usando o watcher do próprio Vite.
+Adicione namedRoutes() de @triooo/named-routes/vite aos plugins Vite do Nuxt (vite.plugins no nuxt.config), Vue, SvelteKit, Astro (vite.plugins no astro.config), React Router ou TanStack Router. Ele gera ao iniciar ou compilar o Vite e regenera quando arquivos são criados, removidos ou renomeados, usando o watcher do próprio Vite.
 
 O framework é detectado pelo package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev ou @remix-run/dev, plugin/CLI/Start do TanStack Router, unplugin-vue-router ou vue-router). Defina framework explicitamente em monorepos ou quando a detecção for ambígua. Execute npx named-routes init para criar uma configuração para o framework detectado.
 
@@ -94,7 +94,7 @@ Caminhos declarados dentro de componentes (definePageMeta({ path }) do Nuxt, rou
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
 import { defineConfig } from "vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts

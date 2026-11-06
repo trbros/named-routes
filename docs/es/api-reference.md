@@ -1,4 +1,4 @@
-# Referencia de la API · @triooo/next-named-routes
+# Referencia de la API · @triooo/named-routes
 
 [← Volver al README](../../README.es.md) · [English](../en/api-reference.md) · [Português](../pt/api-reference.md) · [Español](../es/api-reference.md) · [日本語](../ja/api-reference.md)
 
@@ -20,7 +20,7 @@ createRoutes(manifiesto, defaults?) crea un helper independiente y congelado y c
 Un manifiesto tipado como un simple Record<string, string> (por ejemplo, cargado desde JSON) sigue funcionando: los nombres pasan a ser string y los parámetros un registro flexible, mientras el runtime sigue validando cada llamada.
 
 ```ts
-import { createRoutes } from "@triooo/next-named-routes";
+import { createRoutes } from "@triooo/named-routes";
 const route = createRoutes({
   "users.show": "/users/[user]",
   search: "/search/[[...terms]]",
@@ -36,7 +36,7 @@ if (route.has(input)) console.log(route.pattern(input));
 
 ## Configuración del generador
 
-No se requiere ningún archivo de configuración. Los archivos opcionales se buscan en este orden: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Las configuraciones TypeScript necesitan Node.js 22.18+ (eliminación de tipos integrada); usa .mjs en versiones anteriores. Exporta defineConfig({...}) de @triooo/next-named-routes/config para tener autocompletado. La opción --config de la CLI selecciona otro archivo; root dentro de un archivo de configuración es relativo a ese archivo. Las opciones desconocidas o mal escritas fallan con INVALID_CONFIG.
+No se requiere ningún archivo de configuración. Los archivos opcionales se buscan en este orden: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Las configuraciones TypeScript necesitan Node.js 22.18+ (eliminación de tipos integrada); usa .mjs en versiones anteriores. Exporta defineConfig({...}) de @triooo/named-routes/config para tener autocompletado. La opción --config de la CLI selecciona otro archivo; root dentro de un archivo de configuración es relativo a ese archivo. Las opciones desconocidas o mal escritas fallan con INVALID_CONFIG.
 
 Descubrimiento: framework (auto por defecto, o next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app o pages), appDir/pagesDir (carpetas personalizadas de Next.js o false), routesDir (carpeta de páginas/rutas personalizada en otros frameworks), pageExtensions (valores por defecto de cada framework; funcionan extensiones compuestas como page.tsx), includeApi (false), exclude (globs relativos a la raíz con *, ** y ?).
 
@@ -46,14 +46,14 @@ Salida: output (por defecto src/routes.generated.ts; .ts, .mts, .js o .mjs, nunc
 
 ```ts
 // named-routes.config.ts (or .mjs)
-import { defineConfig } from "@triooo/next-named-routes/config";
+import { defineConfig } from "@triooo/named-routes/config";
 
 export default defineConfig({
   framework: "auto",                 // next, nuxt, vue, sveltekit, astro, ...
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs
-  importSource: "@triooo/next-named-routes",
+  importSource: "@triooo/named-routes",
   exportNames: { route: "url", routeName: "UrlName" },
   pageExtensions: ["vue"],
   includeApi: false,
@@ -95,7 +95,7 @@ discoverRoutes(opciones?) devuelve root, framework, directories, routes, entries
 generateRoutes(opciones?, { check?: boolean }?) devuelve además output y changed. El modo check rechaza la salida desactualizada sin modificarla. validateOptions(opciones) lanza INVALID_CONFIG ante claves desconocidas. Importa /generator y /config solo en herramientas de Node, nunca en código de cliente. withNamedRoutes viene de /next y namedRoutes de /vite.
 
 ```ts
-import { discoverRoutes, generateRoutes } from "@triooo/next-named-routes/generator";
+import { discoverRoutes, generateRoutes } from "@triooo/named-routes/generator";
 const discovery = await discoverRoutes({ root: "/path/to/app", framework: "nuxt" });
 console.log(discovery.framework, discovery.entries);
 const result = await generateRoutes({ root: "/path/to/app" });

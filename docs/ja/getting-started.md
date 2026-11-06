@@ -1,4 +1,4 @@
-# はじめに · @triooo/next-named-routes
+# はじめに · @triooo/named-routes
 
 [← README に戻る](../../README.ja.md) · [English](../en/getting-started.md) · [Português](../pt/getting-started.md) · [Español](../es/getting-started.md) · [日本語](../ja/getting-started.md)
 
@@ -47,7 +47,7 @@ route("users.$user", { user: 42 }, { locale: "pt" });  // /pt/users/42
 
 | パッケージ | フレームワーク | ルートの取得元 | 名前 | 型付きパラメーター | i18n | URL ビルダー | npm（最新 · 月間） |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **@triooo/next-named-routes** | Next.js, Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router | files · `createRoutes()` | ✓ `users.$user` | ✓ | ✓ | ✓ `route()` | 1.0.0 · new |
+| **@triooo/named-routes** | Next.js, Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router | files · `createRoutes()` | ✓ `users.$user` | ✓ | ✓ | ✓ `route()` | 1.0.0 · new |
 | nextjs-routes | Next.js | files | — `"/users/[id]"` | ✓ | ½ Pages Router | ✓ `route()` | 2.2.5 · 173k |
 | next-typesafe-url | Next.js (peer ≤ 15) | files + Zod | — `"/users/[id]"` | ✓ + Zod | — | ✓ `$path()` | 6.1.0 · 41k |
 | next-safe-navigation | Next.js App Router | `defineRoute()` | ✓ | ✓ + schema | — | ✓ `routes.name()` | 0.4.0 · 13k |
@@ -77,13 +77,13 @@ route("users.$user", { user: 42 }, { locale: "pt" });  // /pt/users/42
 あとは一度だけ接続します。Next.js なら next.config の withNamedRoutes、Vite ベースのフレームワークなら Vite プラグインの namedRoutes() です。どのプロジェクトでも named-routes CLI（generate、check、watch）を使えます。
 
 ```sh
-npm install @triooo/next-named-routes
+npm install @triooo/named-routes
 # pnpm
-pnpm add @triooo/next-named-routes
+pnpm add @triooo/named-routes
 # Yarn
-yarn add @triooo/next-named-routes
+yarn add @triooo/named-routes
 # Bun
-bun add @triooo/next-named-routes
+bun add @triooo/named-routes
 ```
 
 <a id="quick-start"></a>
@@ -98,7 +98,7 @@ bun add @triooo/next-named-routes
 
 ```ts
 // next.config.ts
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
+import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
 
 // In your application:

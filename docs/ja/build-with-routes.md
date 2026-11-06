@@ -1,4 +1,4 @@
-# ルートで構築する · @triooo/next-named-routes
+# ルートで構築する · @triooo/named-routes
 
 [← README に戻る](../../README.ja.md) · [English](../en/build-with-routes.md) · [Português](../pt/build-with-routes.md) · [Español](../es/build-with-routes.md) · [日本語](../ja/build-with-routes.md)
 

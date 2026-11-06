@@ -1,4 +1,4 @@
-# Frameworks · @triooo/next-named-routes
+# Frameworks · @triooo/named-routes
 
 [← Back to README](../../README.md) · [English](../en/frameworks.md) · [Português](../pt/frameworks.md) · [Español](../es/frameworks.md) · [日本語](../ja/frameworks.md)
 
@@ -18,7 +18,7 @@
 
 ## Other frameworks (Vite plugin)
 
-Add namedRoutes() from @triooo/next-named-routes/vite to the Vite plugins of Nuxt (vite.plugins in nuxt.config), Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, using Vite's own watcher.
+Add namedRoutes() from @triooo/named-routes/vite to the Vite plugins of Nuxt (vite.plugins in nuxt.config), Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, using Vite's own watcher.
 
 The framework is detected from package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev or @remix-run/dev, TanStack router plugin/CLI/Start, unplugin-vue-router or vue-router). Set framework explicitly in monorepos or when detection is ambiguous. Run npx named-routes init to create a config for the detected framework.
 
@@ -33,7 +33,7 @@ Paths declared inside components (Nuxt definePageMeta({ path }), React Router ro
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
 import { defineConfig } from "vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts
@@ -53,7 +53,7 @@ route("users.$id", { id: 42 }); // /users/42
 
 ## Next.js
 
-Wrap next.config with withNamedRoutes from @triooo/next-named-routes/next. The module is generated before next dev and next build, kept current by a watcher inside next dev, and never written during next start, so read-only deployments are safe. The wrapper inherits pageExtensions, basePath, trailingSlash and the Pages Router i18n config.
+Wrap next.config with withNamedRoutes from @triooo/named-routes/next. The module is generated before next dev and next build, kept current by a watcher inside next dev, and never written during next start, so read-only deployments are safe. The wrapper inherits pageExtensions, basePath, trailingSlash and the Pages Router i18n config.
 
 **Conventions.** app/ and pages/ (or src/app and src/pages) are scanned together. App Router: page files only; route groups and parallel slots are omitted, interceptions resolve to their canonical URL, _private folders are ignored and %5F becomes an underscore. Pages Router: index is removed and _app, _document and _error are skipped. Route Handlers and pages/api are opt-in with includeApi. appDir and pagesDir point to custom folders (or false to skip one).
 
@@ -62,7 +62,7 @@ Wrap next.config with withNamedRoutes from @triooo/next-named-routes/next. The m
 **Verified.** Real Next 16 dev servers (App Router and Pages Router, with basePath and live page discovery) run in CI. Demos: examples/app-router and examples/pages-router. See also the App Router and Pages Router recipes.
 
 ```tsx
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
+import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
 
 // app/users/[user]/page.tsx → users.$user
@@ -85,7 +85,7 @@ Add namedRoutes() to vite.plugins in nuxt.config. Keep the output inside your so
 
 ```vue
 // nuxt.config.ts
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineNuxtConfig({
   vite: { plugins: [namedRoutes({ output: "app/routes.generated.ts" })] },
 });
@@ -115,7 +115,7 @@ For Vue apps with file-based routing (unplugin-vue-router conventions), add name
 // vite.config.ts
 import vue from "@vitejs/plugin-vue";
 import VueRouter from "unplugin-vue-router/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes(), VueRouter(), vue()] });
 
 // src/pages/users/[id].vue → users.$id
@@ -137,7 +137,7 @@ Add namedRoutes() before sveltekit() in vite.config. Writing the module to src/l
 ```svelte
 // vite.config.ts
 import { sveltekit } from "@sveltejs/kit/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
   plugins: [namedRoutes({ output: "src/lib/routes.generated.ts" }), sveltekit()],
 });
@@ -163,7 +163,7 @@ Add namedRoutes() to vite.plugins in astro.config. The module defaults to src/ro
 
 ```astro
 // astro.config.mjs
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ vite: { plugins: [namedRoutes()] } });
 
 ---
@@ -188,7 +188,7 @@ For React Router 7 framework mode (and Remix v2) with flat routes, add namedRout
 ```tsx
 // vite.config.ts
 import { reactRouter } from "@react-router/dev/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
   plugins: [namedRoutes({ output: "app/routes.generated.ts" }), reactRouter()],
 });
@@ -214,7 +214,7 @@ Add namedRoutes() next to tanstackRouter() from @tanstack/router-plugin in vite.
 ```tsx
 // vite.config.ts
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
   plugins: [namedRoutes(), tanstackRouter({ target: "react" }), react()],
 });
@@ -236,7 +236,7 @@ To share a generated module anyway (for example from a monorepo package), set fr
 
 ```tsx
 // src/routes.ts
-import { createRoutes } from "@triooo/next-named-routes";
+import { createRoutes } from "@triooo/named-routes";
 export const route = createRoutes({
   home: "/",
   "users.show": "/users/[id]",       // <Route path="/users/:id">

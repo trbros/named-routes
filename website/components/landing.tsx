@@ -1,23 +1,24 @@
 "use client";
-import { docHref } from "../lib/docs";
+import { createRoutes } from "@triooo/named-routes";
 import Link from "next/link";
 import { type CSSProperties, useState } from "react";
-import { createRoutes } from "@triooo/next-named-routes";
-import { route, routes } from "../src/routes.generated";
+import { docHref } from "../lib/docs";
 import { release } from "../lib/release";
-import { useSiteLocale } from "./use-site-locale";
+import { lines } from "../lib/transit";
+import { route, routes } from "../src/routes.generated";
 import { BrandMark } from "./brand-mark";
-import { Icon } from "./icon";
 import { CodeBlock } from "./code-block";
 import { CopyButton } from "./copy-button";
 import { DepartureBoard } from "./departure-board";
+import { Icon } from "./icon";
 import { TransitMap } from "./transit-map";
-import { lines } from "../lib/transit";
+import { useSiteLocale } from "./use-site-locale";
+
 const installCommands = {
-  npm: "npm i @triooo/next-named-routes",
-  pnpm: "pnpm add @triooo/next-named-routes",
-  yarn: "yarn add @triooo/next-named-routes",
-  bun: "bun add @triooo/next-named-routes",
+  npm: "npm i @triooo/named-routes",
+  pnpm: "pnpm add @triooo/named-routes",
+  yarn: "yarn add @triooo/named-routes",
+  bun: "bun add @triooo/named-routes",
 } as const;
 const proofMessages = {
   next: "real_next_dev_server_3a7c19",
@@ -32,38 +33,108 @@ const navigateExample = `import { route } from "./routes.generated";
 const examples = [
   { name: "user.profile", parameter: "", initial: "" },
   { name: "users.$user", parameter: "user", initial: "ana" },
-  { name: "guides.$slug", parameter: "slug", initial: "getting-started/installation" },
+  {
+    name: "guides.$slug",
+    parameter: "slug",
+    initial: "getting-started/installation",
+  },
 ] as const;
 // File conventions per framework, as inferred by the package's own adapters.
 // React Router and TanStack Router name their splat parameter splat/_splat.
 const conventions = [
-  { id: "app", label: "App Router", dir: "app/", files: ["user/profile/page.tsx", "users/[user]/page.tsx", "guides/[[...slug]]/page.tsx"] },
-  { id: "pages", label: "Pages Router", dir: "pages/", files: ["user/profile.tsx", "users/[user].tsx", "guides/[[...slug]].tsx"] },
-  { id: "nuxt", label: "Nuxt", dir: "app/pages/", files: ["user/profile.vue", "users/[user].vue", "guides/[...slug].vue"] },
-  { id: "vue", label: "Vue Router", dir: "src/pages/", files: ["user/profile.vue", "users/[user].vue", "guides/[...slug].vue"] },
-  { id: "sveltekit", label: "SvelteKit", dir: "src/routes/", files: ["user/profile/+page.svelte", "users/[user]/+page.svelte", "guides/[...slug]/+page.svelte"] },
-  { id: "astro", label: "Astro", dir: "src/pages/", files: ["user/profile.astro", "users/[user].astro", "guides/[...slug].astro"] },
-  { id: "react-router", label: "React Router", dir: "app/routes/", files: ["user.profile.tsx", "users.$user.tsx", "guides.$.tsx"], splat: "splat" },
-  { id: "tanstack", label: "TanStack", dir: "src/routes/", files: ["user/profile.tsx", "users/$user.tsx", "guides/$.tsx"], splat: "_splat" },
+  {
+    id: "app",
+    label: "App Router",
+    dir: "app/",
+    files: [
+      "user/profile/page.tsx",
+      "users/[user]/page.tsx",
+      "guides/[[...slug]]/page.tsx",
+    ],
+  },
+  {
+    id: "pages",
+    label: "Pages Router",
+    dir: "pages/",
+    files: ["user/profile.tsx", "users/[user].tsx", "guides/[[...slug]].tsx"],
+  },
+  {
+    id: "nuxt",
+    label: "Nuxt",
+    dir: "app/pages/",
+    files: ["user/profile.vue", "users/[user].vue", "guides/[...slug].vue"],
+  },
+  {
+    id: "vue",
+    label: "Vue Router",
+    dir: "src/pages/",
+    files: ["user/profile.vue", "users/[user].vue", "guides/[...slug].vue"],
+  },
+  {
+    id: "sveltekit",
+    label: "SvelteKit",
+    dir: "src/routes/",
+    files: [
+      "user/profile/+page.svelte",
+      "users/[user]/+page.svelte",
+      "guides/[...slug]/+page.svelte",
+    ],
+  },
+  {
+    id: "astro",
+    label: "Astro",
+    dir: "src/pages/",
+    files: [
+      "user/profile.astro",
+      "users/[user].astro",
+      "guides/[...slug].astro",
+    ],
+  },
+  {
+    id: "react-router",
+    label: "React Router",
+    dir: "app/routes/",
+    files: ["user.profile.tsx", "users.$user.tsx", "guides.$.tsx"],
+    splat: "splat",
+  },
+  {
+    id: "tanstack",
+    label: "TanStack",
+    dir: "src/routes/",
+    files: ["user/profile.tsx", "users/$user.tsx", "guides/$.tsx"],
+    splat: "_splat",
+  },
 ] as const;
 type Convention = (typeof conventions)[number];
 const splatOf = (convention: Convention) =>
   "splat" in convention ? convention.splat : undefined;
 // A locale-aware copy of this site's manifest, used only to preview i18n URLs.
 const localized = createRoutes(routes, {
-  i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
+  i18n: {
+    locales: ["en", "pt"],
+    defaultLocale: "en",
+    localePrefix: "as-needed",
+  },
 });
 const integrations = {
   next: {
     file: "next.config.ts",
-    code: `import { withNamedRoutes } from '@triooo/next-named-routes/next';\n\nexport default withNamedRoutes({\n  reactStrictMode: true,\n});`,
+    code: `import { withNamedRoutes } from '@triooo/named-routes/next';\n\nexport default withNamedRoutes({\n  reactStrictMode: true,\n});`,
   },
   vite: {
     file: "vite.config.ts",
-    code: `import { defineConfig } from 'vite';\nimport { namedRoutes } from '@triooo/next-named-routes/vite';\n\n// Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router\nexport default defineConfig({\n  plugins: [namedRoutes()],\n});`,
+    code: `import { defineConfig } from 'vite';\nimport { namedRoutes } from '@triooo/named-routes/vite';\n\n// Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router\nexport default defineConfig({\n  plugins: [namedRoutes()],\n});`,
   },
 } as const;
-const frameworkList = ["Next.js", "Nuxt", "Vue Router", "SvelteKit", "Astro", "React Router", "TanStack Router"];
+const frameworkList = [
+  "Next.js",
+  "Nuxt",
+  "Vue Router",
+  "SvelteKit",
+  "Astro",
+  "React Router",
+  "TanStack Router",
+];
 export function Landing() {
   const { t } = useSiteLocale();
   const [framework, setFramework] = useState<Convention["id"]>("app");
@@ -73,10 +144,12 @@ export function Landing() {
   const [withLocale, setWithLocale] = useState(false);
   const [target, setTarget] = useState<keyof typeof integrations>("next");
   const [manager, setManager] = useState<keyof typeof installCommands>("npm");
-  const convention = conventions.find((item) => item.id === framework) ?? conventions[0];
+  const convention =
+    conventions.find((item) => item.id === framework) ?? conventions[0];
   const example = examples[selected];
   // The URL is identical in every framework; only the splat name differs.
-  const splat = example.name === "guides.$slug" ? splatOf(convention) : undefined;
+  const splat =
+    example.name === "guides.$slug" ? splatOf(convention) : undefined;
   const shownName = splat ? `guides.$${splat}` : example.name;
   const shownParameter = splat ?? example.parameter;
   let href = "",
@@ -108,13 +181,13 @@ export function Landing() {
   }
   const params = shownParameter
     ? {
-        [shownParameter]:
-          example.parameter === "slug"
-            ? value
-              ? value.split("/")
-              : []
-            : value,
-      }
+      [shownParameter]:
+        example.parameter === "slug"
+          ? value
+            ? value.split("/")
+            : []
+          : value,
+    }
     : {};
   const extras = [
     withQuery ? "query: { tab: 'activity' }" : "",
@@ -159,18 +232,20 @@ export function Landing() {
             </div>
             <div className="hero-install">
               <code>
-                <span aria-hidden="true">$ </span>npm i
-                @triooo/next-named-routes
+                <span aria-hidden="true">$ </span>npm i @triooo/named-routes
               </code>
               <CopyButton
-                text="npm i @triooo/next-named-routes"
+                text="npm i @triooo/named-routes"
                 label={t("copy_install_command_c36ef7")}
               />
             </div>
           </div>
           <DepartureBoard />
         </div>
-        <div className="line-strip" aria-label={t("supported_frameworks_47a1d9")}>
+        <div
+          className="line-strip"
+          aria-label={t("supported_frameworks_47a1d9")}
+        >
           {lines.map((line) => (
             <a
               key={line.id}
@@ -359,7 +434,9 @@ export function Landing() {
             </Link>
           )}
           {!error && withLocale && (
-            <p className="output-note">{t("localized_url_preview_this_site_is_not_localized_3e7a10")}</p>
+            <p className="output-note">
+              {t("localized_url_preview_this_site_is_not_localized_3e7a10")}
+            </p>
           )}
         </div>
         <div className="workbench-foot">
@@ -500,7 +577,9 @@ export function Landing() {
             <div className="feature-copy">
               <Icon name="grid" />
               <h3>{t("locale_aware_from_v1_0b7e5f")}</h3>
-              <p>{t("locales_prefixes_localized_pathnames_and_domains_f3c2d1")}</p>
+              <p>
+                {t("locales_prefixes_localized_pathnames_and_domains_f3c2d1")}
+              </p>
               <Link href={docHref("i18n")}>
                 {t("explore_i18n_5d2e8a")}
                 <Icon name="arrow" size={13} />
@@ -538,24 +617,40 @@ export function Landing() {
                 <span className="line-dot" aria-hidden="true" />
                 <Link href={docHref(line.docId)}>{line.framework}</Link>
               </span>
-              <span role="cell"><code>{line.scans}</code></span>
+              <span role="cell">
+                <code>{line.scans}</code>
+              </span>
               <span role="cell">
                 <code>{line.connect}</code>
                 <small>{line.connectWhere}</small>
               </span>
-              <span role="cell" className={`where-proof proof-${line.verified}`}>
+              <span
+                role="cell"
+                className={`where-proof proof-${line.verified}`}
+              >
                 {t(proofMessages[line.verified])}
               </span>
             </div>
           ))}
-          <div className="where-row" role="row" style={{ "--lc": "var(--muted)" } as CSSProperties}>
+          <div
+            className="where-row"
+            role="row"
+            style={{ "--lc": "var(--muted)" } as CSSProperties}
+          >
             <span role="cell" className="where-framework">
               <span className="line-dot is-manual" aria-hidden="true" />
               {t("manual_routes_7c41d2")}
             </span>
-            <span role="cell"><code>React, Vue, …</code></span>
-            <span role="cell"><code>createRoutes()</code><small>{t("your_code_8a1f3e")}</small></span>
-            <span role="cell" className="where-proof proof-runtime">{t(proofMessages.runtime)}</span>
+            <span role="cell">
+              <code>React, Vue, …</code>
+            </span>
+            <span role="cell">
+              <code>createRoutes()</code>
+              <small>{t("your_code_8a1f3e")}</small>
+            </span>
+            <span role="cell" className="where-proof proof-runtime">
+              {t(proofMessages.runtime)}
+            </span>
           </div>
         </div>
         <p className="where-note">{t("where_footnote_6f9c02")}</p>
@@ -564,15 +659,30 @@ export function Landing() {
         <div className="v1-section-heading">
           <span className="eyebrow">{t("three_stops_1c8e4d")}</span>
           <h2 id="journey-title">{t("from_install_to_first_link_0b7a65")}</h2>
-          <p>{t("wrap_the_existing_configuration_the_manifest_is_generat_280dc6")}</p>
+          <p>
+            {t(
+              "wrap_the_existing_configuration_the_manifest_is_generat_280dc6",
+            )}
+          </p>
         </div>
         <ol className="journey-stops">
           <li data-reveal>
             <span className="stop-number">01</span>
             <h3>{t("stop_install_4a9d20")}</h3>
-            <div className="router-switch" role="group" aria-label={t("package_manager_7e3b81")}>
-              {(Object.keys(installCommands) as (keyof typeof installCommands)[]).map((item) => (
-                <button key={item} type="button" aria-pressed={manager === item} onClick={() => setManager(item)}>
+            <div
+              className="router-switch"
+              role="group"
+              aria-label={t("package_manager_7e3b81")}
+            >
+              {(
+                Object.keys(installCommands) as (keyof typeof installCommands)[]
+              ).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  aria-pressed={manager === item}
+                  onClick={() => setManager(item)}
+                >
                   {item}
                 </button>
               ))}
@@ -582,15 +692,27 @@ export function Landing() {
                 <span aria-hidden="true">$ </span>
                 {installCommands[manager]}
               </code>
-              <CopyButton text={installCommands[manager]} label={t("copy_install_command_c36ef7")} />
+              <CopyButton
+                text={installCommands[manager]}
+                label={t("copy_install_command_c36ef7")}
+              />
             </div>
           </li>
           <li data-reveal>
             <span className="stop-number">02</span>
             <h3>{t("stop_connect_6b2f19")}</h3>
-            <div className="router-switch" role="group" aria-label={t("integration_target_9a3c51")}>
+            <div
+              className="router-switch"
+              role="group"
+              aria-label={t("integration_target_9a3c51")}
+            >
               {(["next", "vite"] as const).map((item) => (
-                <button key={item} type="button" aria-pressed={target === item} onClick={() => setTarget(item)}>
+                <button
+                  key={item}
+                  type="button"
+                  aria-pressed={target === item}
+                  onClick={() => setTarget(item)}
+                >
                   {item === "next" ? "Next.js" : "Vite"}
                 </button>
               ))}
@@ -607,7 +729,11 @@ export function Landing() {
                 key={target}
                 code={integration.code}
                 language="ts"
-                label={target === "next" ? t("next_integration_840bc7") : t("vite_integration_4b7d0e")}
+                label={
+                  target === "next"
+                    ? t("next_integration_840bc7")
+                    : t("vite_integration_4b7d0e")
+                }
               />
             </div>
           </li>
@@ -616,7 +742,11 @@ export function Landing() {
             <h3>{t("stop_navigate_3c7e52")}</h3>
             <p>{t("stop_navigate_copy_8d4a17")}</p>
             <div className="journey-code">
-              <CodeBlock code={navigateExample} language="tsx" label={t("usage_example_3439e8")} />
+              <CodeBlock
+                code={navigateExample}
+                language="tsx"
+                label={t("usage_example_3439e8")}
+              />
             </div>
             <Link className="text-link" href={docHref("quick-start")}>
               {t("start_the_setup_c5c38e")}

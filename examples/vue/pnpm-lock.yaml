@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@triooo/next-named-routes':
+      '@triooo/named-routes':
         specifier: file:../..
         version: file:../..
       vue:
@@ -189,7 +189,7 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@triooo/next-named-routes@file:../..':
+  '@triooo/named-routes@file:../..':
     resolution: {directory: ../.., type: directory}
     engines: {node: '>=20.19'}
     hasBin: true
@@ -871,7 +871,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@triooo/next-named-routes@file:../..': {}
+  '@triooo/named-routes@file:../..': {}
 
   '@types/estree@1.0.10': {}
 

@@ -76,7 +76,7 @@ def readme(item):
     code, labels = item["code"], item["labels"]
     switcher = " · ".join(f"[{other['name']}]({other['readme']})" for other in locales)
     lines = [
-        "# @triooo/next-named-routes", "", switcher, "", GENERATED, "",
+        "# @triooo/named-routes", "", switcher, "", GENERATED, "",
         f"**v{version}** · [{labels['localGuide']}](LOCAL-DEVELOPMENT.pt-BR.md)", "",
         "## " + labels["contents"], "",
     ]
@@ -100,7 +100,7 @@ def topic(item, index):
     group = groups[index]
     switcher = " · ".join(f"[{other['name']}](../{other['code']}/{group['page']})" for other in locales)
     lines = [
-        f"# {group['title'][code]} · @triooo/next-named-routes", "",
+        f"# {group['title'][code]} · @triooo/named-routes", "",
         f"[← {labels['back']}](../../{item['readme']}) · {switcher}", "", GENERATED, "",
     ]
     for item_id in group["items"]:

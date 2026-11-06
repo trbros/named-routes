@@ -1,6 +1,6 @@
+import { namedRoutes } from "@triooo/named-routes/vite";
 import { defineConfig } from "astro/config";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
 
 export default defineConfig({
-  vite: { plugins: [namedRoutes()] },
+	vite: { plugins: [namedRoutes()] },
 });

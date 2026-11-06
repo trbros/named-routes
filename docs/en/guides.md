@@ -1,4 +1,4 @@
-# Guides · @triooo/next-named-routes
+# Guides · @triooo/named-routes
 
 [← Back to README](../../README.md) · [English](../en/guides.md) · [Português](../pt/guides.md) · [Español](../es/guides.md) · [日本語](../ja/guides.md)
 
@@ -65,7 +65,7 @@ Cannot find routes.generated: confirm the integration runs, run generate, and ch
 Generation refuses to overwrite a handwritten output file. Choose a different output rather than adding a generated signature to unrelated code. Keep generated output outside routable files. Dynamic interpolation does not authorize a request; validate permissions and application input at the destination.
 
 ```ts
-import { NamedRouteError } from "@triooo/next-named-routes";
+import { NamedRouteError } from "@triooo/named-routes";
 try {
   route("users.$user", { user: "" });
 } catch (error) {

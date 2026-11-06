@@ -1,4 +1,4 @@
-# Primeiros passos · @triooo/next-named-routes
+# Primeiros passos · @triooo/named-routes
 
 [← Voltar ao README](../../README.pt-BR.md) · [English](../en/getting-started.md) · [Português](../pt/getting-started.md) · [Español](../es/getting-started.md) · [日本語](../ja/getting-started.md)
 
@@ -47,7 +47,7 @@ Vários pacotes e recursos de frameworks também geram URLs tipadas. Eles difere
 
 | Pacote | Frameworks | Rotas vêm de | Nomes | Parâmetros tipados | i18n | Gerador de URL | npm (última · mês) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **@triooo/next-named-routes** | Next.js, Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router | files · `createRoutes()` | ✓ `users.$user` | ✓ | ✓ | ✓ `route()` | 1.0.0 · new |
+| **@triooo/named-routes** | Next.js, Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router | files · `createRoutes()` | ✓ `users.$user` | ✓ | ✓ | ✓ `route()` | 1.0.0 · new |
 | nextjs-routes | Next.js | files | — `"/users/[id]"` | ✓ | ½ Pages Router | ✓ `route()` | 2.2.5 · 173k |
 | next-typesafe-url | Next.js (peer ≤ 15) | files + Zod | — `"/users/[id]"` | ✓ + Zod | — | ✓ `$path()` | 6.1.0 · 41k |
 | next-safe-navigation | Next.js App Router | `defineRoute()` | ✓ | ✓ + schema | — | ✓ `routes.name()` | 0.4.0 · 13k |
@@ -77,13 +77,13 @@ Instale o pacote com o gerenciador que preferir. Ele não tem dependências de r
 Depois conecte uma única vez: withNamedRoutes no next.config para Next.js, ou o plugin Vite namedRoutes() nos frameworks baseados em Vite. Também é possível usar a CLI named-routes (generate, check, watch) em qualquer projeto.
 
 ```sh
-npm install @triooo/next-named-routes
+npm install @triooo/named-routes
 # pnpm
-pnpm add @triooo/next-named-routes
+pnpm add @triooo/named-routes
 # Yarn
-yarn add @triooo/next-named-routes
+yarn add @triooo/named-routes
 # Bun
-bun add @triooo/next-named-routes
+bun add @triooo/named-routes
 ```
 
 <a id="quick-start"></a>
@@ -98,7 +98,7 @@ O alias @/routes.generated abaixo pressupõe que @/* aponta para src/*. Se ele a
 
 ```ts
 // next.config.ts
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
+import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
 
 // In your application:

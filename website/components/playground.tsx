@@ -1,5 +1,5 @@
 "use client";
-import { NamedRouteError } from "@triooo/next-named-routes";
+import { NamedRouteError } from "@triooo/named-routes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

@@ -12,7 +12,7 @@
 		"prepare": "svelte-kit sync || true"
 	},
 	"dependencies": {
-		"@triooo/next-named-routes": "file:../..",
+		"@triooo/named-routes": "file:../..",
 		"cookie": "^2.0.1"
 	},
 	"devDependencies": {

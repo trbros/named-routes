@@ -1,4 +1,4 @@
-# API リファレンス · @triooo/next-named-routes
+# API リファレンス · @triooo/named-routes
 
 [← README に戻る](../../README.ja.md) · [English](../en/api-reference.md) · [Português](../pt/api-reference.md) · [Español](../es/api-reference.md) · [日本語](../ja/api-reference.md)
 
@@ -20,7 +20,7 @@ createRoutes(manifest, defaults?) は独立した凍結済みのヘルパーを�
 単なる Record<string, string> として型付けされたマニフェスト（たとえば JSON から読み込んだもの）でも動作します。名前は string、パラメーターは緩いレコードになりますが、ランタイムはすべての呼び出しを引き続き検証します。
 
 ```ts
-import { createRoutes } from "@triooo/next-named-routes";
+import { createRoutes } from "@triooo/named-routes";
 const route = createRoutes({
   "users.show": "/users/[user]",
   search: "/search/[[...terms]]",
@@ -36,7 +36,7 @@ if (route.has(input)) console.log(route.pattern(input));
 
 ## ジェネレーターの設定
 
-設定ファイルは必須ではありません。任意の設定ファイルは named-routes.config.ts、.mts、.mjs、.js、.cjs、.json の順に探されます。TypeScript の設定には Node.js 22.18 以上（組み込みの型除去）が必要で、それより古いバージョンでは .mjs を使ってください。補完を効かせるには @triooo/next-named-routes/config の defineConfig({...}) をエクスポートします。CLI の --config で別のファイルを指定でき、設定ファイル内の root はそのファイルからの相対パスです。未知のオプションや綴りの誤りは INVALID_CONFIG で失敗します。
+設定ファイルは必須ではありません。任意の設定ファイルは named-routes.config.ts、.mts、.mjs、.js、.cjs、.json の順に探されます。TypeScript の設定には Node.js 22.18 以上（組み込みの型除去）が必要で、それより古いバージョンでは .mjs を使ってください。補完を効かせるには @triooo/named-routes/config の defineConfig({...}) をエクスポートします。CLI の --config で別のファイルを指定でき、設定ファイル内の root はそのファイルからの相対パスです。未知のオプションや綴りの誤りは INVALID_CONFIG で失敗します。
 
 検出: framework（デフォルトは auto、または next、nuxt、vue、sveltekit、astro、react-router、tanstack-router、manual）、router（Next.js: auto、app、pages）、appDir/pagesDir（Next.js の独自フォルダー、または false）、routesDir（ほかのフレームワークのページ/ルートの独自フォルダー）、pageExtensions（各フレームワークのデフォルト。page.tsx のような複数ドットの拡張子も可）、includeApi（false）、exclude（ルートからの相対 glob。*、**、? を使用）。
 
@@ -46,14 +46,14 @@ if (route.has(input)) console.log(route.pattern(input));
 
 ```ts
 // named-routes.config.ts (or .mjs)
-import { defineConfig } from "@triooo/next-named-routes/config";
+import { defineConfig } from "@triooo/named-routes/config";
 
 export default defineConfig({
   framework: "auto",                 // next, nuxt, vue, sveltekit, astro, ...
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs
-  importSource: "@triooo/next-named-routes",
+  importSource: "@triooo/named-routes",
   exportNames: { route: "url", routeName: "UrlName" },
   pageExtensions: ["vue"],
   includeApi: false,
@@ -95,7 +95,7 @@ discoverRoutes(options?) は何も書き込まずに root、framework、director
 generateRoutes(options?, { check?: boolean }?) はさらに output と changed を返します。check モードは古い出力を変更せずに拒否します。validateOptions(options) は未知のキーに対して INVALID_CONFIG を投げます。/generator と /config は Node のツールの中だけでインポートし、クライアントのコードでは使わないでください。withNamedRoutes は /next から、namedRoutes は /vite からインポートします。
 
 ```ts
-import { discoverRoutes, generateRoutes } from "@triooo/next-named-routes/generator";
+import { discoverRoutes, generateRoutes } from "@triooo/named-routes/generator";
 const discovery = await discoverRoutes({ root: "/path/to/app", framework: "nuxt" });
 console.log(discovery.framework, discovery.entries);
 const result = await generateRoutes({ root: "/path/to/app" });

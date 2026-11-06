@@ -1,4 +1,4 @@
-# フレームワーク · @triooo/next-named-routes
+# フレームワーク · @triooo/named-routes
 
 [← README に戻る](../../README.ja.md) · [English](../en/frameworks.md) · [Português](../pt/frameworks.md) · [Español](../es/frameworks.md) · [日本語](../ja/frameworks.md)
 
@@ -18,7 +18,7 @@
 
 ## ほかのフレームワーク（Vite プラグイン）
 
-@triooo/next-named-routes/vite の namedRoutes() を、Nuxt（nuxt.config の vite.plugins）、Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router の Vite プラグインに追加します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更があると Vite 自身の watcher で再生成します。
+@triooo/named-routes/vite の namedRoutes() を、Nuxt（nuxt.config の vite.plugins）、Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router の Vite プラグインに追加します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更があると Vite 自身の watcher で再生成します。
 
 フレームワークは package.json から検出されます（nuxt、next、@sveltejs/kit、astro、@react-router/dev または @remix-run/dev、TanStack Router のプラグイン/CLI/Start、unplugin-vue-router または vue-router）。モノレポや検出があいまいな場合は framework を明示してください。npx named-routes init を実行すると、検出したフレームワーク用の設定ファイルを作れます。
 
@@ -33,7 +33,7 @@ React Router / Remix の flat routes（app/routes）: ドットでネスト、_i
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
 import { defineConfig } from "vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts
@@ -53,7 +53,7 @@ route("users.$id", { id: 42 }); // /users/42
 
 ## Next.js
 
-next.config を @triooo/next-named-routes/next の withNamedRoutes でラップします。モジュールは next dev と next build の前に生成され、next dev の中では watcher が最新に保ち、next start では一切書き込まないため、読み取り専用のデプロイでも安全です。ラッパーは pageExtensions、basePath、trailingSlash、Pages Router の i18n 設定を引き継ぎます。
+next.config を @triooo/named-routes/next の withNamedRoutes でラップします。モジュールは next dev と next build の前に生成され、next dev の中では watcher が最新に保ち、next start では一切書き込まないため、読み取り専用のデプロイでも安全です。ラッパーは pageExtensions、basePath、trailingSlash、Pages Router の i18n 設定を引き継ぎます。
 
 **規約。** app/ と pages/（または src/app と src/pages）を合わせて読み取ります。App Router: page ファイルのみ。ルートグループと並列スロットは省かれ、インターセプトは正規の URL に解決され、_ で始まるプライベートフォルダーは無視され、%5F はアンダースコアになります。Pages Router: index は取り除かれ、_app、_document、_error は対象外です。Route Handlers と pages/api は includeApi で有効にできます。appDir と pagesDir で独自のフォルダーを指定できます（片方を false にすると読み取りません）。
 
@@ -62,7 +62,7 @@ next.config を @triooo/next-named-routes/next の withNamedRoutes でラップ�
 **検証。** CI では実際の Next 16 開発サーバー（App Router と Pages Router、basePath とページのライブ検出を含む）を動かしています。デモ: examples/app-router と examples/pages-router。App Router と Pages Router のレシピもあわせて参照してください。
 
 ```tsx
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
+import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
 
 // app/users/[user]/page.tsx → users.$user
@@ -85,7 +85,7 @@ nuxt.config の vite.plugins に namedRoutes() を追加します。出力はソ
 
 ```vue
 // nuxt.config.ts
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineNuxtConfig({
   vite: { plugins: [namedRoutes({ output: "app/routes.generated.ts" })] },
 });
@@ -115,7 +115,7 @@ import { route } from "~/routes.generated";
 // vite.config.ts
 import vue from "@vitejs/plugin-vue";
 import VueRouter from "unplugin-vue-router/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes(), VueRouter(), vue()] });
 
 // src/pages/users/[id].vue → users.$id
@@ -137,7 +137,7 @@ vite.config で sveltekit() の前に namedRoutes() を追加します。モジ�
 ```svelte
 // vite.config.ts
 import { sveltekit } from "@sveltejs/kit/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
   plugins: [namedRoutes({ output: "src/lib/routes.generated.ts" }), sveltekit()],
 });
@@ -163,7 +163,7 @@ astro.config の vite.plugins に namedRoutes() を追加します。モジュ�
 
 ```astro
 // astro.config.mjs
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ vite: { plugins: [namedRoutes()] } });
 
 ---
@@ -188,7 +188,7 @@ flat routes を使う React Router 7 のフレームワークモード（と Rem
 ```tsx
 // vite.config.ts
 import { reactRouter } from "@react-router/dev/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
   plugins: [namedRoutes({ output: "app/routes.generated.ts" }), reactRouter()],
 });
@@ -214,7 +214,7 @@ vite.config で @tanstack/router-plugin の tanstackRouter() と並べて namedR
 ```tsx
 // vite.config.ts
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
   plugins: [namedRoutes(), tanstackRouter({ target: "react" }), react()],
 });
@@ -236,7 +236,7 @@ import { route } from "../../routes.generated";
 
 ```tsx
 // src/routes.ts
-import { createRoutes } from "@triooo/next-named-routes";
+import { createRoutes } from "@triooo/named-routes";
 export const route = createRoutes({
   home: "/",
   "users.show": "/users/[id]",       // <Route path="/users/:id">

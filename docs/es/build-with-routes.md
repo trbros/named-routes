@@ -1,4 +1,4 @@
-# Construye con rutas · @triooo/next-named-routes
+# Construye con rutas · @triooo/named-routes
 
 [← Volver al README](../../README.es.md) · [English](../en/build-with-routes.md) · [Português](../pt/build-with-routes.md) · [Español](../es/build-with-routes.md) · [日本語](../ja/build-with-routes.md)
 

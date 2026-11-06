@@ -31,7 +31,7 @@ Alternativas: `pnpm add /caminho/arquivo.tgz`, `yarn add /caminho/arquivo.tgz` o
 No `next.config.ts` do consumidor:
 
 ```ts
-import { withNamedRoutes } from '@triooo/next-named-routes/next';
+import { withNamedRoutes } from '@triooo/named-routes/next';
 
 export default withNamedRoutes({
   reactStrictMode: true,
@@ -46,7 +46,7 @@ Em Nuxt, Vue, SvelteKit, Astro, React Router ou TanStack Router, use o plugin Vi
 
 ```ts
 // vite.config.ts (no Nuxt: vite.plugins no nuxt.config; no Astro: vite.plugins no astro.config)
-import { namedRoutes } from '@triooo/next-named-routes/vite';
+import { namedRoutes } from '@triooo/named-routes/vite';
 export default defineConfig({ plugins: [namedRoutes()] });
 ```
 
@@ -88,7 +88,7 @@ Ajuste o caminho do import à posição do arquivo. Se usa `src/app`, o import n
 ## 5. Conferir e atualizar
 
 ```sh
-npm ls @triooo/next-named-routes
+npm ls @triooo/named-routes
 npx next-named-routes list
 npx next-named-routes check
 npx tsc --noEmit

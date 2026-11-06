@@ -1,4 +1,4 @@
-# ガイド · @triooo/next-named-routes
+# ガイド · @triooo/named-routes
 
 [← README に戻る](../../README.ja.md) · [English](../en/guides.md) · [Português](../pt/guides.md) · [Español](../es/guides.md) · [日本語](../ja/guides.md)
 
@@ -65,7 +65,7 @@ routes.generated が見つからない場合: 統合が実行されているか�
 生成処理は手書きの出力ファイルの上書きを拒否します。無関係なコードに生成の署名を付けるのではなく、別の output を選んでください。生成された出力はルーティング対象のファイルの外に置いてください。動的な補間はリクエストを認可するものではありません。権限とアプリケーションの入力は目的地で検証してください。
 
 ```ts
-import { NamedRouteError } from "@triooo/next-named-routes";
+import { NamedRouteError } from "@triooo/named-routes";
 try {
   route("users.$user", { user: "" });
 } catch (error) {

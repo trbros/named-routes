@@ -1,404 +1,416 @@
 import { randomUUID } from "node:crypto";
 import {
-  mkdir,
-  readdir,
-  readFile,
-  rename,
-  stat,
-  unlink,
-  writeFile,
+	mkdir,
+	readdir,
+	readFile,
+	rename,
+	stat,
+	unlink,
+	writeFile,
 } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
-  type Adapter,
-  adapters,
-  detectFramework,
-  type FrameworkId,
-  frameworks,
+	type Adapter,
+	adapters,
+	detectFramework,
+	type FrameworkId,
+	frameworks,
 } from "./frameworks.js";
 import {
-  createRoutes,
-  formatPattern,
-  type I18nOptions,
-  NamedRouteError,
-  type PatternSegment,
-  parsePattern,
-  type RouteDefaults,
+	createRoutes,
+	formatPattern,
+	type I18nOptions,
+	NamedRouteError,
+	type PatternSegment,
+	parsePattern,
+	type RouteDefaults,
 } from "./index.js";
 
 export type { FrameworkId } from "./frameworks.js";
 export interface NamingContext {
-  /** Canonical URL pattern (without locale prefix). */
-  path: string;
-  /** The automatic name before transform. */
-  name: string;
-  segments: PatternSegment[];
-  file: string | null;
-  router: string;
+	/** Canonical URL pattern (without locale prefix). */
+	path: string;
+	/** The automatic name before transform. */
+	name: string;
+	segments: PatternSegment[];
+	file: string | null;
+	router: string;
 }
 export interface NamingOptions {
-  /** Joins URL segments. Default "." (user.profile). */
-  separator?: string;
-  /** Marks parameters. Default "$" (users.$user). May be "". */
-  paramPrefix?: string;
-  /** Name of the root route. Default "home". */
-  home?: string;
-  /** Final say over automatic names (JavaScript/TypeScript config only). */
-  transform?: (route: NamingContext) => string | null | undefined;
+	/** Joins URL segments. Default "." (user.profile). */
+	separator?: string;
+	/** Marks parameters. Default "$" (users.$user). May be "". */
+	paramPrefix?: string;
+	/** Name of the root route. Default "home". */
+	home?: string;
+	/** Final say over automatic names (JavaScript/TypeScript config only). */
+	transform?: (route: NamingContext) => string | null | undefined;
 }
 export interface I18nGeneratorOptions<Locale extends string = string>
-  extends Omit<I18nOptions<Locale>, "unlocalized"> {
-  /** Dynamic first segment holding the locale. Default ["locale", "lang"]; false disables detection. */
-  localeParam?: string | readonly string[] | false;
-  /** Extra route names that never get a locale. Discovered non-locale routes are added automatically. */
-  unlocalized?: readonly string[];
-  /** Accepted (and ignored) so a next-intl `routing` object can be passed as is. */
-  localeCookie?: unknown;
-  localeDetection?: unknown;
-  alternateLinks?: unknown;
+	extends Omit<I18nOptions<Locale>, "unlocalized"> {
+	/** Dynamic first segment holding the locale. Default ["locale", "lang"]; false disables detection. */
+	localeParam?: string | readonly string[] | false;
+	/** Extra route names that never get a locale. Discovered non-locale routes are added automatically. */
+	unlocalized?: readonly string[];
+	/** Accepted (and ignored) so a next-intl `routing` object can be passed as is. */
+	localeCookie?: unknown;
+	localeDetection?: unknown;
+	alternateLinks?: unknown;
 }
 export interface ExportNames {
-  /** Frozen manifest export. Default "routes". */
-  routes?: string;
-  /** URL helper export. Default "route". */
-  route?: string;
-  /** Route name union type. Default "RouteName". */
-  routeName?: string;
-  /** Locale union type (with i18n). Default "RouteLocale". */
-  routeLocale?: string;
+	/** Frozen manifest export. Default "routes". */
+	routes?: string;
+	/** URL helper export. Default "route". */
+	route?: string;
+	/** Route name union type. Default "RouteName". */
+	routeName?: string;
+	/** Locale union type (with i18n). Default "RouteLocale". */
+	routeLocale?: string;
 }
 export interface GeneratorOptions {
-  /** Project directory. Default: process.cwd(). */
-  root?: string;
-  /** Routing convention. Default "auto" (detected from package.json, then Next.js). */
-  framework?: FrameworkId | "auto";
-  /** Next.js only: auto (default), app or pages. */
-  router?: "auto" | "app" | "pages";
-  /** Next.js only: custom App Router directory, or false to skip it. */
-  appDir?: string | false;
-  /** Next.js only: custom Pages Router directory, or false to skip it. */
-  pagesDir?: string | false;
-  /** Other frameworks: custom pages/routes directory relative to root. */
-  routesDir?: string;
-  pageExtensions?: readonly string[];
-  includeApi?: boolean;
-  /** Glob patterns relative to root (`*`, `**`, `?`) for files or folders to ignore. */
-  exclude?: readonly string[];
-  /** URL pattern -> custom route name. Misspelled or undiscovered paths fail. */
-  names?: Readonly<Record<string, string>>;
-  /** Additional explicit names for URLs such as rewrite destinations. */
-  extraRoutes?: Readonly<Record<string, string>>;
-  naming?: NamingOptions;
-  i18n?: I18nGeneratorOptions;
-  /** Generated module (.ts, .mts, .js or .mjs). Default "src/routes.generated.ts". */
-  output?: string;
-  /** Module specifier the generated file imports createRoutes from. */
-  importSource?: string;
-  exportNames?: ExportNames;
-  /** Public URL defaults serialized into the generated module. Never put secrets here. */
-  defaults?: Omit<RouteDefaults, "i18n">;
+	/** Project directory. Default: process.cwd(). */
+	root?: string;
+	/** Routing convention. Default "auto" (detected from package.json, then Next.js). */
+	framework?: FrameworkId | "auto";
+	/** Next.js only: auto (default), app or pages. */
+	router?: "auto" | "app" | "pages";
+	/** Next.js only: custom App Router directory, or false to skip it. */
+	appDir?: string | false;
+	/** Next.js only: custom Pages Router directory, or false to skip it. */
+	pagesDir?: string | false;
+	/** Other frameworks: custom pages/routes directory relative to root. */
+	routesDir?: string;
+	pageExtensions?: readonly string[];
+	includeApi?: boolean;
+	/** Glob patterns relative to root (`*`, `**`, `?`) for files or folders to ignore. */
+	exclude?: readonly string[];
+	/** URL pattern -> custom route name. Misspelled or undiscovered paths fail. */
+	names?: Readonly<Record<string, string>>;
+	/** Additional explicit names for URLs such as rewrite destinations. */
+	extraRoutes?: Readonly<Record<string, string>>;
+	naming?: NamingOptions;
+	i18n?: I18nGeneratorOptions;
+	/** Generated module (.ts, .mts, .js or .mjs). Default "src/routes.generated.ts". */
+	output?: string;
+	/** Module specifier the generated file imports createRoutes from. */
+	importSource?: string;
+	exportNames?: ExportNames;
+	/** Public URL defaults serialized into the generated module. Never put secrets here. */
+	defaults?: Omit<RouteDefaults, "i18n">;
 }
 export interface DiscoveredRoute {
-  name: string;
-  path: string;
-  file: string | null;
-  /** Source kind: app, pages, routes, api, server or explicit. */
-  router: string;
-  framework: FrameworkId;
-  variant?: boolean;
-  localized?: boolean;
+	name: string;
+	path: string;
+	file: string | null;
+	/** Source kind: app, pages, routes, api, server or explicit. */
+	router: string;
+	framework: FrameworkId;
+	variant?: boolean;
+	localized?: boolean;
 }
 export interface Discovery {
-  root: string;
-  framework: FrameworkId;
-  /** Scanned directories relative to root. */
-  directories: string[];
-  sources: { kind: string; directory: string }[];
-  routes: Record<string, string>;
-  entries: DiscoveredRoute[];
-  /** Runtime defaults written into the generated module. */
-  defaults: RouteDefaults;
+	root: string;
+	framework: FrameworkId;
+	/** Scanned directories relative to root. */
+	directories: string[];
+	sources: { kind: string; directory: string }[];
+	routes: Record<string, string>;
+	entries: DiscoveredRoute[];
+	/** Runtime defaults written into the generated module. */
+	defaults: RouteDefaults;
 }
 
-const PACKAGE = "@triooo/next-named-routes";
+const PACKAGE = "@triooo/named-routes";
 const generatedHeader = `// Generated by ${PACKAGE}. Do not edit.`;
 const error = (message: string): never => {
   throw new NamedRouteError("GENERATION_ERROR", message);
-};
+};	
 const invalid = (message: string): never => {
   throw new NamedRouteError("INVALID_CONFIG", message);
-};
+};	
 const posix = (value: string) => value.split(sep).join("/");
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  !!value && typeof value === "object" && !Array.isArray(value);
+  !	alue && typeof value === "object" && !Array.isArray(value);
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
-const RESERVED = new Set(
+const RESERVED = new Set(	
   "break case catch class const continue debugger default delete do else enum export extends false finally for function if import in instanceof new null return super switch this throw true try typeof var void while with yield let static implements interface package private protected public await".split(
     " ",
   ),
 );
 
-async function isDirectory(path: string) {
-  try {
-    return (await stat(path)).isDirectory();
-  } catch (caught: unknown) {
-    const code = (caught as NodeJS.ErrnoException).code;
-    if (code === "ENOENT" || code === "ENOTDIR") return false;
+async f		ry {	
+    return (awa	 stat(		)).isDirectory();
+  } catch (caught: unknown) {	
+    const c		= (caught as NodeJS.ErrnoException).code;
+    i		ode === "ENOENT" || code === "ENOTDIR") return false;
     throw caught;
   }
 }
 
 const generatorKeys = new Set([
-  "root",
-  "framework",
+ 		ot",
+  "f	mework",
   "router",
   "appDir",
-  "pagesDir",
-  "routesDir",
-  "pageExtensions",
-  "includeApi",
-  "exclude",
-  "names",
-  "extraRoutes",
-  "naming",
-  "i18n",
-  "output",
-  "importSource",
-  "exportNames",
+  "pa	sDir",
+	"routesDir",	
+  "page	tensions",
+  "	cludeApi",
+  "e	lude",
+  "names	
+  "extraRou	 "naming",
+  "i1	",
+  "out	t",	 "importSource"	 "exportNa	s",
   "defaults",
-]);
-const i18nKeys = new Set([
-  "locales",
+]);		
+const 	8nKeys = new Set([
+  "locales	
   "defaultLocale",
   "localePrefix",
-  "pathnames",
-  "domains",
-  "localeParam",
-  "unlocalized",
-  "localeCookie",
-  "localeDetection",
+  "	thnames",
+  "	mains",
+  "lo	leParam",
+  "unl	alized",
+  "	caleCookie"	
+  "localeDet	tion",
   "alternateLinks",
-]);
+]);			
 function stringMap(value: unknown, label: string) {
-  if (value === undefined) return;
-  if (!isRecord(value)) invalid(`${label} must be an object`);
-  for (const [key, item] of Object.entries(value as object))
-    if (typeof item !== "string" || !item)
+  if (value === undefined) return	
+  if 	isRecord(value)) invalid(`${label} must be an object`);
+  for (	nst [key, item] of Object.entries(value as object))
+    if (typeof item !== "		ng" || !item)
       invalid(`${label}.${key} must be a nonempty string`);
-}
+}			
 function stringList(value: unknown, label: string) {
-  if (value === undefined) return;
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || !item))
+  if (value === undefined) return		
+		
+  if (!Arr
+		y.isArray(value) || value.some((item) => typeof item !== "string" || !item))
     invalid(`${label} must be an array of nonempty strings`);
 }
+			
 function optionalString(value: unknown, label: string) {
-  if (value !== undefined && (typeof value !== "string" || !value))
+	if (value !== undefined && (typeof value !== "string" || !value))
     invalid(`${label} must be a nonempty string`);
 }
-
+		
 /** Validates user options and reports typos instead of silently ignoring them. */
-export function validateOptions(options: unknown): GeneratorOptions {
+export function validateOptions(options: unknown): GeneratorOptions 	
   if (!isRecord(options)) return invalid("Options must be an object");
-  for (const key of Object.keys(options))
-    if (!generatorKeys.has(key)) invalid(`Unknown option "${key}"`);
-  const o = options as GeneratorOptions;
-  optionalString(o.root, "root");
-  if (o.framework !== undefined && o.framework !== "auto" && !frameworks.includes(o.framework))
-    invalid(`Invalid framework: ${String(o.framework)}; use auto, ${frameworks.join(", ")}`);
+  for (const key of Object	eys(options))		 if (!generatorKeys.has(key)) invalid(`Unknown option "${key}"`);
+  const o = options as Gene	torOptions;
+  optionalString(o.root, "root");		
+		
+  if (
+		.framework !== undefined 
+		& o.framework !== "auto" && !fram
+	ew		.include
+			s(o.framework))
+    invalid(`Invalid framework: ${String(o.framework)}; use auto,,
+		 ${	ameworks.join(", ")}`);
   if (o.router !== undefined && !["auto", "app", "pages"].includes(o.router))
-    error(`Invalid router: ${String(o.router)}`);
-  for (const key of ["appDir", "pagesDir"] as const)
+    error(`Invalid		ter: ${String(o.router)}`);
+  for (const ke	of ["appDir", "pagesDir"] as const)		
     if (o[key] !== undefined && o[key] !== false) optionalString(o[key], key);
-  optionalString(o.routesDir, "routesDir");
-  if (o.pageExtensions !== undefined) {
+  optionalString(o.route	ir, "routesDir");
+  if (o.pageExtensions !== u	efined) {		
     if (!Array.isArray(o.pageExtensions)) error("pageExtensions must be an array");
     if (
-      !o.pageExtensions.length ||
-      o.pageExtensions.some(
+			
+      !o.pageExtensions.l		     			eExtensions.some(							
+					
         (ext) => typeof ext !== "string" || !/^[a-z0-9]+(?:\.[a-z0-9]+)*$/i.test(ext),
       )
     )
       error("Invalid pageExtensions");
-  }
+  }										
   if (o.includeApi !== undefined && typeof o.includeApi !== "boolean")
-    invalid("includeApi must be a boolean");
+    invalid("includeApi		t be a boolean");
   stringList(o.exclude, "exclude");
-  stringMap(o.names, "names");
-  if (o.extraRoutes !== undefined && !isRecord(o.extraRoutes))
-    invalid("extraRoutes must be an object");
-  if (o.naming !== undefined) {
-    if (!isRecord(o.naming)) invalid("naming must be an object");
-    for (const key of Object.keys(o.naming))
+ 	tringMap(o.names, "names");	
+  if 	.extraRoutes !== undefined && !isRecord(o.extraRoutes))
+    invalid("extraRout		ust be an object");
+  if (o.naming !== undefined) {	
+  		 (!isRecord(o.naming)) invalid("naming must be an object");
+    for (const key of O		t.keys(o.naming))			
       if (!["separator", "paramPrefix", "home", "transform"].includes(key))
-        invalid(`Unknown naming option "${key}"`);
-    const { separator, paramPrefix, home, transform } = o.naming;
-    if (separator !== undefined && (typeof separator !== "string" || !/^[^\s\u0000-\u001f]+$/.test(separator)))
-      invalid("naming.separator must be a nonempty string without spaces");
-    if (paramPrefix !== undefined && (typeof paramPrefix !== "string" || /[\s\u0000-\u001f]/.test(paramPrefix)))
-      invalid("naming.paramPrefix must be a string without spaces");
-    optionalString(home, "naming.home");
-    if (transform !== undefined && typeof transform !== "function")
+        invalid(`				naming option "${key}"`);
+  		nst { separator, paramPrefix, home, transform } = o.naming;		
+			
+			
+    if (separator !== un
+				efined && (typeof separator !== "string" 
+		||			\s\u0000-\u001f]+$/.test(separator)))
+      invalid("naming.separator must be a nonempty string without sp		");
+			
+			
+    if (paramPrefix !== undefined && (typeof paramPrefix !== "stri
+		ng			 invalid("naming.paramPrefix must be a string without spaces");
+    optionalString(home, "n		g.home");
+		if (transform !== undefined && typeof transform !== "function")
       invalid("naming.transform must be a function");
-  }
-  if (o.i18n !== undefined) {
-    if (!isRecord(o.i18n)) invalid("i18n must be an object");
-    for (const key of Object.keys(o.i18n))
-      if (!i18nKeys.has(key)) invalid(`Unknown i18n option "${key}"`);
+  }			
+  if (o.i18n !== undefined) {		
+    if		sRecord(o.i18n)) invalid("i18n must be an object");
+    for (const key of Obj		keys(o.i18n))			   if (!i18nKeys.has(key)) invalid(`Unknown i18n option "${key}"`);
     const param = o.i18n.localeParam;
-    if (
+    if (		
       param !== undefined &&
-      param !== false &&
-      !(typeof param === "string" && param) &&
+     		am !=			e &&			    !(typeof param 			tring" && param) &&			
+				
       !(Array.isArray(param) && param.every((item) => typeof item === "string" && item))
-    )
-      invalid("i18n.localeParam must be a string, an array of strings or false");
+    
+				
+								
+
+				      invalid("i18n.localeParam must be a string, an array of strings or false");
     stringList(o.i18n.unlocalized, "i18n.unlocalized");
-  }
-  optionalString(o.output, "output");
-  optionalString(o.importSource, "importSource");
-  if (o.importSource !== undefined && /[\u0000-\u001f'"`\\]/.test(o.importSource))
-    invalid("importSource contains unsupported characters");
-  if (o.exportNames !== undefined) {
+  },
+					
+  optionalString(o.output,	ou	ut");
+  optionalString(o	mportSource, "importSource");	
+		
+  if (o.importSource !
+		= undefined && /[\u0000-\u001f'"`\\]/.test(o.importSource))
+    i
+	nv		("importSource contains unsupported characters");
+  if (o.exportNames !== undefin	) {		
     if (!isRecord(o.exportNames)) invalid("exportNames must be an object");
-    const seen = new Set<string>();
-    for (const [key, value] of Object.entries(o.exportNames)) {
-      if (!["routes", "route", "routeName", "routeLocale"].includes(key))
-        invalid(`Unknown exportNames option "${key}"`);
-      if (typeof value !== "string" || !IDENTIFIER.test(value) || RESERVED.has(value))
-        invalid(`exportNames.${key} must be a valid JavaScript identifier`);
+    const seen = new Set<string>		
+    		(const [key, value] of Object.entries(o.exportNames)) {			      if (!["routes", "route", "routeName", "routeLocale"].includes(key))
+        inva				nown exportNames option "${key}"`);			
+				
+      if (typeof va
+				ue !== "string" || !IDENTI
+				IER.test(value) || 
+			RE				as(value))
+        invalid(`exportNames.${key} must be a valid JavaScript ident			);
       if (seen.has(value)) invalid(`exportNames.${key} duplicates ${value}`);
       seen.add(value);
     }
   }
-  if (o.defaults !== undefined) {
-    if (!isRecord(o.defaults)) invalid("defaults must be an object");
-    for (const key of Object.keys(o.defaults))
-      if (key === "i18n") invalid("Configure locales with the top-level i18n option");
-      else if (!["basePath", "trailingSlash", "origin"].includes(key))
+ 			.defaults !== und		ed	{			  if (!isRecord(o.defaults)) invalid("defaults must be an object");
+    for (const key of		ect.keys(o.defaults))			
+      
+				f (key === "i18n") invalid("Configure locales with the top-le			   else if (!["basePath", "trailingSlash", "origin"].includes(key))
         invalid(`Unknown defaults option "${key}"`);
-  }
-  return o;
-}
-
-function globToRegExp(glob: string) {
-  let source = "";
-  const pattern = glob.replace(/^\.\//, "").replace(/\/$/, "");
-  for (let index = 0; index < pattern.length; index++) {
+  }				
+function gl	To	gExp(glob: string) {
+  let source = "";	
+  co	t pattern = glob.replace(/^\.\//, "").replace(/\/$/, "");
+  for (let 	dex = 0; index < pattern.length; index++) {
     const char = pattern[index];
-    if (char === "*") {
-      if (pattern[index + 1] === "*") {
-        index++;
-        if (pattern[index + 1] === "/") {
-          index++;
-          source += "(?:.*/)?";
-        } else source += ".*";
-      } else source += "[^/]*";
-    } else if (char === "?") source += "[^/]";
+    if (cha		= "*") {
+    		 (pattern[index + 1] === "*") {
+        ind			
+        i				rn[index + 1] === "/") {
+       				++;
+          source 					)?";
+     					source += ".*";
+     				source += "[^/]*";			
+    } else if (char =		?") source += "[^/]";
     else source += char.replace(/[.+^${}()|[\]\\]/g, "\\$&");
-  }
+  		
   return new RegExp(`^${source}(?:/.*)?$`);
 }
-
+		
 function automaticName(path: string, naming: NamingOptions = {}) {
-  const separator = naming.separator ?? ".";
-  const prefix = naming.paramPrefix ?? "$";
-  const segments = parsePattern(path);
-  if (!segments.length) return naming.home ?? "home";
+  const separator = nam	g.separator ?? ".";
+  const prefix = naming.	ramPrefix ?? "$";
+  const segments = parsePatte	(path);
+  if (!segment	length) return naming.home ?? "home";
   return segments
-    .map((segment) =>
-      segment.kind === "static"
-        ? segment.value
-        : segment.kind === "mixed"
-          ? segment.parts
-              .map((part) => (part.kind === "static" ? part.value : `${prefix}${part.name}`))
+    .map((segment) =>	
+      segment.		 === "static"
+        ? se			value
+        :				.kind === "mixed"
+       				ment.parts												
+  
+								          .map((part) => (part.kind === "static" ? part.value : `${prefix}${part.name}`))
               .join("")
-          : `${prefix}${segment.name}`,
-    )
-    .join(separator);
-}
-function shape(path: string) {
+ ,
+							  							
+					
+functio		ap		th: string) {
   return parsePattern(path)
-    .map((segment) =>
-      segment.kind === "static"
-        ? segment.value
-        : segment.kind === "mixed"
-          ? segment.parts
-              .map((part) => (part.kind === "static" ? part.value : "[dynamic]"))
+    .map((segment)	>
+      segment.		 === "static"
+        ? se			value
+        :				.kind === "mixed"
+       				ment.parts												              
+								ap((part) => (part.kind === "static" ? part.value : "[dynamic]"))
               .join("")
           : `[${segment.kind}]`,
-    )
-    .join("/");
-}
-
-async function resolveFramework(root: string, options: GeneratorOptions) {
+  ,
+							 )																
+async function resolveFramework(root: string, options: GeneratorOpti	s) {
   if (options.framework && options.framework !== "auto") return options.framework;
   if (
-    (options.router && options.router !== "auto") ||
-    options.appDir !== undefined ||
-    options.pagesDir !== undefined
+		
+    (opt	ns.ro		 && options.router !== "auto") ||
+    options.appDir !== undefined		   options.pagesDir !== undefined
   )
     return "next";
-  try {
-    const manifest: unknown = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
-    if (isRecord(manifest)) {
-      const dependencies = Object.assign(
-        {},
+  		{						
+    const ma
+			nifest: unknown = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+    if (isRecord(manifest)) {,
+				      const dependencies = Object.assign(
+        {},											
         ...["dependencies", "devDependencies", "optionalDependencies"].map((key) =>
-          isRecord(manifest[key]) ? manifest[key] : {},
-        ),
-      );
-      const detected = detectFramework(dependencies);
+   
+					       isRecord(manifest[key]) ? manifest[key] : {},
+ (    );)				   			 de			 = detectFramework(dependencies);
       if (detected) return detected;
     }
-  } catch (caught) {
-    const code = (caught as NodeJS.ErrnoException).code;
+  } 			(caught) {			
+    const c		= (caught as NodeJS.ErrnoException).code;		
     if (code !== "ENOENT" && !(caught instanceof SyntaxError)) throw caught;
   }
   return "next";
 }
 
 interface Source {
-  kind: string;
+  kind: s	in	
   directory: string;
   prefix?: string;
-}
+}		
 async function resolveSources(
-  root: string,
+	root: string,
   adapter: Adapter,
-  options: GeneratorOptions,
-): Promise<Source[]> {
-  const router = options.router ?? "auto";
-  if (adapter.id !== "next") {
-    if (router !== "auto") invalid("router applies only to framework next");
-    if (options.appDir !== undefined || options.pagesDir !== undefined)
-      invalid("appDir and pagesDir apply only to framework next");
-  } else if (options.routesDir !== undefined)
-    invalid("Next.js uses appDir and pagesDir instead of routesDir");
+  o	ions: Generato	ptions,
+): Promise<Sourc	]> {
+  const router = options.	uter ?? "auto";
+  if (adapter.id !== "next") {			
+    if (router !== "auto") invalid("router applies only to framework		    if (options.appDir !== undefined || options.pagesDir !== undefined)
+ 			nvalid("appDir and pagesDir apply only to framework next");
+  } else if (options.r	tesDir !== undefined)		  invalid("Next.js uses appDir and pagesDir instead of routesDir");
   const sources: Source[] = [];
-  let primary = true;
-  for (const source of adapter.sources) {
-    if (source.api && !options.includeApi) continue;
+  let primary 	true;
+  fo	(const source of ada	er.sources) {
+    if (source.		&& !options.includeApi) continue;		
     if (adapter.id === "next" && router !== "auto" && router !== source.kind) continue;
     const override =
-      adapter.id === "next"
-        ? source.kind === "app"
-          ? options.appDir
-          : options.pagesDir
-        : primary && !source.api
-          ? options.routesDir
-          : undefined;
-    if (!source.api) primary = false;
-    if (override === false) continue;
-    if (typeof override === "string") {
-      const directory = resolve(root, override);
-      if (!(await isDirectory(directory)))
-        invalid(`Routes directory not found: ${override}`);
+      ad
+			pter.id ==		ext"
+        			ce.kind === "app"
+         				ns.appDir
+          : 					gesDir
+      					y && !source.api
+     				ptions.routesDir
+          : und					
+    if 					pi) primary =		se;
+    if (override === false) co		ue;
+    if (typeof override === 		ing") {
+      const directo			esolve(root, override);
+      if (!(await isDirec			irectory)))
+        				`Routes directory not found: ${override}`);			
       sources.push({ kind: source.kind, directory, prefix: source.prefix });
       continue;
-    }
-    for (const candidate of source.candidates) {
-      const directory = resolve(root, candidate);
-      if (await isDirectory(directory)) {
+    }			 for (cons		nd		e of source.candidates) {
+      const direct			resolve(root, candidate);
+      if (await isDirector			ctory)) {				
         sources.push({ kind: source.kind, directory, prefix: source.prefix });
         break;
       }
@@ -406,344 +418,366 @@ async function resolveSources(
   }
   return sources;
 }
-
+											
 function pageExtensionsOf(adapter: Adapter, options: GeneratorOptions) {
-  return [...(options.pageExtensions ?? adapter.extensions)].sort(
+ 	eturn [...(options.pageExtensions ?? adapter.extensions)].sort(
     (a, b) => b.length - a.length,
   );
 }
-function mapFile(
+function		File(
   adapter: Adapter,
-  source: Source,
-  parts: string[],
-  name: string,
-  extensions: readonly string[],
+  sou	e: Source,
+  parts: st	ng[],
+  name: string,	
+	extensions: reado	y string[],
   includeApi: boolean,
-) {
-  if (/\.d\.[cm]?ts$/.test(name)) return null;
+) {		
+  if (/\.d\.[cm]?ts$/	est(name)) return null;	
   const extension = extensions.find((ext) => name.endsWith(`.${ext}`));
-  if (!extension) return null;
-  const stem = name.slice(0, -extension.length - 1);
-  if (!stem) return null;
+  if (!extension) return null;	
+  const stem = 	me.slice(0, -extension.length - 1);
+  if (!stem) return null;		
   return adapter.map({ kind: source.kind, parts, stem, extension, includeApi });
 }
 
 interface Candidate {
   path: string;
   file: string | null;
-  router: string;
-  variant?: boolean;
-  localized?: boolean;
+  router: s	ing;
+  vari	t?: boolean;
+  loca	zed?: boolean;
   api?: boolean;
 }
-
-export async function discoverRoutes(input: GeneratorOptions = {}): Promise<Discovery> {
-  const options = validateOptions(input);
-  const root = resolve(options.root ?? process.cwd());
-  const framework = await resolveFramework(root, options);
-  const adapter = adapters[framework];
-  const extensions = pageExtensionsOf(adapter, options);
-  const includeApi = options.includeApi === true;
-  const exclude = (options.exclude ?? []).map(globToRegExp);
-  const excluded = (path: string) => exclude.some((pattern) => pattern.test(path));
-  const sources = await resolveSources(root, adapter, options);
-  if (!sources.length && framework !== "manual") {
+			
+export async fun
+	ction discoverRoutes(input: GeneratorOptions = {}): Promise<Discovery> {
+  ,
+const options = validate	tions(input);
+  const root 	resolve(options.root ?? process.cwd());
+  const f	mework = await resolveFramework(root, options);
+  const adapter = adapters[fr	ework];
+  const ext	sions = pageExtensionsOf(adapter, options);
+  const includeApi	 options.includeApi === true;
+  const	xclude = (options.exclude ?? []).map(globToRegExp);	
+  const excluded = (
+		ath: string) => exclude.some((pattern) => pattern.test(path));
+  co	t sources = await resolveSources(root, adapter, options);
+  if (!sources.le	th && framework !== "manual") {
     const expected =
-      framework === "next"
-        ? options.router && options.router !== "auto"
+      framework === 		t"			
+        ? opti				er && options.router !== "auto"
           ? options.router
-          : "app or pages"
+          : "a					s"									adapter.sources
+						.filter
         : adapter.sources.filter((item) => !item.api).flatMap((item) => item.candidates).join(" or ");
-    error(
+    err
+						or(
+											
       `No ${expected} directory found in ${root} for ${adapter.label}. Set "framework" (${frameworks.join(", ")}) or a custom routes directory.`,
     );
   }
-  const candidates: Candidate[] = [];
-  for (const source of sources) {
-    const walk = async (parts: string[]): Promise<void> => {
+  const candidates:		did	e[	= [];
+  for (const source of sources) {	
+    con		alk = async (parts: string[]): Promise<void> => {			
       const children = await readdir(resolve(source.directory, ...parts), {
         withFileTypes: true,
-      });
+      });										
       children.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-      for (const child of children) {
-        if (child.isSymbolicLink()) continue;
-        const absolute = resolve(source.directory, ...parts, child.name);
-        const file = posix(relative(root, absolute));
+      for (const child of chil			{
+        if (child.isSy				nk()) continue;				      const absolute = resolve(source.directory, ...parts, child.name);
+        const 				osix(relative(root, absolute));				
         if (excluded(file) || (child.isDirectory() && excluded(`${file}/`))) continue;
         if (child.isDirectory()) {
-          if (
-            child.name === "node_modules" ||
-            adapter.skipDirectory(child.name, { kind: source.kind, parts })
+       
+					  if (				
+        					name 						dules" ||						        adapter.skipDirectory(child.name, { kind: source.kind, parts })
           )
-            continue;
-          await walk([...parts, child.name]);
-        } else if (child.isFile()) {
+            continue;					
+						ait walk([					child.name]);
+        } else if (child.isFile				
           let mapped: ReturnType<typeof mapFile>;
-          try {
-            mapped = mapFile(adapter, source, parts, child.name, extensions, includeApi);
-            if (!mapped) continue;
-            if (source.prefix && mapped.path !== "/")
-              mapped = { ...mapped, path: `${source.prefix}${mapped.path}` };
+  					y {											
+       
+							     map
+							ed = ma
+							File(a
+							apter, source, parts, child.name, extensions, includeApi);
+       
+							    if (!ma
+							ped) conti,
+						nue						
+            if						fix && mapped.path !== "/")							          mapped = { ...mapped, path: `${source.prefix}${mapped.						
             else if (source.prefix) mapped = { ...mapped, path: source.prefix };
             parsePattern(mapped.path);
-          } catch (caught) {
-            if (caught instanceof NamedRouteError)
-              throw new NamedRouteError(caught.code, `${caught.message} (${file})`);
-            throw caught;
-          }
-          candidates.push({ ...mapped, router: source.kind, file });
+						catch (caught) {					
+            if (c						ceof NamedRouteError)							
+              throw new
+								 NamedRouteError(caught.code, `${caught.message} (${file})`);
+         
+								  throw caught;
+          },
+																							 candidates.push({ ...mapped, router: source.kind, file });
         }
       }
     };
     await walk([]);
   }
-
+													
   // i18n: strip the locale segment ([locale] folder or physical locale folders).
   const i18n = options.i18n;
   if (i18n) {
-    const params =
-      i18n.localeParam === false
-        ? []
-        : typeof i18n.localeParam === "string"
-          ? [i18n.localeParam]
-          : [...(i18n.localeParam ?? ["locale", "lang"])];
-    const locales = new Set<string>(Array.isArray(i18n.locales) ? i18n.locales : []);
-    let segmented = false;
-    for (const candidate of candidates) {
-      const [first, ...rest] = parsePattern(candidate.path);
-      if (
-        first &&
-        (first.kind === "dynamic" || first.kind === "optionalDynamic") &&
+    co	t params =
+  	  i18n.localeParam === false
+   		 ? []			
+        				 i18n				aram === "string"
+          ? [i18n.localeParam]					
+         					8n.localeParam ?? ["locale", "lang"])];		
+    const locales 
+			= new Set<string>(Array.isArray(i18n.locales) ? i18n.locales : []);
+    let segmented = false;,
+				 for (const candidate o		ndidates) {
+      c			    if (
+        first &&											      (first.kind === "dynamic" || first.kind === "optionalDynamic") &&
         params.includes(first.name)
-      ) {
-        segmented = true;
-        candidate.path = formatPattern(rest);
-        candidate.localized = true;
-      } else if (first?.kind === "static" && locales.has(first.value)) {
-        candidate.path = formatPattern(rest);
-        candidate.localized = true;
-        candidate.variant = true;
+      ) {				    segmented = true;							    candidate.path				tPattern(rest);
+        candidate.localized = tr							     } else if (first?.kind === "static" && locales.has(first.value)) {
+        candidate.path				tPattern(rest);
+        candidate.localized = tr				  candidate.variant = true;
       }
-    }
+    }											
     // Without a [locale] folder (Pages Router i18n, @nuxtjs/i18n, middleware
-    // rewrites) every page is localized; endpoints never are.
-    for (const candidate of candidates)
+    /		writes) every page is localized; endpoints never are.
+    for (const candidate of 		idates)
       candidate.localized ??= !segmented && !candidate.api;
   }
-
-  const rank = (item: Candidate) => (item.variant ? 0 : 2) + (item.localized === false ? 0 : 1);
-  const paths = new Map<string, Candidate>();
-  for (const candidate of candidates) {
-    const key = shape(candidate.path);
+					
+  cons
+		 rank = (item: Candidate) => (item.variant ? 0 : 2) + (item.localized === false ? 0 : 1);
+  const paths = new Ma	string, Candidate>();
+  for (const candidate of ca	idates) {
+    const key = shape(candida		ath);
     const previous = paths.get(key);
-    if (!previous) {
-      paths.set(key, candidate);
-      continue;
-    }
-    if (previous.path !== candidate.path)
-      error(`Route conflict: ${previous.file} and ${candidate.file}`);
+    if (!p		ous) {
+      paths.se		    continue;
+    }			
+    			evious.pat		= 		idate.path)			   error(`Route conflict: ${previous.file} and ${candidate.file}`);
     if (
-      adapter.strictDuplicates &&
-      previous.localized === candidate.localized &&
+      adapter.strictDupli		s &&			
+      previous.l			ed === candidate.localized &&			
       (previous.router !== candidate.router || (!previous.variant && !candidate.variant))
     )
-      error(`Route conflict: ${previous.file} and ${candidate.file}`);
-    if (rank(candidate) > rank(previous)) paths.set(key, candidate);
+									   error(`Route conflict: ${previous.file} and ${candidate.file}`		 if (rank(candidate) > rank(previous)) paths.set(key, candidate);
   }
-  if (adapter.strictDuplicates)
-    for (const candidate of paths.values()) {
-      const parts = parsePattern(candidate.path);
+  if (adapter.strictDuplicates)		
+    for (const candida		f paths.values()) {
+      const parts 			ePattern(candidate.path);			
       if (candidate.variant || parts.at(-1)?.kind !== "optional") continue;
-      const base = shape(formatPattern(parts.slice(0, -1)));
-      const others = [paths.get(base), paths.get(`${base}${base ? "/" : ""}[catchAll]`)];
-      if (others.some((other) => other && !other.variant && other !== candidate))
-        error(`Optional catch-all route conflict: ${candidate.file}`);
+      c			ase = shape(formatPattern(parts.slice(0, -1)));			
+
+				      const othe
+				s = [paths.get(base), paths.get(`${base}${base ?,
+			 "/			}[ca
+				tchAll]`)];
+      if (others.some((other) => other && !other.variant && other 
+			!=				   error(`Optional catch-all route conflict: ${candidate.file}`);
     }
 
-  const aliases = options.names ?? {};
-  const discovered = [...paths.values()];
-  for (const path of Object.keys(aliases))
-    if (!discovered.some((item) => item.path === path))
-      error(`Named path not found: ${path}`);
-  const entries: DiscoveredRoute[] = [];
-  for (const candidate of discovered) {
-    let name = Object.hasOwn(aliases, candidate.path)
-      ? aliases[candidate.path]
-      : automaticName(candidate.path, options.naming);
+  const aliases = opti		nam	 ?? {};
+  const discovered = [...p	hs.values()];
+  for (const path of Obje	.keys(aliases))
+    if (!dis		red.some((item) => item.path === path))
+      error(`Named pat			found: ${path}`);
+  const entries: Discovered	ute[] = [];
+  for (const candidate of di	overed) {
+    let name =		ect.hasOwn(aliases, candidate.path)
+      ? aliases[candidate.path]			
+      : autom			me(candidate.path, options.naming);		
     if (!Object.hasOwn(aliases, candidate.path) && options.naming?.transform) {
-      const transformed = options.naming.transform({
+      const tra			ed = options.naming.transform({
         path: candidate.path,
-        name,
-        segments: parsePattern(candidate.path),
+        name,				
+      				ts: pa				rn(candidate.path),
         file: candidate.file,
-        router: candidate.router,
-      });
-      if (transformed !== undefined && transformed !== null) {
-        if (typeof transformed !== "string" || !transformed)
-          invalid(`naming.transform returned an invalid name for ${candidate.path}`);
+    				    });							    			ransformed !== undefined && transformed !== null) {
+       				eof transformed !== "string" || !transformed)					
+
+						          invalid(`naming.transform returned an invalid name for ${candidate.path}`);
         name = transformed;
       }
     }
-    entries.push({
-      name,
-      path: candidate.path,
-      file: candidate.file,
-      router: candidate.router,
-      framework,
-      ...(candidate.variant ? { variant: true } : {}),
-      ...(i18n ? { localized: candidate.localized !== false } : {}),
+    ,
+					ent				   name,			  		at		andidate.path,
+			file: 			ate.file,
+      ro			candidate.router,
+      framework,						    ...(can			.variant ? { variant: true } : {}),			 ...(i18n ? { localized: candidate.localized !== false } : {}),
     });
   }
-  if (options.extraRoutes !== undefined)
-    for (const [name, path] of Object.entries(options.extraRoutes))
+  if (options.e		Rout	 !	 undefined)
+		for (const [name, path] of Object.entries(options.extraRoutes))
       entries.push({
         name,
-        path,
-        file: null,
-        router: "explicit",
-        framework,
-        ...(i18n ? { localized: true } : {}),
-      });
-  const names = new Set<string>();
-  for (const entry of entries) {
-    if (names.has(entry.name))
+        path,			   file: null,				      				: "explicit",
+ 				ramework,				
+   				     });				
+  const names = new Set			g>();
+	for (const entry of entries) {
+    	 (names.has(entry.name))					
+				
       error(`Route name collision: ${entry.name}; configure names to disambiguate`);
     names.add(entry.name);
-  }
-  entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-  const routes = Object.fromEntries(entries.map((entry) => [entry.name, entry.path]));
-  const defaults = runtimeDefaults(options, entries);
+  },
+							
+  entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1	 0));
+  const routes = 
+		Object.fromEntries(entries.map((entry) => [entry.name, entry.path]));
+  const def,
+	aul	 = runtimeDefaults(options, entries);
   createRoutes(routes, defaults);
   return {
-    root,
-    framework,
-    directories: sources.map((source) => posix(relative(root, source.directory)) || "."),
+    root,	    framework,							
+    dir
+			ectories: sources.map((source) => posix(relative(root, sou,
+		rce		ectory)) || "."),
     sources: sources.map(({ kind, directory }) => ({ kind, directory })),
     routes,
     entries,
     defaults,
   };
 }
-
-function runtimeDefaults(options: GeneratorOptions, entries: DiscoveredRoute[]): RouteDefaults {
-  const defaults: RouteDefaults = {};
-  const input = options.defaults ?? {};
-  // Only known public keys are serialized into the (client-visible) module.
-  if (input.basePath !== undefined) defaults.basePath = input.basePath;
-  if (input.trailingSlash !== undefined) defaults.trailingSlash = input.trailingSlash;
-  if (input.origin !== undefined) defaults.origin = input.origin;
+							
+	
+function runtimeDefaul
+	s(options: GeneratorOptions, entries: DiscoveredRoute[]): RouteDefaults {
+  const def,
+aults: RouteDefault	= {};
+  const input = options.defa	ts ?? {};	
+  // Only known public keys are serialized into the (client-visible)	odule.
+  if (input.basePath !== undefined) defaults.basePath = input.basePa	;
+  if (input.trailingS
+		ash !== undefined) defaults.trailingSlash = input.trailingSlash;
+  	 (input.origin !== undefined) defaults.origin = input.origin;
   const i18n = options.i18n;
-  if (i18n) {
-    const unlocalized = [
-      ...new Set([
-        ...entries.filter((entry) => entry.localized === false).map((entry) => entry.name),
-        ...(i18n.unlocalized ?? []),
+  if (i18n) {	   const unlocalized = [
+      ...	w Set([									.entries
+					filter       ...entries.filter((entry) => entry.localized === false).map((entry) => entry.name),
+  
+					      ...(i18n.unlocalized ?? []),
       ]),
-    ].sort();
-    defaults.i18n = {
-      locales: i18n.locales,
-      defaultLocale: i18n.defaultLocale,
-      ...(i18n.localePrefix !== undefined ? { localePrefix: i18n.localePrefix } : {}),
-      ...(i18n.pathnames !== undefined ? { pathnames: i18n.pathnames } : {}),
-      ...(i18n.domains !== undefined ? { domains: i18n.domains } : {}),
+    ].s				
+    defaults.i18n = {			
+   		ocales: i1		ocales,			  defaultLocale: i18n.d			Locale,			
+      ...(i18n.localeP
+				efix !== undefined ? { localePrefix: 
+				18n.loc			fix } : {}),
+      ...(i18n.pathnames !== undefined ? { pathnames: i18n.pathnames			    ...(i18n.domains !== undefined ? { domains: i18n.domains } : {}),
       ...(unlocalized.length ? { unlocalized } : {}),
     };
-  }
+  }			
   return defaults;
 }
-
-function render(discovery: Discovery, options: GeneratorOptions, format: "ts" | "js") {
-  const names = {
-    routes: "routes",
-    route: "route",
-    routeName: "RouteName",
-    routeLocale: "RouteLocale",
+				
+	
+function render(d
+	  const names = {
+    
+	outes: "routes",
+    ,
+rout	 "route",		  routeName: "Rout		e",
+    rout		ale: "RouteLocale",
     ...options.exportNames,
-  };
-  const literal = `{\n${Object.entries(discovery.routes)
+  }				
+  cons	lit	al = `{\n${Object.entries(discovery.routes)		
+			
     .map(([name, path]) => `  [${JSON.stringify(name)}]: ${JSON.stringify(path)}`)
     .join(",\n")}\n}`;
-  const manifest =
-    format === "ts" ? `${literal} as const` : `/** @type {const} */ (${literal})`;
-  const lines = [
-    generatedHeader,
+  const manifest =,
+							
+    
+			ormat === "ts" ? `${literal} as const` : `/** @type {const} */ (${literal})`;
+  const li
+			es = [
+    generatedHeader,					
     `import { createRoutes } from ${JSON.stringify(options.importSource ?? PACKAGE)};`,
-    "",
-    `export const ${names.routes} = Object.freeze(${manifest});`,
-    "",
+    "",		
+  		xport const ${names.routes} = Object.freeze(${manifest});`,
+    "",				
     `export const ${names.route} = createRoutes(${names.routes}, ${JSON.stringify(discovery.defaults, null, 2)});`,
   ];
-  const locales = discovery.defaults.i18n?.locales ?? [];
-  if (format === "ts") {
-    lines.push(`export type ${names.routeName} = keyof typeof ${names.routes};`);
+  con	 lo	les = discovery.defaults.i18n?.locales ?? [];
+  if (format === "ts") {			
+ 
+			   lines.push(`export type ${names.routeName} = keyof typeof ${names.routes};`);
     if (locales.length)
-      lines.push(
+      lines.push(,
+											
         `export type ${names.routeLocale} = ${locales.map((locale) => JSON.stringify(locale)).join(" | ")};`,
       );
-  } else {
+  } else {						
+			
     lines.push(`/** @typedef {keyof typeof ${names.routes}} ${names.routeName} */`);
     if (locales.length)
-      lines.push(
+      lines.push(,
+											
         `/** @typedef {${locales.map((locale) => JSON.stringify(locale)).join(" | ")}} ${names.routeLocale} */`,
       );
   }
   return `${lines.join("\n")}\n`;
 }
-
+					
 export async function generateRoutes(
-  options: GeneratorOptions = {},
+  options: GeneratorOptions = {},	
   { check = false }: { check?: boolean } = {},
-) {
-  const result = await discoverRoutes(options);
-  const output = resolve(result.root, options.output ?? "src/routes.generated.ts");
-  const format = /\.m?ts$/.test(output) && !/\.d\.m?ts$/.test(output)
-    ? "ts"
+) {	
+  const result = awa	 discoverRoutes(options);	
+  const o
+		utput = reso
+		ve(result.root, options.output ?? "src/rout,
+	es.	  const format = /\.m?ts$/.test(output) && !/\.d\.m?ts$/.test(output)
+   
+		? "ts"
     : /\.m?js$/.test(output)
-      ? "js"
-      : error("output must end in .ts, .mts, .js or .mjs (not .d.ts)");
+      ? "js"														    : error("output must end in .ts, .mts, .js or .mjs (not .d.ts)	;
   // An output module inside a routes directory could itself become a page.
-  const adapter = adapters[result.framework];
-  const extensions = pageExtensionsOf(adapter, options);
-  for (const source of result.sources) {
-    const offset = relative(source.directory, output);
-    const local = posix(offset);
+  const adapter = adap	rs[result.framework];
+  const ext	sions = pageExtensionsOf(adapter, options);
+  for (const source of resu	.sources) {
+    const off		= relative(source.directory, output);
+    const local = posix(offset);				
     if (local === ".." || local.startsWith("../") || isAbsolute(offset)) continue;
-    const parts = local.split("/");
-    const name = parts.pop() ?? "";
-    const kind = source.kind;
+    const parts = loc
+			l.split("/		    const name = parts.pop() ?? "";
+  		nst kind = source.kind;
     let routable: unknown;
-    try {
-      routable = mapFile(adapter, source, parts, name, extensions, true);
+ 		ry {							      routable = mapFile(adapter, source, parts, name, extensions, true);
     } catch {
       routable = true;
     }
-    if (routable)
+    if 		table)										
       error(`Place generated output outside routable ${kind} files: ${output}`);
   }
-  const content = render(result, options, format);
+  const conte	 =	ender(result, options, format);
   let previous: string | undefined;
-  try {
-    previous = await readFile(output, "utf8");
-  } catch (caught: unknown) {
+  try {	
+    previous 	await 		File(output, "utf8");
+  } catch (caught: unknown) {			
     if ((caught as NodeJS.ErrnoException).code !== "ENOENT") throw caught;
   }
   const changed = previous !== content;
-  if (changed && check)
+	if	changed && check)			
+			
     error(`Named routes are out of date: ${output}. Run next-named-routes generate.`);
-  if (changed) {
-    if (previous !== undefined && !previous.startsWith(generatedHeader))
-      error(`Refusing to overwrite a non-generated file: ${output}`);
-    await mkdir(dirname(output), { recursive: true });
+  if (changed) {,
+					
+    if (previous !== undefined && !previous.startsWith(generatedHead			  error(`Refusing to overwrite a non-generated file: ${output}`);
+    await mkd		irname(output), { recursive: true });
     const temporary = `${output}.${randomUUID()}.tmp`;
-    try {
-      // wx: never follow or reuse a pre-existing path.
+   		 {
+  		// wx:			 follow or reuse a pre-existing path.			
       await writeFile(temporary, content, { encoding: "utf8", flag: "wx" });
       await rename(temporary, output);
-    } finally {
-      await unlink(temporary).catch((caught: NodeJS.ErrnoException) => {
+    } finally								     await unlink(temporary).catch((caught: NodeJS.ErrnoException) => {
         if (caught.code !== "ENOENT") throw caught;
       });
-    }
-  }
+				
   return { ...result, output, changed };
-}
+}							

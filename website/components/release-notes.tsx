@@ -68,7 +68,7 @@ export function ReleaseNotes() {
           <h2>{t("add_named_routes_to_your_project_f96989")}</h2>
           <p>{t("install_the_package_and_connect_withnamedroutes_to_your_ebf41c")}</p>
         </div>
-        <CodeBlock code="npm install @triooo/next-named-routes" language="sh" label={t("install_the_package_a52739")} />
+        <CodeBlock code="npm install @triooo/named-routes" language="sh" label={t("install_the_package_a52739")} />
       </section>
       <section className="doc-next-steps">
         <p className="release-note">{t("a_breaking_change_to_this_documented_contract_requires__c5f529")}</p>

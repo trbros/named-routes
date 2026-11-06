@@ -1,4 +1,4 @@
-# Referência da API · @triooo/next-named-routes
+# Referência da API · @triooo/named-routes
 
 [← Voltar ao README](../../README.pt-BR.md) · [English](../en/api-reference.md) · [Português](../pt/api-reference.md) · [Español](../es/api-reference.md) · [日本語](../ja/api-reference.md)
 
@@ -20,7 +20,7 @@ createRoutes(manifesto, defaults?) cria um helper congelado e independente e cop
 Um manifesto tipado como Record<string, string> simples (por exemplo, carregado de JSON) também funciona: os nomes viram string e os parâmetros, um registro flexível, enquanto o runtime continua validando cada chamada.
 
 ```ts
-import { createRoutes } from "@triooo/next-named-routes";
+import { createRoutes } from "@triooo/named-routes";
 const route = createRoutes({
   "users.show": "/users/[user]",
   search: "/search/[[...terms]]",
@@ -36,7 +36,7 @@ if (route.has(input)) console.log(route.pattern(input));
 
 ## Configuração do gerador
 
-Nenhum arquivo de configuração é obrigatório. Arquivos opcionais são procurados nesta ordem: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Configurações TypeScript exigem Node.js 22.18+ (remoção nativa de tipos); use .mjs em versões anteriores. Exporte defineConfig({...}) de @triooo/next-named-routes/config para ter autocomplete. A flag --config da CLI seleciona outro arquivo; root dentro da configuração é relativo ao próprio arquivo. Opções desconhecidas ou com erro de digitação falham com INVALID_CONFIG.
+Nenhum arquivo de configuração é obrigatório. Arquivos opcionais são procurados nesta ordem: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Configurações TypeScript exigem Node.js 22.18+ (remoção nativa de tipos); use .mjs em versões anteriores. Exporte defineConfig({...}) de @triooo/named-routes/config para ter autocomplete. A flag --config da CLI seleciona outro arquivo; root dentro da configuração é relativo ao próprio arquivo. Opções desconhecidas ou com erro de digitação falham com INVALID_CONFIG.
 
 Descoberta: framework (auto por padrão, ou next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app ou pages), appDir/pagesDir (pastas personalizadas do Next.js ou false), routesDir (pasta de páginas/rotas personalizada nos outros frameworks), pageExtensions (padrões de cada framework; extensões compostas como page.tsx funcionam), includeApi (false), exclude (globs relativos à raiz com *, ** e ?).
 
@@ -46,14 +46,14 @@ Saída: output (padrão src/routes.generated.ts; .ts, .mts, .js ou .mjs, nunca d
 
 ```ts
 // named-routes.config.ts (or .mjs)
-import { defineConfig } from "@triooo/next-named-routes/config";
+import { defineConfig } from "@triooo/named-routes/config";
 
 export default defineConfig({
   framework: "auto",                 // next, nuxt, vue, sveltekit, astro, ...
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs
-  importSource: "@triooo/next-named-routes",
+  importSource: "@triooo/named-routes",
   exportNames: { route: "url", routeName: "UrlName" },
   pageExtensions: ["vue"],
   includeApi: false,
@@ -95,7 +95,7 @@ discoverRoutes(opções?) retorna root, framework, directories, routes, entries 
 generateRoutes(opções?, { check?: boolean }?) também retorna output e changed. O modo check rejeita saída desatualizada sem modificá-la. validateOptions(opções) lança INVALID_CONFIG para chaves desconhecidas. Importe /generator e /config apenas em ferramentas Node, nunca em código cliente. withNamedRoutes vem de /next e namedRoutes de /vite.
 
 ```ts
-import { discoverRoutes, generateRoutes } from "@triooo/next-named-routes/generator";
+import { discoverRoutes, generateRoutes } from "@triooo/named-routes/generator";
 const discovery = await discoverRoutes({ root: "/path/to/app", framework: "nuxt" });
 console.log(discovery.framework, discovery.entries);
 const result = await generateRoutes({ root: "/path/to/app" });

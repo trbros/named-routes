@@ -34,65 +34,73 @@ generates during dev/build; in Vite-based frameworks use the /vite plugin.
 `;
 
 async function version() {
-  const manifest = JSON.parse(
-    await readFile(new URL("../package.json", import.meta.url), "utf8"),
-  ) as { version: string };
-  return manifest.version;
+	const manifest = JSON.parse(
+		await readFile(new URL("../package.json", import.meta.url), "utf8"),
+	) as { version: string };
+	return manifest.version;
 }
 
 async function main() {
-  const { values, positionals } = parseArgs({
-    allowPositionals: true,
-    options: {
-      root: { type: "string" },
-      config: { type: "string" },
-      framework: { type: "string" },
-      output: { type: "string" },
-      "routes-dir": { type: "string" },
-      router: { type: "string" },
-      api: { type: "boolean" },
-      "watch-interval": { type: "string" },
-      version: { type: "boolean", short: "v" },
-      help: { type: "boolean", short: "h" },
-    },
-  });
-  if (values.help) {
-    process.stdout.write(help);
-    return;
-  }
-  if (values.version) {
-    process.stdout.write(`${await version()}\n`);
-    return;
-  }
-  const [command = "generate", ...extra] = positionals;
-  if (extra.length || !["generate", "check", "list", "watch", "init"].includes(command))
-    throw new Error("Invalid command. Run named-routes --help.");
-  const root = resolve(values.root ?? process.cwd());
-  if (values.router && !["auto", "app", "pages"].includes(values.router))
-    throw new Error("Invalid router; use auto, app or pages");
-  if (
-    values.framework &&
-    values.framework !== "auto" &&
-    !(frameworks as readonly string[]).includes(values.framework)
-  )
-    throw new Error(`Invalid framework; use auto, ${frameworks.join(", ")}`);
-  const interval = values["watch-interval"] === undefined ? 750 : Number(values["watch-interval"]);
-  const options = async (): Promise<GeneratorOptions> => ({
-    ...(await loadConfiguration(root, values.config)),
-    ...(values.framework
-      ? { framework: values.framework as GeneratorOptions["framework"] }
-      : {}),
-    ...(values.output ? { output: values.output } : {}),
-    ...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
-    ...(values.router ? { router: values.router as GeneratorOptions["router"] } : {}),
-    ...(values.api !== undefined ? { includeApi: values.api } : {}),
-  });
-  if (command === "init") {
-    if (await findConfiguration(root))
-      throw new Error("A named-routes config file already exists");
-    const discovery = await discoverRoutes(await options());
-    const path = resolve(root, "named-routes.config.mjs");
-    const body = `import { defineConfig } from "@triooo/next-named-routes/config";
+	const { values, positionals } = parseArgs({
+		allowPositionals: true,
+		options: {
+			root: { type: "string" },
+			config: { type: "string" },
+			framework: { type: "string" },
+			output: { type: "string" },
+			"routes-dir": { type: "string" },
+			router: { type: "string" },
+			api: { type: "boolean" },
+			"watch-interval": { type: "string" },
+			version: { type: "boolean", short: "v" },
+			help: { type: "boolean", short: "h" },
+		},
+	});
+	if (values.help) {
+		process.stdout.write(help);
+		return;
+	}
+	if (values.version) {
+		process.stdout.write(`${await version()}\n`);
+		return;
+	}
+	const [command = "generate", ...extra] = positionals;
+	if (
+		extra.length ||
+		!["generate", "check", "list", "watch", "init"].includes(command)
+	)
+		throw new Error("Invalid command. Run named-routes --help.");
+	const root = resolve(values.root ?? process.cwd());
+	if (values.router && !["auto", "app", "pages"].includes(values.router))
+		throw new Error("Invalid router; use auto, app or pages");
+	if (
+		values.framework &&
+		values.framework !== "auto" &&
+		!(frameworks as readonly string[]).includes(values.framework)
+	)
+		throw new Error(`Invalid framework; use auto, ${frameworks.join(", ")}`);
+	const interval =
+		values["watch-interval"] === undefined
+			? 750
+			: Number(values["watch-interval"]);
+	const options = async (): Promise<GeneratorOptions> => ({
+		...(await loadConfiguration(root, values.config)),
+		...(values.framework
+			? { framework: values.framework as GeneratorOptions["framework"] }
+			: {}),
+		...(values.output ? { output: values.output } : {}),
+		...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
+		...(values.router
+			? { router: values.router as GeneratorOptions["router"] }
+			: {}),
+		...(values.api !== undefined ? { includeApi: values.api } : {}),
+	});
+	if (command === "init") {
+		if (await findConfiguration(root))
+			throw new Error("A named-routes config file already exists");
+		const discovery = await discoverRoutes(await options());
+		const path = resolve(root, "named-routes.config.mjs");
+		const body = `import { defineConfig } from "@triooo/named-routes/config";
 
 export default defineConfig({
   framework: ${JSON.stringify(discovery.framework)},
@@ -101,47 +109,38 @@ export default defineConfig({
   // i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
 });
 `;
-    await writeFile(path, body, { flag: "wx" });
-    process.stdout.write(
-      `Created ${relative(process.cwd(), path) || path} (${discovery.framework}, ${discovery.entries.length} routes)\n`,
-    );
-    return;
+    		t writeFile(path, body, { flag: "wx" });
+    		ess.stdout.write(
+    			ated ${relative(process.cwd(), path) || path} (${discovery.framework}, ${discovery.entries.length} routes)\n`,
+    		   		rn;
   }
-  if (command === "list") {
-    process.stdout.write(
-      `${JSON.stringify((await discoverRoutes(await options())).entries, null, 2)}\n`,
-    );
-    return;
+	if	command === "list") {
+    		ess.stdout.write(
+    			SON.stringify((await discoverRoutes(await options())).entries, null, 2)}\n`,
+    		   		rn;
   }
-  const run = async () => {
-    const result = await generateRoutes(await options(), {
-      check: command === "check",
-    });
-    if (command !== "watch" || result.changed)
-      process.stdout.write(
-        `${result.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework})\n`,
-      );
-  };
-  await run();
-  if (command === "watch") {
-    await new Promise<void>((done) => {
-      const stopWatching = watchGeneration(run, {
-        interval,
-        onError: (error) => process.stderr.write(`${error.message}\n`),
-      });
-      const stop = () => {
-        stopWatching();
-        process.removeListener("SIGINT", stop);
-        process.removeListener("SIGTERM", stop);
-        done();
-      };
-      process.once("SIGINT", stop);
-      process.once("SIGTERM", stop);
-    });
-  }
-}
-main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(`named-routes: ${message}\n`);
-  process.exitCode = 1;
+	co	t run = async () => {
+    		t result = await generateRoutes(await options(), {
+    			k: command === "check",
+    		    		command !== "watch" || result.changed)
+    			ess.stdout.write(
+    				esult.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework})\n`,
+    			 };	 aw	t run();
+  if	command === "watch") {
+    		t new Promise<void>((done) => {
+    			t stopWatching = watchGeneration(run, {
+    				rval,
+    				ror: (error) => process.stderr.write(`${error.message}\n`),
+    			    			t stop = () => {
+    				Watching();
+    				ess.removeListener("SIGINT", stop);
+    				ess.removeListener("SIGTERM", stop);
+    				();
+    			   			ess.once("SIGINT", stop);
+    			ess.once("SIGTERM", stop);
+    		  }
+	main().catch((error: unknown) => {
+  co	t message = error instanceof Error ? error.message : String(error);
+  pr	ess.stderr.write(`named-routes: ${message}\n`);
+  pr	ess.exitCode = 1;
 });

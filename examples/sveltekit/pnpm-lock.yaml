@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@triooo/next-named-routes':
+      '@triooo/named-routes':
         specifier: file:../..
         version: file:../..
       cookie:
@@ -193,7 +193,7 @@ packages:
       svelte: ^5.46.4
       vite: ^8.0.0-beta.7 || ^8.0.0
 
-  '@triooo/next-named-routes@file:../..':
+  '@triooo/named-routes@file:../..':
     resolution: {directory: ../.., type: directory}
     engines: {node: '>=20.19'}
     hasBin: true
@@ -559,7 +559,7 @@ snapshots:
       vite: 8.3.6
       vitefu: 1.1.3(vite@8.3.6)
 
-  '@triooo/next-named-routes@file:../..': {}
+  '@triooo/named-routes@file:../..': {}
 
   '@types/estree@1.0.10': {}
 

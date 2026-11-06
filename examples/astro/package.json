@@ -1,7 +1,13 @@
 {
-  "name": "named-routes-astro-demo",
-  "private": true,
-  "type": "module",
-  "scripts": { "dev": "astro dev", "build": "astro build" },
-  "dependencies": { "@triooo/next-named-routes": "file:../..", "astro": "^7.4.7" }
+	"name": "named-routes-astro-demo",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build"
+	},
+	"dependencies": {
+		"@triooo/named-routes": "file:../..",
+		"astro": "^7.4.7"
+	}
 }

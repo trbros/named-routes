@@ -1,4 +1,4 @@
-# Guías · @triooo/next-named-routes
+# Guías · @triooo/named-routes
 
 [← Volver al README](../../README.es.md) · [English](../en/guides.md) · [Português](../pt/guides.md) · [Español](../es/guides.md) · [日本語](../ja/guides.md)
 
@@ -65,7 +65,7 @@ No se encuentra routes.generated: confirma que la integración se ejecuta, ejecu
 La generación se niega a sobrescribir un archivo de salida escrito a mano. Elige otro output en lugar de añadir la firma de generado a código no relacionado. Mantén la salida generada fuera de los archivos enrutables. La interpolación dinámica no autoriza una petición; valida los permisos y las entradas de la aplicación en el destino.
 
 ```ts
-import { NamedRouteError } from "@triooo/next-named-routes";
+import { NamedRouteError } from "@triooo/named-routes";
 try {
   route("users.$user", { user: "" });
 } catch (error) {

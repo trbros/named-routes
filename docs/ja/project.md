@@ -1,4 +1,4 @@
-# プロジェクト · @triooo/next-named-routes
+# プロジェクト · @triooo/named-routes
 
 [← README に戻る](../../README.ja.md) · [English](../en/project.md) · [Português](../pt/project.md) · [Español](../es/project.md) · [日本語](../ja/project.md)
 
@@ -128,7 +128,7 @@ cd examples/nuxt && npm install && npm run dev
 アップグレードしたら、開発サーバーを再起動してマニフェストを生成し直し、アプリケーションの型チェックとナビゲーションのテストを実行してください。ページを移動しても公開ルート名を保ちたい場合は、明示的なエイリアスを使ってください。
 
 ```sh
-npm install @triooo/next-named-routes@^1
+npm install @triooo/named-routes@^1
 npx named-routes check
 npx tsc --noEmit
 ```

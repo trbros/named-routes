@@ -1,5 +1,5 @@
 import path from "node:path";
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
+import { withNamedRoutes } from "@triooo/named-routes/next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const basePath = (

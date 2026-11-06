@@ -1,4 +1,4 @@
-# Projeto · @triooo/next-named-routes
+# Projeto · @triooo/named-routes
 
 [← Voltar ao README](../../README.pt-BR.md) · [English](../en/project.md) · [Português](../pt/project.md) · [Español](../es/project.md) · [日本語](../ja/project.md)
 
@@ -128,7 +128,7 @@ Versões patch preservam a API documentada enquanto corrigem bugs. Versões mino
 Depois de atualizar, reinicie o servidor de desenvolvimento para regenerar o manifesto e execute o type check e os testes de navegação da aplicação. Se mover uma página e precisar preservar o nome público da rota, use um alias explícito.
 
 ```sh
-npm install @triooo/next-named-routes@^1
+npm install @triooo/named-routes@^1
 npx named-routes check
 npx tsc --noEmit
 ```

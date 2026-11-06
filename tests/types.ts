@@ -1,20 +1,21 @@
-import { createRoutes, type RouteParams } from "@triooo/next-named-routes";
-import { withNamedRoutes } from "@triooo/next-named-routes/next";
-import { generateRoutes } from "@triooo/next-named-routes/generator";
-import { defineConfig } from "@triooo/next-named-routes/config";
-import { namedRoutes } from "@triooo/next-named-routes/vite";
+import { createRoutes, type RouteParams } from "@triooo/named-routes";
+import { defineConfig } from "@triooo/named-routes/config";
+import { generateRoutes } from "@triooo/named-routes/generator";
+import { withNamedRoutes } from "@triooo/named-routes/next";
+import { namedRoutes } from "@triooo/named-routes/vite";
+
 const route = createRoutes({
-  home: "/",
-  "posts.show": "/posts/[post]",
-  "teams.user": "/teams/[team]/users/[user]",
-  docs: "/docs/[...slug]",
-  shop: "/shop/[[...path]]",
+	home: "/",
+	"posts.show": "/posts/[post]",
+	"teams.user": "/teams/[team]/users/[user]",
+	docs: "/docs/[...slug]",
+	shop: "/shop/[[...path]]",
 });
 route("home");
 route(
-  "home",
-  {},
-  { query: { page: 2, tags: ["a", "b"], draft: false }, hash: "title" },
+	"home",
+	{},
+	{ query: { page: 2, tags: ["a", "b"], draft: false }, hash: "title" },
 );
 route("posts.show", { post: 42 });
 route("teams.user", { team: "triooo", user: 1 });
@@ -24,10 +25,10 @@ route("shop", { path: null });
 route("shop", { path: [] });
 const literal: "/posts/[post]" = route.pattern("posts.show");
 const names: ("home" | "posts.show" | "teams.user" | "docs" | "shop")[] =
-  route.names();
+	route.names();
 const pathParams: RouteParams<"/[locale]/posts/[id]"> = {
-  locale: "pt-BR",
-  id: 1,
+	locale: "pt-BR",
+	id: 1,
 };
 // @ts-expect-error Unknown route names must fail.
 route("missing");
@@ -49,13 +50,13 @@ const candidate: string = "home";
 if (route.has(candidate)) route.pattern(candidate);
 withNamedRoutes({ basePath: "/app", trailingSlash: true }, { router: "app" });
 withNamedRoutes(
-  async (phase: string) => ({ reactStrictMode: phase.length > 0 }),
-  { root: "." },
+	async (phase: string) => ({ reactStrictMode: phase.length > 0 }),
+	{ root: "." },
 );
 generateRoutes({
-  router: "pages",
-  names: { "/posts/[post]": "posts.show" },
-  includeApi: true,
+	router: "pages",
+	names: { "/posts/[post]": "posts.show" },
+	includeApi: true,
 });
 
 withNamedRoutes({}, { watch: true, watchInterval: 750 });
@@ -63,8 +64,20 @@ withNamedRoutes({}, { watch: true, watchInterval: 750 });
 withNamedRoutes({}, { watch: "yes" });
 
 const localized = createRoutes(
-  { home: "/", about: "/about", post: "/blog/[slug]", opt: "/[[lang]]/x", mixed: "/v[major]-[minor]" },
-  { i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" } },
+	{
+		home: "/",
+		about: "/about",
+		post: "/blog/[slug]",
+		opt: "/[[lang]]/x",
+		mixed: "/v[major]-[minor]",
+	},
+	{
+		i18n: {
+			locales: ["en", "pt"],
+			defaultLocale: "en",
+			localePrefix: "as-needed",
+		},
+	},
 );
 localized("about", {}, { locale: "pt" });
 localized("post", { slug: "a" }, { locale: "en" });
@@ -87,12 +100,16 @@ const dynamic = createRoutes(loose);
 dynamic("anything", { id: 1, parts: ["a"] });
 
 const config = defineConfig({
-  framework: "nuxt",
-  routesDir: "app/pages",
-  output: "app/utils/routes.ts",
-  naming: { separator: ":", transform: ({ name }) => name.toUpperCase() },
-  i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
-  exportNames: { route: "url" },
+	framework: "nuxt",
+	routesDir: "app/pages",
+	output: "app/utils/routes.ts",
+	naming: { separator: ":", transform: ({ name }) => name.toUpperCase() },
+	i18n: {
+		locales: ["en", "pt"],
+		defaultLocale: "en",
+		localePrefix: "as-needed",
+	},
+	exportNames: { route: "url" },
 });
 void config;
 // @ts-expect-error Unknown framework.

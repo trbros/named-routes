@@ -1,4 +1,4 @@
-# Project · @triooo/next-named-routes
+# Project · @triooo/named-routes
 
 [← Back to README](../../README.md) · [English](../en/project.md) · [Português](../pt/project.md) · [Español](../es/project.md) · [日本語](../ja/project.md)
 
@@ -128,7 +128,7 @@ Patch releases preserve the documented API while fixing bugs. Minor releases add
 After an upgrade, restart the dev server to regenerate the manifest and run your application’s type check and navigation tests. If you move a page and need to preserve its public route name, use an explicit alias.
 
 ```sh
-npm install @triooo/next-named-routes@^1
+npm install @triooo/named-routes@^1
 npx named-routes check
 npx tsc --noEmit
 ```

@@ -4,7 +4,7 @@ const pkg = JSON.parse(
 	await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
 const { RELEASE_TAG, RELEASE_PRERELEASE } = process.env;
-if (pkg.name !== "@triooo/next-named-routes")
+if (pkg.name !== "@triooo/named-routes")
 	throw new Error("Unexpected npm package name");
 if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$/.test(pkg.version))
 	throw new Error("Unsupported release version");
