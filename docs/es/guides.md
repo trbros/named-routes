@@ -36,7 +36,7 @@ Los watchers no se ejecutan durante las compilaciones de producción y no mantie
 
 ## CLI e integración continua
 
-El binario se llama named-routes (next-named-routes es un alias). generate (por defecto) escribe el manifiesto. list imprime las entradas descubiertas en JSON. check compara sin escribir y sale con código 1 cuando está desactualizado. watch genera al inicio y sondea hasta SIGINT/SIGTERM. init escribe named-routes.config.mjs para el framework detectado y nunca sobrescribe una configuración existente.
+El binario se llama named-routes (named-routes es un alias). generate (por defecto) escribe el manifiesto. list imprime las entradas descubiertas en JSON. check compara sin escribir y sale con código 1 cuando está desactualizado. watch genera al inicio y sondea hasta SIGINT/SIGTERM. init escribe named-routes.config.mjs para el framework detectado y nunca sobrescribe una configuración existente.
 
 Opciones: --root <directorio>, --config <archivo>, --framework <nombre>, --output <archivo>, --routes-dir <carpeta>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Ejecuta los comandos desde el proyecto consumidor con el paquete instalado localmente.
 

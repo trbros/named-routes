@@ -77,7 +77,7 @@
 	},
 	"bin": {
 		"named-routes": "./dist/cli.js",
-		"next-named-routes": "./dist/cli.js"
+		"named-routes": "./dist/cli.js"
 	},
 	"files": [
 		"dist",

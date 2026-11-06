@@ -8,8 +8,8 @@ if (pkg.name !== "@triooo/named-routes")
 	throw new Error("Unexpected npm package name");
 if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$/.test(pkg.version))
 	throw new Error("Unsupported release version");
-if (RELEASE_TAG !== `next-named-routes-v${pkg.version}`)
-	throw new Error(`Release tag must be next-named-routes-v${pkg.version}`);
+if (RELEASE_TAG !== `named-routes-v${pkg.version}`)
+	throw new Error(`Release tag must be named-routes-v${pkg.version}`);
 const prerelease = pkg.version.includes("-");
 if ((RELEASE_PRERELEASE === "true") !== prerelease)
 	throw new Error("GitHub prerelease status must match the package version");

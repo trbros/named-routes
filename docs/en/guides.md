@@ -36,7 +36,7 @@ Watchers do not run during production builds and do not keep the process alive b
 
 ## CLI and CI
 
-The binary is named-routes (next-named-routes is an alias). generate (default) writes the manifest. list prints discovered entries as JSON. check compares without writing and exits with code 1 when stale. watch generates initially and polls until SIGINT/SIGTERM. init writes named-routes.config.mjs for the detected framework and never overwrites an existing config.
+The binary is named-routes (named-routes is an alias). generate (default) writes the manifest. list prints discovered entries as JSON. check compares without writing and exits with code 1 when stale. watch generates initially and polls until SIGINT/SIGTERM. init writes named-routes.config.mjs for the detected framework and never overwrites an existing config.
 
 Flags: --root <directory>, --config <file>, --framework <name>, --output <file>, --routes-dir <dir>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Run commands from the consumer with the local package installed.
 

@@ -7,13 +7,13 @@ Requisitos: Node.js 20.19 ou superior, um projeto Next.js (ou Nuxt, Vue, SvelteK
 Na pasta do pacote:
 
 ```sh
-cd /caminho/para/next-named-routes
+cd /caminho/para/named-routes
 pnpm install --frozen-lockfile --ignore-scripts
 pnpm build
 npm pack
 ```
 
-Na versão atual, isso gera `triooo-next-named-routes-1.0.0.tgz`. Use o nome informado pelo `npm pack` se a versão mudar. O arquivo contém o JavaScript compilado e as declarações TypeScript, sem depender de uma publicação no npm.
+Na versão atual, isso gera `triooo-named-routes-1.0.0.tgz`. Use o nome informado pelo `npm pack` se a versão mudar. O arquivo contém o JavaScript compilado e as declarações TypeScript, sem depender de uma publicação no npm.
 
 ## 2. Instalar no projeto Next.js
 
@@ -21,10 +21,10 @@ Troque `/caminho/meu-projeto-next` pelo diretório do seu projeto:
 
 ```sh
 cd /caminho/meu-projeto-next
-npm install /caminho/para/next-named-routes/triooo-next-named-routes-1.0.0.tgz
+npm install /caminho/para/named-routes/triooo-named-routes-1.0.0.tgz
 ```
 
-Alternativas: `pnpm add /caminho/arquivo.tgz`, `yarn add /caminho/arquivo.tgz` ou `bun add /caminho/arquivo.tgz`. Não misture gerenciadores no mesmo projeto. No Windows, use o caminho equivalente, por exemplo `npm install "C:/caminho/para/next-named-routes/triooo-next-named-routes-1.0.0.tgz"`.
+Alternativas: `pnpm add /caminho/arquivo.tgz`, `yarn add /caminho/arquivo.tgz` ou `bun add /caminho/arquivo.tgz`. Não misture gerenciadores no mesmo projeto. No Windows, use o caminho equivalente, por exemplo `npm install "C:/caminho/para/named-routes/triooo-named-routes-1.0.0.tgz"`.
 
 ## 3. Conectar ao Next.js
 
@@ -89,8 +89,8 @@ Ajuste o caminho do import à posição do arquivo. Se usa `src/app`, o import n
 
 ```sh
 npm ls @triooo/named-routes
-npx next-named-routes list
-npx next-named-routes check
+npx named-routes list
+npx named-routes check
 npx tsc --noEmit
 ```
 
@@ -101,7 +101,7 @@ Após mudar o código do pacote, compile e gere outro tarball, reinstale esse ar
 Depois de instalar as dependências e compilar o pacote, no consumidor:
 
 ```sh
-npm install /caminho/para/next-named-routes
+npm install /caminho/para/named-routes
 ```
 
 O npm pode criar um vínculo com a pasta local. Continue executando `pnpm build` na pasta do pacote quando alterar o fonte e reinicie o Next.js. Para verificar o comportamento de uma instalação distribuída, prefira o tarball: é o mesmo formato verificado pelos testes de instalação do pacote.
@@ -109,6 +109,6 @@ O npm pode criar um vínculo com a pasta local. Continue executando `pnpm build`
 ## Se algo não funcionar
 
 - **Não encontra `dist/index.js`:** execute `pnpm build` no pacote e gere/reinstale o tarball.
-- **Não encontra `routes.generated`:** confirme o wrapper no `next.config`, reinicie `next dev` ou execute `npx next-named-routes generate` na raiz do consumidor.
+- **Não encontra `routes.generated`:** confirme o wrapper no `next.config`, reinicie `next dev` ou execute `npx named-routes generate` na raiz do consumidor.
 - **O tipo não aceita uma rota nova:** salve a página, aguarde a atualização do manifesto e reinicie o servidor TypeScript do editor se necessário.
 - **Mudou a configuração do Next.js:** reinicie o Next.js.

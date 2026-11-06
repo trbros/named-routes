@@ -24,7 +24,7 @@ function run(script, env) {
 test("publication requires an exact version tag and matching prerelease status", () => {
 	const script = join(root, "scripts/check-release.mjs");
 	const env = {
-		RELEASE_TAG: `next-named-routes-v${pkg.version}`,
+		RELEASE_TAG: `named-routes-v${pkg.version}`,
 		RELEASE_PRERELEASE: String(pkg.version.includes("-")),
 	};
 	const valid = run(script, env);
@@ -34,7 +34,7 @@ test("publication requires an exact version tag and matching prerelease status",
 		0,
 	);
 	assert.notEqual(
-		run(script, { ...env, RELEASE_TAG: "next-named-routes-v999.0.0" }).status,
+		run(script, { ...env, RELEASE_TAG: "named-routes-v999.0.0" }).status,
 		0,
 	);
 	assert.notEqual(
@@ -54,7 +54,7 @@ test("publication metadata matches the actual GitHub repository independently of
 		await writeFile(join(temp, "package.json"), JSON.stringify(pkg));
 		assert.notEqual(run(script, { GITHUB_REPOSITORY: "" }).status, 0);
 		const result = run(script, {
-			GITHUB_REPOSITORY: "trbros/next-named-routes",
+			GITHUB_REPOSITORY: "trbros/named-routes",
 		});
 		assert.equal(result.status, 0, result.stderr);
 		const prepared = JSON.parse(
@@ -64,7 +64,7 @@ test("publication metadata matches the actual GitHub repository independently of
 		assert.equal(prepared.version, pkg.version);
 		assert.equal(
 			prepared.repository.url,
-			"git+https://github.com/trbros/next-named-routes.git",
+			"git+https://github.com/trbros/named-routes.git",
 		);
 		assert.equal(prepared.repository.directory, undefined);
 	} finally {

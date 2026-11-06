@@ -55,3 +55,5 @@ examples/*/.astro/
 examples/*/.react-router/
 examples/*/typed-router.d.ts
 examples/*/src/routeTree.gen.ts
+
+Makefile

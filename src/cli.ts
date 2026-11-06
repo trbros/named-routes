@@ -29,7 +29,7 @@ Options:
   -v, --version           Print the package version
   -h, --help              Show this help
 
-next-named-routes is an alias of this command. In Next.js, withNamedRoutes()
+named-routes is an alias of this command. In Next.js, withNamedRoutes()
 generates during dev/build; in Vite-based frameworks use the /vite plugin.
 `;
 
@@ -109,38 +109,47 @@ export default defineConfig({
   // i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
 });
 `;
-    		t writeFile(path, body, { flag: "wx" });
-    		ess.stdout.write(
-    			ated ${relative(process.cwd(), path) || path} (${discovery.framework}, ${discovery.entries.length} routes)\n`,
-    		   		rn;
-  }
-	if	command === "list") {
-    		ess.stdout.write(
-    			SON.stringify((await discoverRoutes(await options())).entries, null, 2)}\n`,
-    		   		rn;
-  }
-	co	t run = async () => {
-    		t result = await generateRoutes(await options(), {
-    			k: command === "check",
-    		    		command !== "watch" || result.changed)
-    			ess.stdout.write(
-    				esult.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework})\n`,
-    			 };	 aw	t run();
-  if	command === "watch") {
-    		t new Promise<void>((done) => {
-    			t stopWatching = watchGeneration(run, {
-    				rval,
-    				ror: (error) => process.stderr.write(`${error.message}\n`),
-    			    			t stop = () => {
-    				Watching();
-    				ess.removeListener("SIGINT", stop);
-    				ess.removeListener("SIGTERM", stop);
-    				();
-    			   			ess.once("SIGINT", stop);
-    			ess.once("SIGTERM", stop);
-    		  }
-	main().catch((error: unknown) => {
-  co	t message = error instanceof Error ? error.message : String(error);
-  pr	ess.stderr.write(`named-routes: ${message}\n`);
-  pr	ess.exitCode = 1;
+		await writeFile(path, body, { flag: "wx" });
+		process.stdout.write(
+			`Created ${relative(process.cwd(), path) || path} (${discovery.framework}, ${discovery.entries.length} routes)\n`,
+		);
+		return;
+	}
+	if (command === "list") {
+		process.stdout.write(
+			`${JSON.stringify((await discoverRoutes(await options())).entries, null, 2)}\n`,
+		);
+		return;
+	}
+	const run = async () => {
+		const result = await generateRoutes(await options(), {
+			check: command === "check",
+		});
+		if (command !== "watch" || result.changed)
+			process.stdout.write(
+				`${result.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework})\n`,
+			);
+	};
+	await run();
+	if (command === "watch") {
+		await new Promise<void>((done) => {
+			const stopWatching = watchGeneration(run, {
+				interval,
+				onError: (error) => process.stderr.write(`${error.message}\n`),
+			});
+			const stop = () => {
+				stopWatching();
+				process.removeListener("SIGINT", stop);
+				process.removeListener("SIGTERM", stop);
+				done();
+			};
+			process.once("SIGINT", stop);
+			process.once("SIGTERM", stop);
+		});
+	}
+}
+main().catch((error: unknown) => {
+	const message = error instanceof Error ? error.message : String(error);
+	process.stderr.write(`named-routes: ${message}\n`);
+	process.exitCode = 1;
 });

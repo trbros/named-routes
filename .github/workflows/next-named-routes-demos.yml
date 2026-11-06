@@ -8,7 +8,7 @@ on:
       - "src/frameworks.ts"
       - "src/generator.ts"
       - "src/vite.ts"
-      - ".github/workflows/next-named-routes-demos.yml"
+      - ".github/workflows/named-routes-demos.yml"
   workflow_dispatch:
 
 permissions:

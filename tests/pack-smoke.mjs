@@ -36,7 +36,7 @@ try {
 	run("npm", ["pack", "--json", "--pack-destination", temporary]);
 	const archive = join(
 		temporary,
-		`triooo-next-named-routes-${manifest.version}.tgz`,
+		`triooo-named-routes-${manifest.version}.tgz`,
 	);
 	const files = run("tar", ["-tzf", archive]).trim().split("\n");
 	assert.ok(files.some((file) => file === "package/dist/index.js"));

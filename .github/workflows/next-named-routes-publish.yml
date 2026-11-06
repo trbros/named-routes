@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   release-info:
-    if: startsWith(github.event.release.tag_name, 'next-named-routes-v')
+    if: startsWith(github.event.release.tag_name, 'named-routes-v')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -35,7 +35,7 @@ jobs:
 
   validate:
     needs: release-info
-    uses: ./.github/workflows/next-named-routes-ci.yml
+    uses: ./.github/workflows/named-routes-ci.yml
 
   publish:
     needs: [release-info, validate]

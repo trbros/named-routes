@@ -36,7 +36,7 @@ watcher は本番ビルド中には動かず、それ自体がプロセスを生
 
 ## CLI と CI
 
-バイナリ名は named-routes です（next-named-routes はエイリアス）。generate（デフォルト）はマニフェストを書き出します。list は検出したエントリーを JSON で出力します。check は書き込まずに比較し、古くなっていれば終了コード 1 で終わります。watch は最初に生成し、SIGINT/SIGTERM までポーリングを続けます。init は検出したフレームワーク用の named-routes.config.mjs を書き出し、既存の設定は決して上書きしません。
+バイナリ名は named-routes です（named-routes はエイリアス）。generate（デフォルト）はマニフェストを書き出します。list は検出したエントリーを JSON で出力します。check は書き込まずに比較し、古くなっていれば終了コード 1 で終わります。watch は最初に生成し、SIGINT/SIGTERM までポーリングを続けます。init は検出したフレームワーク用の named-routes.config.mjs を書き出し、既存の設定は決して上書きしません。
 
 フラグ: --root <directory>、--config <file>、--framework <name>、--output <file>、--routes-dir <dir>、--router <auto|app|pages>、--api、--watch-interval <ms>、--version (-v)、--help (-h)。コマンドは、パッケージをローカルにインストールした利用側のプロジェクトで実行してください。
 

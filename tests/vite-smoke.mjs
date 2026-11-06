@@ -44,73 +44,76 @@ try {
 	await writeFile(
 		join(root, "vite.config.ts"),
 		`import { defineConfig } from "vite";\nimport { namedRoutes } from "@triooo/named-routes/vite";\nexport default defineConfig({ plugins: [namedRoutes({ i18n: { locales: ["en", "pt"], defaultLocale: "en" } })] });\n`,
-  );
-	awa	 writeFile(
-    j		root, "tsconfig.json"),
-    J		stringify({
-     			lerOptions: { targ
-				t: "ES2022", lib:
-				["ESNext", "DOM"], modu
-				e: "ESNext", modu
-				eResolution: "bundler", stri
-				t: true, noEm
-				t: true, type
-				: ["node"] },
- ,
-			   			: ["vite.config.ts", "use.ts"],
-    }		 );
-	con	 { createServer } = await import(pathT
-		oFileURL(join(root, "node_modules/vite/dist/node/index.js")).href);
-  
-	con	 server = await createServer({ root
-		 conf
-		gFile: join(root, "vite.config.ts"), serv
-		r: { port: 0 }, logL
-		vel: "error" });
-,
-	 awa	 server.listen();
-  con	 output = join(root, "src/routes.generated.ts");
-  con	 until = async (predicate, label) => {
-    f		let attempt = 0; attempt < 200; attempt++) {
-     			wait predicate().catch(() => false)) return;
-     			 sleep(50);
-    }		 a		t.fail(label);
-  };
-	try	
-    a		 until(async
-			 () => (await readFile(output, "utf8")).includes('["home"]'), "ini
-			ial generation");
-  ,
-		  a		 sleep(1500); // let the watcher finish its initial crawl
-    a		 mkdir(join(root, "src/pages/users"), { recursive: true });
-    a		 writeFile(join(root, "src/pages/users/[id].vue"), "<template/>");
-    a		 until(async
-			 () => (await readFile(output, "utf8")).includes('"users.$id"'), "fil
-			 addition");
-  ,
-		  a		 rm(join(root, "src/pages/users"), { recursive: true });
-    a		 until(async
-			 () => !(await readFile(output, "utf8")).includes('"users.$id"'), "fil
-			 removal");
-  ,
-		} f	ally {
-    a		 server.close();
-  }
- 	wa	 writeFile(
-    j		root, "use.ts"),
-    `		rt { route } from "./src/routes.generated";\nroute("home", {}, { locale: "pt" });\n// @ts-expect-error unknown route\nroute("missing");\n// @ts-expect-error unknown locale\nroute("home", {}, { locale: "fr" });\n`,
-  );
-	con	 tsc = spawnSync(proce
-		ss.execPath, [joi
-		(root, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json"], {
-  
-		 c			root,
-    e			ing: "utf8",
-  });		 ,
-	ass	t.equal(tsc.status, 0, tsc.stdout + tsc.stderr);
-  con	le.log("vite
-		: plugin types, initial generation, live additions/removals and typed locales passed");
-} ,
-	finally {
-  awa	 rm(root, { recursive: true, force: true });
+	);
+	await writeFile(
+		join(root, "tsconfig.json"),
+		JSON.stringify({
+			compilerOptions: {
+				target: "ES2022",
+				lib: ["ESNext", "DOM"],
+				module: "ESNext",
+				moduleResolution: "bundler",
+				strict: true,
+				noEmit: true,
+				types: ["node"],
+			},
+			files: ["vite.config.ts", "use.ts"],
+		}),
+	);
+	const { createServer } = await import(
+		pathToFileURL(join(root, "node_modules/vite/dist/node/index.js")).href
+	);
+	const server = await createServer({
+		root,
+		configFile: join(root, "vite.config.ts"),
+		server: { port: 0 },
+		logLevel: "error",
+	});
+	await server.listen();
+	const output = join(root, "src/routes.generated.ts");
+	const until = async (predicate, label) => {
+		for (let attempt = 0; attempt < 200; attempt++) {
+			if (await predicate().catch(() => false)) return;
+			await sleep(50);
+		}
+		assert.fail(label);
+	};
+	try {
+		await until(
+			async () => (await readFile(output, "utf8")).includes('["home"]'),
+			"initial generation",
+		);
+		await sleep(1500); // let the watcher finish its initial crawl
+		await mkdir(join(root, "src/pages/users"), { recursive: true });
+		await writeFile(join(root, "src/pages/users/[id].vue"), "<template/>");
+		await until(
+			async () => (await readFile(output, "utf8")).includes('"users.$id"'),
+			"file addition",
+		);
+		await rm(join(root, "src/pages/users"), { recursive: true });
+		await until(
+			async () => !(await readFile(output, "utf8")).includes('"users.$id"'),
+			"file removal",
+		);
+	} finally {
+		await server.close();
+	}
+	await writeFile(
+		join(root, "use.ts"),
+		`import { route } from "./src/routes.generated";\nroute("home", {}, { locale: "pt" });\n// @ts-expect-error unknown route\nroute("missing");\n// @ts-expect-error unknown locale\nroute("home", {}, { locale: "fr" });\n`,
+	);
+	const tsc = spawnSync(
+		process.execPath,
+		[join(root, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.json"],
+		{
+			cwd: root,
+			encoding: "utf8",
+		},
+	);
+	assert.equal(tsc.status, 0, tsc.stdout + tsc.stderr);
+	console.log(
+		"vite: plugin types, initial generation, live additions/removals and typed locales passed",
+	);
+} finally {
+	await rm(root, { recursive: true, force: true });
 }
