@@ -55,7 +55,7 @@ jobs:
           python-version: "3.x"
       # Every language has every section, paragraph and interface key.
       - run: node scripts/sync-locales.mjs --check
-      # README.md, README.pt-BR.md, README.es.md and README.ja.md match docs/content.json.
+      # README.*.md and docs/<code>/*.md match docs/content.json and docs/groups.json.
       - run: python scripts/sync-docs.py --check
 
   frameworks:

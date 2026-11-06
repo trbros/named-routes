@@ -15,7 +15,8 @@ pnpm docs                       # after editing docs/content.json
 pnpm docs:check
 ```
 
-- `docs/content.json` is the single source for the website and both README files.
-  Edit English and Portuguese together and never edit the README files by hand.
+- `docs/content.json` is the single source for the website, every README and the topic
+  pages in `docs/<code>/*.md`; `docs/groups.json` decides which page each section lands on.
+  Edit every language together and never edit the generated Markdown by hand.
 - Add regression tests for discovery or URL changes and a CHANGELOG entry.
 - Do not commit generated files (`dist/`, `routes.generated.ts`, `.next/`, demo builds).

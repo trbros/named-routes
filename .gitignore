@@ -15,6 +15,9 @@ dist/
 
 /RELEASE.private.md
 
+# Personal Vercel deploy of the website (its own repo, see deploy-personal/README.md)
+/deploy-personal/
+
 # Local environment and tooling
 .env
 .env.*

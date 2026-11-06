@@ -1,0 +1,38 @@
+[
+  {
+    "id": "start",
+    "page": "getting-started.md",
+    "title": { "en": "Getting started", "pt": "Primeiros passos", "es": "Primeros pasos", "ja": "はじめに" },
+    "items": ["overview", "comparison", "installation", "quick-start", "naming"]
+  },
+  {
+    "id": "frameworks",
+    "page": "frameworks.md",
+    "title": { "en": "Frameworks", "pt": "Frameworks", "es": "Frameworks", "ja": "フレームワーク" },
+    "items": ["frameworks", "nextjs", "nuxt", "vue", "sveltekit", "astro", "react-router", "tanstack-router", "manual-routes"]
+  },
+  {
+    "id": "use",
+    "page": "build-with-routes.md",
+    "title": { "en": "Build with routes", "pt": "Desenvolva com rotas", "es": "Construye con rutas", "ja": "ルートで構築する" },
+    "items": ["app-router", "pages-router", "parameters", "query-hash", "base-path", "i18n", "typescript"]
+  },
+  {
+    "id": "reference",
+    "page": "api-reference.md",
+    "title": { "en": "API reference", "pt": "Referência da API", "es": "Referencia de la API", "ja": "API リファレンス" },
+    "items": ["runtime-api", "configuration", "stable-names", "generator-api"]
+  },
+  {
+    "id": "advanced",
+    "page": "guides.md",
+    "title": { "en": "Guides", "pt": "Guias", "es": "Guías", "ja": "ガイド" },
+    "items": ["discovery", "development", "cli", "errors", "boundaries"]
+  },
+  {
+    "id": "project",
+    "page": "project.md",
+    "title": { "en": "Project", "pt": "Projeto", "es": "Proyecto", "ja": "プロジェクト" },
+    "items": ["website", "demos", "contributing", "versioning"]
+  }
+]

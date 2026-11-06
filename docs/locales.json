@@ -6,28 +6,28 @@
       "name": "English",
       "htmlLang": "en",
       "readme": "README.md",
-      "labels": { "contents": "Contents", "references": "Official references", "localGuide": "Local installation guide (Portuguese)" }
+      "labels": { "contents": "Contents", "references": "Official references", "localGuide": "Local installation guide (Portuguese)", "documentation": "Documentation", "back": "Back to README", "previous": "Previous", "next": "Next" }
     },
     {
       "code": "pt",
       "name": "Português",
       "htmlLang": "pt-BR",
       "readme": "README.pt-BR.md",
-      "labels": { "contents": "Conteúdo", "references": "Referências oficiais", "localGuide": "Guia de instalação local" }
+      "labels": { "contents": "Conteúdo", "references": "Referências oficiais", "localGuide": "Guia de instalação local", "documentation": "Documentação", "back": "Voltar ao README", "previous": "Anterior", "next": "Próximo" }
     },
     {
       "code": "es",
       "name": "Español",
       "htmlLang": "es",
       "readme": "README.es.md",
-      "labels": { "contents": "Contenido", "references": "Referencias oficiales", "localGuide": "Guía de instalación local (en portugués)" }
+      "labels": { "contents": "Contenido", "references": "Referencias oficiales", "localGuide": "Guía de instalación local (en portugués)", "documentation": "Documentación", "back": "Volver al README", "previous": "Anterior", "next": "Siguiente" }
     },
     {
       "code": "ja",
       "name": "日本語",
       "htmlLang": "ja",
       "readme": "README.ja.md",
-      "labels": { "contents": "目次", "references": "公式リファレンス", "localGuide": "ローカルインストールガイド（ポルトガル語）" }
+      "labels": { "contents": "目次", "references": "公式リファレンス", "localGuide": "ローカルインストールガイド（ポルトガル語）", "documentation": "ドキュメント", "back": "README に戻る", "previous": "前へ", "next": "次へ" }
     }
   ]
 }
