@@ -25,11 +25,13 @@ export function CodeBlock({
   language = "tsx",
   label,
   lineNumbers = false,
+  visibleLines,
 }: {
   code: string;
   language?: string;
   label: string;
   lineNumbers?: boolean;
+  visibleLines?: number;
 }) {
   const lang =
     language === "ts"
@@ -54,7 +56,7 @@ export function CodeBlock({
     >
       <code>
         {tokens.map((line, index) => (
-          <span className="code-line" key={index}>
+          <span className={`code-line${visibleLines !== undefined && index < visibleLines ? " is-on" : ""}`} key={index} style={visibleLines === undefined ? undefined : { visibility: index < visibleLines ? "visible" : "hidden" }}>
             {lineNumbers && (
               <span className="line-number" aria-hidden="true">
                 {index + 1}

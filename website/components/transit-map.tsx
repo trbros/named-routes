@@ -9,22 +9,40 @@ const HUB = { x: 510, y: 250, r: 44 };
 const LOOP = { top: 150, bottom: 350, left: 610, right: 850 };
 const RADIUS = (LOOP.bottom - LOOP.top) / 2;
 const loopPath = `M${HUB.x} ${HUB.y} A${RADIUS} ${RADIUS} 0 0 1 ${LOOP.left} ${LOOP.top} H${LOOP.right} A${RADIUS} ${RADIUS} 0 0 1 ${LOOP.right} ${LOOP.bottom} H${LOOP.left} A${RADIUS} ${RADIUS} 0 0 1 ${HUB.x} ${HUB.y} Z`;
+const manualCode = [
+  'import { createRoutes } from "@triooo/named-routes";',
+  '',
+  'const route = createRoutes({',
+  '  "users.$user": "/users/[user]"',
+  '}, {',
+  '  i18n: { locales: ["en", "pt"], defaultLocale: "en" }',
+  '});',
+  '',
+  'route("users.$user", { user: "ana" }, { locale: "pt" });',
+] as const;
 const URL_X = LOOP.right + RADIUS;
 const loopStops: { x: number; y: number; station: Station; label: string }[] = [
-  { x: 660, y: LOOP.top, station: "name", label: "name" },
-  { x: 735, y: LOOP.top, station: "params", label: "params" },
-  { x: 810, y: LOOP.top, station: "locale", label: "locale" },
-  { x: URL_X, y: HUB.y, station: "url", label: "URL" },
+  { x: 630, y: LOOP.top, station: "install", label: "install" },
+  { x: 740, y: LOOP.top, station: "configure", label: "configure" },
+  { x: 850, y: LOOP.top, station: "name", label: "name" },
+  { x: URL_X, y: HUB.y, station: "locale", label: "locale" },
+  { x: 850, y: LOOP.bottom, station: "params", label: "params" },
+  { x: 740, y: LOOP.bottom, station: "render", label: "render" },
+  { x: 630, y: LOOP.bottom, station: "browser", label: "browser" },
 ];
-const geometry = lines.map((line, index) => {
-  const y = 34 + index * 72;
+const mapEntries = [
+  ...lines,
+  { id: "manual", framework: "createRoutes()", convention: "routes.ts", color: "#f4f6ee" },
+];
+const geometry = mapEntries.map((line, index) => {
+  const y = 34 + index * 62;
   const entry = HUB.x - HUB.r;
   return { line, y, d: `M230 ${y} H270 C390 ${y} 390 ${HUB.y} ${entry} ${HUB.y}` };
 });
 
 /**
- * Seven framework lines fan into the route() roundel. From there one circuit
- * runs through the name, params and locale stations, turns at the URL and
+ * Seven framework lines and the manual helper fan into the route() roundel. From there one circuit
+ * runs through installation, configuration, naming, locale, params, render and browser, then
  * returns to route(): a train circulates forever while the storyboard below
  * builds the active line's page.
  */
@@ -45,11 +63,12 @@ export function TransitMap() {
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
-  const current = lines[active];
+  const manual = active === lines.length;
+  const current = lines[active] ?? lines[0];
   const reached = station ? loopStops.findIndex((stop) => stop.station === station) : -1;
   const next = useCallback(() => {
     if (pinned || !visible) return;
-    setActive((value) => (value + 1) % lines.length);
+    setActive((value) => (value + 1) % mapEntries.length);
   }, [pinned, visible]);
   const choose = (index: number) => {
     setPinned(true);
@@ -60,9 +79,10 @@ export function TransitMap() {
     <div
       ref={ref}
       className={visible ? "transit is-running" : "transit"}
-      style={{ "--active": current.color } as CSSProperties}
+      style={{ "--active": manual ? "var(--night-ink)" : current.color } as CSSProperties}
     >
-      <svg className="transit-svg" viewBox="0 0 1000 520" role="img" aria-labelledby="transit-desc">
+      <div className="transit-map-viewport" tabIndex={0} role="region" aria-labelledby="network-title">
+      <svg className="transit-svg" viewBox="0 0 1050 520" role="img" aria-labelledby="transit-desc">
         <desc id="transit-desc">{t("map_description_51ab3e")}</desc>
         <defs>
           <pattern id="transit-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -73,18 +93,13 @@ export function TransitMap() {
             <stop offset="100%" style={{ stopColor: "var(--active)", stopOpacity: 0 }} />
           </radialGradient>
         </defs>
-        <rect width="1000" height="520" fill="url(#transit-grid)" />
+        <rect width="1050" height="520" fill="url(#transit-grid)" />
 
-        {/* The circuit: route() → name → params → locale → URL → back to route() */}
+        {/* The circuit follows setup, URL generation, render and the browser preview. */}
         <path className="loop-track" d={loopPath} />
         <path id="loop-path" className="loop-active" d={loopPath} pathLength={1} />
-        <text className="map-label map-loop" x={(LOOP.left + LOOP.right) / 2} y={LOOP.bottom + 30} textAnchor="middle">
+        <text className="map-label map-loop" x={(LOOP.left + LOOP.right) / 2} y={LOOP.bottom + 66} textAnchor="middle">
           ↺ {t("next_route_loop_3d9a71")}
-        </text>
-
-        <path className="transit-manual" d={`M330 505 C430 505 ${HUB.x} 440 ${HUB.x} ${HUB.y + HUB.r}`} pathLength={1} />
-        <text className="map-label map-manual" x="232" y="500" textAnchor="end">
-          createRoutes()
         </text>
 
         {geometry.map(({ line, y, d }, index) => (
@@ -116,12 +131,12 @@ export function TransitMap() {
             key={stop.station}
             className={`loop-stop${index <= reached ? " is-on" : ""}${index === reached ? " is-current" : ""}`}
           >
-            <circle className="stop-dot" cx={stop.x} cy={stop.y} r={stop.station === "url" ? 13 : 8} />
+            <circle className="stop-dot" cx={stop.x} cy={stop.y} r={stop.station === "browser" ? 13 : 8} />
             <text
               className="map-label map-stop"
-              x={stop.station === "url" ? stop.x + 24 : stop.x}
-              y={stop.station === "url" ? stop.y + 4 : stop.y - 20}
-              textAnchor={stop.station === "url" ? "start" : "middle"}
+              x={stop.x === URL_X ? stop.x + 24 : stop.x}
+              y={stop.x === URL_X ? stop.y + 4 : stop.y === LOOP.bottom ? stop.y + 32 : stop.y - 20}
+              textAnchor={stop.x === URL_X ? "start" : "middle"}
             >
               {stop.label}
             </text>
@@ -150,9 +165,27 @@ export function TransitMap() {
           route()
         </text>
       </svg>
+      </div>
       <RouteStoryboard
-        story={{
-          file: current.file,
+        story={manual ? {
+          file: "routes.ts",
+          code: manualCode,
+          lifecycle: { install: "npm i @triooo/named-routes", configure: "createRoutes(routes, { i18n })", render: "<a href={route(...)}>…</a>" },
+          name: "users.$user",
+          locale: "pt",
+          params: '{ user: "ana" }',
+          url: "/pt/users/ana",
+          color: "var(--night-ink)",
+        } : {
+          file: current.localizedFile,
+          lifecycle: {
+            install: "npm i @triooo/named-routes",
+            configure: `${current.connect} · ${current.connectWhere}`,
+            configureCode: current.id === "next"
+              ? 'import { withNamedRoutes } from "@triooo/named-routes/next";\n\nexport default withNamedRoutes({\n  reactStrictMode: true\n});'
+              : `import { namedRoutes } from "@triooo/named-routes/vite";\n\nconst plugin = namedRoutes({\n  framework: "${current.id === "tanstack" ? "tanstack-router" : current.id}"\n});`,
+            render: current.id === "nuxt" ? "<NuxtPage />" : current.id === "vue" ? "<RouterView />" : current.id === "astro" ? "<Page /> → HTML" : current.id === "sveltekit" ? "+page.svelte → HTML" : "<Page />",
+          },
           name: current.name,
           params: current.params,
           locale: "pt",
@@ -164,7 +197,7 @@ export function TransitMap() {
         onDone={next}
       />
       <div className="transit-legend" role="group" aria-label={t("map_select_9d2e71")}>
-        {lines.map((line, index) => (
+        {mapEntries.map((line, index) => (
           <button
             key={line.id}
             type="button"
@@ -177,7 +210,7 @@ export function TransitMap() {
           </button>
         ))}
         {pinned && (
-          <button type="button" className="legend-resume" onClick={() => setPinned(false)}>
+          <button type="button" className="legend-resume" onClick={() => { setPinned(false); setRun((value) => value + 1); }}>
             {t("resume_departures_1f7c2b")}
           </button>
         )}

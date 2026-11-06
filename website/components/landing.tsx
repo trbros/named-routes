@@ -7,7 +7,7 @@ import { release } from "../lib/release";
 import { lines } from "../lib/transit";
 import { route, routes } from "../src/routes.generated";
 import { BrandMark } from "./brand-mark";
-import { CodeBlock } from "./code-block";
+import { CodeBlock, InlineCode } from "./code-block";
 import { CopyButton } from "./copy-button";
 import { DepartureBoard } from "./departure-board";
 import { Icon } from "./icon";
@@ -44,6 +44,7 @@ const examples = [
 const conventions = [
   {
     id: "app",
+    localePrefix: "[locale]/",
     label: "App Router",
     dir: "app/",
     files: [
@@ -54,24 +55,28 @@ const conventions = [
   },
   {
     id: "pages",
+    localePrefix: "",
     label: "Pages Router",
     dir: "pages/",
     files: ["user/profile.tsx", "users/[user].tsx", "guides/[[...slug]].tsx"],
   },
   {
     id: "nuxt",
+    localePrefix: "[locale]/",
     label: "Nuxt",
     dir: "app/pages/",
     files: ["user/profile.vue", "users/[user].vue", "guides/[...slug].vue"],
   },
   {
     id: "vue",
+    localePrefix: "[locale]/",
     label: "Vue Router",
     dir: "src/pages/",
     files: ["user/profile.vue", "users/[user].vue", "guides/[...slug].vue"],
   },
   {
     id: "sveltekit",
+    localePrefix: "[[locale]]/",
     label: "SvelteKit",
     dir: "src/routes/",
     files: [
@@ -82,6 +87,7 @@ const conventions = [
   },
   {
     id: "astro",
+    localePrefix: "[locale]/",
     label: "Astro",
     dir: "src/pages/",
     files: [
@@ -92,6 +98,7 @@ const conventions = [
   },
   {
     id: "react-router",
+    localePrefix: "($locale).",
     label: "React Router",
     dir: "app/routes/",
     files: ["user.profile.tsx", "users.$user.tsx", "guides.$.tsx"],
@@ -99,6 +106,7 @@ const conventions = [
   },
   {
     id: "tanstack",
+    localePrefix: "{-$locale}/",
     label: "TanStack",
     dir: "src/routes/",
     files: ["user/profile.tsx", "users/$user.tsx", "guides/$.tsx"],
@@ -119,11 +127,11 @@ const localized = createRoutes(routes, {
 const integrations = {
   next: {
     file: "next.config.ts",
-    code: `import { withNamedRoutes } from '@triooo/named-routes/next';\n\nexport default withNamedRoutes({\n  reactStrictMode: true,\n});`,
+    code: `import { withNamedRoutes } from '@triooo/named-routes/next';\n\nexport default withNamedRoutes({\n  reactStrictMode: true,\n}, {\n  i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" }\n});`,
   },
   vite: {
     file: "vite.config.ts",
-    code: `import { defineConfig } from 'vite';\nimport { namedRoutes } from '@triooo/named-routes/vite';\n\n// Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router\nexport default defineConfig({\n  plugins: [namedRoutes()],\n});`,
+    code: `import { defineConfig } from 'vite';\nimport { namedRoutes } from '@triooo/named-routes/vite';\n\n// Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router\nexport default defineConfig({\n  plugins: [namedRoutes({\n    i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" }\n  })],\n});`,
   },
 } as const;
 const frameworkList = [
@@ -141,7 +149,7 @@ export function Landing() {
   const [selected, setSelected] = useState(1);
   const [value, setValue] = useState<string>("ana");
   const [withQuery, setWithQuery] = useState(false);
-  const [withLocale, setWithLocale] = useState(false);
+  const [withLocale, setWithLocale] = useState(true);
   const [target, setTarget] = useState<keyof typeof integrations>("next");
   const [manager, setManager] = useState<keyof typeof installCommands>("npm");
   const convention =
@@ -194,7 +202,7 @@ export function Landing() {
     withLocale ? "locale: 'pt'" : "",
   ].filter(Boolean);
   const call = `route('${shownName}'${shownParameter || extras.length ? ", " + JSON.stringify(params, null, 2) : ""}${extras.length ? `, { ${extras.join(", ")} }` : ""})`;
-  const code = `import { route } from './routes.generated';\n\nconst url = ${call};`;
+  const code = `import { route } from './routes.generated';\n\nconst url = ${call};\n// ${href || "—"}`;
   const integration = integrations[target];
   function choose(index: number) {
     setSelected(index);
@@ -263,8 +271,8 @@ export function Landing() {
       </section>
       <section className="network" data-reveal aria-labelledby="network-title">
         <div className="v1-section-heading">
-          <span className="eyebrow">{t("the_network_a10c3f")}</span>
-          <h2 id="network-title">{t("seven_lines_one_interchange_2b8d61")}</h2>
+          <span className="eyebrow justify-center">{t("the_network_a10c3f")}</span>
+          <h2 id="network-title">{t("seven_frameworks_one_helper")}</h2>
           <p>{t("map_copy_5e9f04")}</p>
         </div>
         <TransitMap />
@@ -318,7 +326,7 @@ export function Landing() {
           <aside className="workbench-files">
             <div className="workbench-label">
               <Icon name="folder" size={13} />
-              {convention.dir}
+              {convention.dir}{withLocale && convention.id === "pages" ? " · i18n" : ""}
             </div>
             {examples.map((item, index) => (
               <button
@@ -330,7 +338,7 @@ export function Landing() {
               >
                 <span className="tree-branch" aria-hidden="true" />
                 <Icon name="code" size={14} />
-                <span>{convention.files[index]}</span>
+                <span>{withLocale ? convention.localePrefix : ""}{convention.files[index]}</span>
               </button>
             ))}
             <div className="filesystem-note">
@@ -427,16 +435,11 @@ export function Landing() {
               <code key={href}>{href}</code>
             )}
           </div>
-          {!error && !withLocale && (
-            <Link className="output-open" href={href}>
+          {!error && (
+            <Link className="output-open" href={withLocale ? href.replace(/^\/pt(?=\/|$)/, "") || "/" : href} locale={withLocale ? "pt" : undefined}>
               {t("follow_route_57b1dd")}
               <Icon name="arrow" size={14} />
             </Link>
-          )}
-          {!error && withLocale && (
-            <p className="output-note">
-              {t("localized_url_preview_this_site_is_not_localized_3e7a10")}
-            </p>
           )}
         </div>
         <div className="workbench-foot">
@@ -468,7 +471,7 @@ export function Landing() {
       </section>
       <section className="v1-features" data-reveal>
         <div className="v1-section-heading">
-          <span className="eyebrow">
+          <span className="eyebrow justify-start">
             {t("built_around_your_codebase_2be038")}
           </span>
           <h2>
@@ -688,10 +691,10 @@ export function Landing() {
               ))}
             </div>
             <div className="journey-command">
-              <code key={manager}>
-                <span aria-hidden="true">$ </span>
-                {installCommands[manager]}
-              </code>
+              <div className="flex min-w-0 items-center gap-2">
+                <span aria-hidden="true">$</span>
+                <InlineCode key={manager} code={installCommands[manager]} language="bash" />
+              </div>
               <CopyButton
                 text={installCommands[manager]}
                 label={t("copy_install_command_c36ef7")}
@@ -778,6 +781,7 @@ export function Landing() {
         <div className="v1-section-heading">
           <span className="eyebrow">{t("a_few_details_2329b8")}</span>
           <h2>{t("before_your_first_route_4f7b2f")}</h2>
+          <p>{t("before_your_first_route_description")}</p>
         </div>
         <div>
           {[

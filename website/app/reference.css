@@ -2659,7 +2659,8 @@
 }
 
 /* Light-theme syntax: bright tokens on code panels, ink tones inline. */
-:root[data-theme="light"] .workspace .highlighted-code {
+:root[data-theme="light"] .workspace .highlighted-code,
+:root[data-theme="light"] .workspace .journey-command .highlighted-inline {
   --shiki-foreground: #f0f3f7;
   --shiki-token-keyword: #c4adff;
   --shiki-token-function: #82caff;
