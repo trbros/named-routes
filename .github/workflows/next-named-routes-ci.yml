@@ -1,0 +1,102 @@
+name: Next Named Routes CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: named-routes-ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Package · Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20.19.0", "22", "24", "26"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      # The pnpm version comes from package.json "packageManager".
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm typecheck
+      - run: pnpm check
+      - run: pnpm test:package
+
+  docs:
+    name: Languages and documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+      # Every language has every section, paragraph and interface key.
+      - run: node scripts/sync-locales.mjs --check
+      # README.md, README.pt-BR.md, README.es.md and README.ja.md match docs/content.json.
+      - run: python scripts/sync-docs.py --check
+
+  frameworks:
+    name: Real Next.js and Vite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm build
+      - name: Install the Next.js example dependencies
+        run: pnpm --dir examples/app-router install --frozen-lockfile --ignore-scripts
+      - run: pnpm test:next
+      - run: pnpm test:vite
+
+  website:
+    name: Documentation website
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      # The website installs the package from .. and needs its dist/.
+      - run: pnpm build
+      - run: pnpm --dir website install --frozen-lockfile --ignore-scripts
+      - run: pnpm --dir website run check:i18n
+      - run: pnpm --dir website run typecheck
+      - run: pnpm --dir website run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"

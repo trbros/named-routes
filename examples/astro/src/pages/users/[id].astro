@@ -1,0 +1,8 @@
+---
+import { route } from "../../routes.generated";
+export function getStaticPaths() {
+  return [{ params: { id: "42" } }, { params: { id: "ana" } }];
+}
+const { id } = Astro.params;
+---
+<p>User <strong>{id}</strong> — <a href={route("home")}>home</a></p>

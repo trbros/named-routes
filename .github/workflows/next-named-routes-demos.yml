@@ -1,0 +1,45 @@
+name: Next Named Routes demos
+
+# Builds every framework demo in examples/ with its real framework.
+on:
+  pull_request:
+    paths:
+      - "examples/**"
+      - "src/frameworks.ts"
+      - "src/generator.ts"
+      - "src/vite.ts"
+      - ".github/workflows/next-named-routes-demos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: named-routes-demos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo:
+    name: Demo · ${{ matrix.demo }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        demo: [nuxt, vue, sveltekit, astro, react-router, tanstack-router, react]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      # Demos depend on the package through file:../.. and need its dist/.
+      - run: pnpm build
+      - run: npm ci --no-audit --no-fund
+        working-directory: examples/${{ matrix.demo }}
+      - run: npm run build
+        working-directory: examples/${{ matrix.demo }}

@@ -1,0 +1,66 @@
+name: Publish Next Named Routes
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: named-routes-publish-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  release-info:
+    if: startsWith(github.event.release.tag_name, 'next-named-routes-v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      dist-tag: ${{ steps.release.outputs.dist_tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Match the release tag and package version
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: node scripts/check-release.mjs
+
+  validate:
+    needs: release-info
+    uses: ./.github/workflows/next-named-routes-ci.yml
+
+  publish:
+    needs: [release-info, validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      # The pnpm version comes from package.json "packageManager".
+      - uses: pnpm/action-setup@v6
+      - name: Use an npm CLI supporting trusted publishing
+        run: npm install --global 'npm@^11.5.1'
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Link provenance to the actual publishing repository
+        run: node scripts/prepare-publish.mjs
+      - name: Publish through npm OIDC
+        env:
+          NPM_CONFIG_TAG: ${{ needs.release-info.outputs.dist-tag }}
+        run: npm publish --access public --provenance

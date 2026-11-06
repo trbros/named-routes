@@ -1,0 +1,8 @@
+---
+import { route } from "../../routes.generated";
+export function getStaticPaths() {
+  return [{ params: { slug: undefined } }, { params: { slug: "guide/install" } }];
+}
+const { slug } = Astro.params;
+---
+<p>Docs: <code>{slug ?? "(index)"}</code> — <a href={route("home")}>home</a></p>

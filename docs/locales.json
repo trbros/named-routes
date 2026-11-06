@@ -1,0 +1,33 @@
+{
+  "source": "en",
+  "locales": [
+    {
+      "code": "en",
+      "name": "English",
+      "htmlLang": "en",
+      "readme": "README.md",
+      "labels": { "contents": "Contents", "references": "Official references", "localGuide": "Local installation guide (Portuguese)" }
+    },
+    {
+      "code": "pt",
+      "name": "Português",
+      "htmlLang": "pt-BR",
+      "readme": "README.pt-BR.md",
+      "labels": { "contents": "Conteúdo", "references": "Referências oficiais", "localGuide": "Guia de instalação local" }
+    },
+    {
+      "code": "es",
+      "name": "Español",
+      "htmlLang": "es",
+      "readme": "README.es.md",
+      "labels": { "contents": "Contenido", "references": "Referencias oficiales", "localGuide": "Guía de instalación local (en portugués)" }
+    },
+    {
+      "code": "ja",
+      "name": "日本語",
+      "htmlLang": "ja",
+      "readme": "README.ja.md",
+      "labels": { "contents": "目次", "references": "公式リファレンス", "localGuide": "ローカルインストールガイド（ポルトガル語）" }
+    }
+  ]
+}

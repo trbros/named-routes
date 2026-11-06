@@ -1,0 +1,54 @@
+node_modules/
+.next/
+*.tgz
+examples/*/src/routes.generated.ts
+examples/*/next-env.d.ts
+website/src/routes.generated.ts
+website/next-env.d.ts
+website/AGENTS.md
+website/CLAUDE.md
+.vercel/
+
+dist/
+
+*.tsbuildinfo
+
+/RELEASE.private.md
+
+# Local environment and tooling
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+.DS_Store
+*.tmp
+
+# Local-only notes and scripts (keep personal release notes or experiments here)
+*.private.*
+*.local.*
+scripts/local/
+
+# Editors and test reports
+.idea/
+.vscode/*
+!.vscode/extensions.json
+test-results/
+playwright-report/
+
+# Re-created by `next dev` in each example
+examples/*/AGENTS.md
+examples/*/CLAUDE.md
+
+# Demo build output and framework-generated files
+examples/*/app/routes.generated.ts
+examples/*/src/lib/routes.generated.ts
+examples/*/dist/
+examples/*/build/
+examples/*/.nuxt/
+examples/*/.output/
+examples/*/.svelte-kit/
+examples/*/.astro/
+examples/*/.react-router/
+examples/*/typed-router.d.ts
+examples/*/src/routeTree.gen.ts

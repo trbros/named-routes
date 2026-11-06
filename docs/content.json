@@ -1,0 +1,1424 @@
+[
+  {
+    "id": "overview",
+    "title": {
+      "en": "What it does",
+      "pt": "O que ele faz",
+      "es": "Qué hace",
+      "ja": "このパッケージでできること"
+    },
+    "paragraphs": {
+      "en": [
+        "Triooo Named Routes discovers the pages your framework already routes and generates typed URL helpers. Create a page, import route, and navigate by its inferred name. The filesystem remains the source of truth.",
+        "Next.js (App Router, Pages Router, src layouts and mixed migrations) is integrated through withNamedRoutes. Nuxt, Vue Router file-based routing, SvelteKit, Astro, React Router/Remix flat routes and TanStack Router are discovered by convention adapters and kept current by a Vite plugin. Apps that declare routes by hand use the same typed runtime with a written manifest.",
+        "Every framework maps to one pattern syntax and one naming rule, so app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte and app/routes/users.$user.tsx all become users.$user. Locale-aware URLs (next-intl, Pages Router i18n, @nuxtjs/i18n and similar) are supported from v1.",
+        "The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 20.19+ is required for tooling and TypeScript 5+ for the exported types. Next 16 and Vite 7 are covered by real integration tests."
+      ],
+      "pt": [
+        "O Triooo Named Routes descobre as páginas que seu framework já roteia e gera helpers de URL tipados. Crie uma página, importe route e navegue pelo nome inferido. O sistema de arquivos continua sendo a fonte de verdade.",
+        "O Next.js (App Router, Pages Router, diretórios src e migrações mistas) é integrado pelo withNamedRoutes. Nuxt, roteamento por arquivos do Vue Router, SvelteKit, Astro, flat routes do React Router/Remix e TanStack Router são descobertos por adaptadores de convenção e mantidos atualizados por um plugin Vite. Apps que declaram rotas manualmente usam o mesmo runtime tipado com um manifesto escrito à mão.",
+        "Todos os frameworks convergem para uma sintaxe de padrão e uma regra de nomes: app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte e app/routes/users.$user.tsx viram users.$user. URLs com idioma (next-intl, i18n do Pages Router, @nuxtjs/i18n e similares) são suportadas desde a v1.",
+        "O runtime de URLs funciona no navegador sem imports de framework ou Node.js. O gerador Node lê caminhos de arquivos; nunca executa suas páginas. As ferramentas exigem Node.js 20.19+ e os tipos exportados, TypeScript 5+. Next 16 e Vite 7 são cobertos por testes de integração reais."
+      ],
+      "es": [
+        "Triooo Named Routes descubre las páginas que tu framework ya enruta y genera helpers de URL tipados. Crea una página, importa route y navega por su nombre inferido. El sistema de archivos sigue siendo la fuente de verdad.",
+        "Next.js (App Router, Pages Router, carpetas src y migraciones mixtas) se integra mediante withNamedRoutes. Nuxt, el enrutamiento por archivos de Vue Router, SvelteKit, Astro, las flat routes de React Router/Remix y TanStack Router se descubren con adaptadores de convención y se mantienen al día con un plugin de Vite. Las apps que declaran rutas a mano usan el mismo runtime tipado con un manifiesto escrito a mano.",
+        "Todos los frameworks se traducen a una sola sintaxis de patrones y una sola regla de nombres, así que app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte y app/routes/users.$user.tsx se convierten en users.$user. Las URLs con idioma (next-intl, i18n del Pages Router, @nuxtjs/i18n y similares) son compatibles desde la v1.",
+        "El runtime de URLs funciona en el navegador sin imports de framework ni de Node.js. El generador, solo para Node, lee rutas de archivos; nunca ejecuta tus páginas. Las herramientas requieren Node.js 20.19+ y los tipos exportados, TypeScript 5+. Next 16 y Vite 7 están cubiertos por pruebas de integración reales."
+      ],
+      "ja": [
+        "Triooo Named Routes は、フレームワークがすでにルーティングしているページを検出し、型付きの URL ヘルパーを生成します。ページを作り、route をインポートし、推論された名前で移動するだけです。信頼できる情報源は、これまでどおりファイルシステムです。",
+        "Next.js（App Router、Pages Router、src 構成、混在した移行プロジェクト）は withNamedRoutes で統合します。Nuxt、Vue Router のファイルベースルーティング、SvelteKit、Astro、React Router/Remix の flat routes、TanStack Router は規約アダプターで検出され、Vite プラグインで最新に保たれます。ルートを手書きで宣言するアプリも、手書きのマニフェストで同じ型付きランタイムを使えます。",
+        "どのフレームワークもひとつのパターン構文とひとつの命名規則に変換されるため、app/users/[user]/page.tsx、pages/users/[user].vue、src/routes/users/[user]/+page.svelte、app/routes/users.$user.tsx はすべて users.$user になります。言語付き URL（next-intl、Pages Router の i18n、@nuxtjs/i18n など）は v1 から対応しています。",
+        "URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上、公開される型には TypeScript 5 以上が必要です。Next 16 と Vite 7 は実際の統合テストで確認しています。"
+      ]
+    },
+    "code": "// Next.js   app/users/[user]/page.tsx          → users.$user\n// Nuxt      pages/users/[user].vue             → users.$user\n// SvelteKit src/routes/users/[user]/+page.svelte → users.$user\n// Remix/RR  app/routes/users.$user.tsx         → users.$user\nroute(\"users.$user\", { user: 42 });                    // /users/42\nroute(\"users.$user\", { user: 42 }, { locale: \"pt\" });  // /pt/users/42",
+    "language": "ts"
+  },
+  {
+    "id": "comparison",
+    "title": {
+      "en": "Compared with alternatives",
+      "pt": "Comparação com alternativas",
+      "es": "Comparación con alternativas",
+      "ja": "ほかの選択肢との比較"
+    },
+    "paragraphs": {
+      "en": [
+        "Several packages and framework features also generate typed URLs. They differ in where routes come from, whether routes have names, which frameworks they cover and whether locales are part of the model. The tables summarize what each project documents or ships; npm figures are the latest version and downloads in the last month, collected on 2026-11-05. ✓ means supported, ½ partial, — not offered or not documented.",
+        "**Where this package differs.** Names are inferred from the files you already have and stay identical across Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router; locales (prefixes, translated pathnames, domains) are part of the same typed call; and route() returns a plain string that works outside any router: redirects, emails, sitemaps or a package shared by several apps in a monorepo.",
+        "**When another choice fits better.** If you use a single framework and are happy keying routes by path, its built-in feature needs no extra dependency. If you need search params validated against a schema (Zod, Valibot), next-typesafe-url and next-safe-navigation do that and this package does not. If your routes live in a Laravel backend, Ziggy is the natural fit. next-routes targets the legacy Pages Router with React 15/16, and the unscoped next-named-routes package is an unrelated 2022 project with a similar name.",
+        "**Built into the frameworks.** Next.js typedRoutes, React Router href(), SvelteKit resolve() and TanStack Router type paths written in that framework's own syntax; Nuxt typedPages types Nuxt's route names. They work inside one framework and do not share names or a locale model with others. Astro's getRelativeLocaleUrl() builds locale URLs from an untyped path."
+      ],
+      "pt": [
+        "Vários pacotes e recursos de frameworks também geram URLs tipadas. Eles diferem em de onde vêm as rotas, se as rotas têm nomes, quais frameworks cobrem e se os idiomas fazem parte do modelo. As tabelas resumem o que cada projeto documenta ou publica; os números do npm são a versão mais recente e os downloads do último mês, coletados em 2026-11-05. ✓ significa suportado, ½ parcial, — não oferecido ou não documentado.",
+        "**Onde este pacote se diferencia.** Os nomes são inferidos dos arquivos que você já tem e ficam idênticos entre Next.js, Nuxt, Vue, SvelteKit, Astro, React Router e TanStack Router; os idiomas (prefixos, caminhos traduzidos, domínios) fazem parte da mesma chamada tipada; e route() retorna uma string simples que funciona fora de qualquer router: redirects, e-mails, sitemaps ou um pacote compartilhado por vários apps em um monorepo.",
+        "**Quando outra escolha é melhor.** Se você usa um único framework e não se importa em identificar rotas pelo caminho, o recurso nativo dele dispensa dependências. Se precisa validar search params contra um schema (Zod, Valibot), next-typesafe-url e next-safe-navigation fazem isso e este pacote não. Se suas rotas vivem num backend Laravel, o Ziggy é o encaixe natural. O next-routes atende o Pages Router legado com React 15/16, e o pacote next-named-routes sem escopo é um projeto de 2022 sem relação, apenas com nome parecido.",
+        "**Nativos dos frameworks.** typedRoutes do Next.js, href() do React Router, resolve() do SvelteKit e o TanStack Router tipam caminhos escritos na sintaxe do próprio framework; o typedPages do Nuxt tipa os nomes de rota do Nuxt. Eles funcionam dentro de um framework e não compartilham nomes nem um modelo de idiomas com outros. O getRelativeLocaleUrl() do Astro monta URLs de idioma a partir de um caminho não tipado."
+      ],
+      "es": [
+        "Varios paquetes y funciones de los frameworks también generan URLs tipadas. Se diferencian en de dónde salen las rutas, si las rutas tienen nombre, qué frameworks cubren y si los idiomas forman parte del modelo. Las tablas resumen lo que cada proyecto documenta o publica; las cifras de npm son la última versión y las descargas del último mes, recogidas el 2026-11-05. ✓ significa compatible, ½ parcial, — no ofrecido o no documentado.",
+        "**En qué se diferencia este paquete.** Los nombres se infieren de los archivos que ya tienes y son idénticos en Next.js, Nuxt, Vue, SvelteKit, Astro, React Router y TanStack Router; los idiomas (prefijos, rutas traducidas, dominios) forman parte de la misma llamada tipada; y route() devuelve un string simple que funciona fuera de cualquier router: redirects, emails, sitemaps o un paquete compartido por varias apps en un monorepo.",
+        "**Cuándo encaja mejor otra opción.** Si usas un solo framework y te basta con identificar las rutas por su ruta, su función integrada no requiere dependencias extra. Si necesitas validar los search params contra un esquema (Zod, Valibot), next-typesafe-url y next-safe-navigation lo hacen y este paquete no. Si tus rutas viven en un backend Laravel, Ziggy es la opción natural. next-routes está pensado para el Pages Router heredado con React 15/16, y el paquete next-named-routes sin scope es un proyecto de 2022 sin relación, solo con un nombre parecido.",
+        "**Integrado en los frameworks.** typedRoutes de Next.js, href() de React Router, resolve() de SvelteKit y TanStack Router tipan rutas escritas con la sintaxis de ese framework; typedPages de Nuxt tipa los nombres de ruta de Nuxt. Funcionan dentro de un framework y no comparten nombres ni un modelo de idiomas con otros. getRelativeLocaleUrl() de Astro construye URLs de idioma a partir de una ruta sin tipar."
+      ],
+      "ja": [
+        "型付きの URL を生成するパッケージやフレームワークの機能はほかにもあります。違いは、ルートをどこから得るか、ルートに名前があるか、どのフレームワークに対応するか、言語がモデルに含まれるかです。表は各プロジェクトがドキュメント化している内容、または公開しているものをまとめたもので、npm の数値は 2026-11-05 に取得した最新バージョンと直近 1 か月のダウンロード数です。✓ は対応、½ は一部対応、— は提供なし、またはドキュメントなしを意味します。",
+        "**このパッケージの違い。** 名前は既存のファイルから推論され、Next.js、Nuxt、Vue、SvelteKit、Astro、React Router、TanStack Router のどれでも同じになります。言語（プレフィックス、翻訳されたパス、ドメイン）も同じ型付きの呼び出しに含まれます。そして route() はどのルーターの外でも使える普通の文字列を返すので、リダイレクト、メール、サイトマップ、モノレポで複数のアプリが共有するパッケージでも使えます。",
+        "**ほかの選択肢が向いている場合。** 使うフレームワークがひとつで、パスでルートを指定することに不満がなければ、そのフレームワークの組み込み機能なら依存を増やさずに済みます。検索パラメーターをスキーマ（Zod、Valibot）で検証したいなら、next-typesafe-url や next-safe-navigation が対応していますが、このパッケージは対応していません。ルートが Laravel のバックエンドにあるなら Ziggy が自然な選択です。next-routes は React 15/16 時代の Pages Router 向けで、スコープなしの next-named-routes は名前が似ているだけの 2022 年の無関係なプロジェクトです。",
+        "**フレームワーク組み込みの機能。** Next.js の typedRoutes、React Router の href()、SvelteKit の resolve()、TanStack Router は、そのフレームワーク独自の構文で書いたパスを型付けします。Nuxt の typedPages は Nuxt のルート名を型付けします。いずれもひとつのフレームワークの中で動作し、名前や言語のモデルをほかと共有しません。Astro の getRelativeLocaleUrl() は、型のないパスから言語付きの URL を作ります。"
+      ]
+    },
+    "tables": [
+      {
+        "caption": {
+          "en": "Packages",
+          "pt": "Pacotes",
+          "es": "Paquetes",
+          "ja": "パッケージ"
+        },
+        "head": {
+          "en": [
+            "Package",
+            "Frameworks",
+            "Routes from",
+            "Names",
+            "Typed params",
+            "i18n",
+            "URL builder",
+            "npm (latest · month)"
+          ],
+          "pt": [
+            "Pacote",
+            "Frameworks",
+            "Rotas vêm de",
+            "Nomes",
+            "Parâmetros tipados",
+            "i18n",
+            "Gerador de URL",
+            "npm (última · mês)"
+          ],
+          "es": [
+            "Paquete",
+            "Frameworks",
+            "Rutas desde",
+            "Nombres",
+            "Parámetros tipados",
+            "i18n",
+            "Generador de URL",
+            "npm (última · mes)"
+          ],
+          "ja": [
+            "パッケージ",
+            "フレームワーク",
+            "ルートの取得元",
+            "名前",
+            "型付きパラメーター",
+            "i18n",
+            "URL ビルダー",
+            "npm（最新 · 月間）"
+          ]
+        },
+        "rows": [
+          [
+            "**@triooo/next-named-routes**",
+            "Next.js, Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router",
+            "files · `createRoutes()`",
+            "✓ `users.$user`",
+            "✓",
+            "✓",
+            "✓ `route()`",
+            "1.0.0 · new"
+          ],
+          [
+            "nextjs-routes",
+            "Next.js",
+            "files",
+            "— `\"/users/[id]\"`",
+            "✓",
+            "½ Pages Router",
+            "✓ `route()`",
+            "2.2.5 · 173k"
+          ],
+          [
+            "next-typesafe-url",
+            "Next.js (peer ≤ 15)",
+            "files + Zod",
+            "— `\"/users/[id]\"`",
+            "✓ + Zod",
+            "—",
+            "✓ `$path()`",
+            "6.1.0 · 41k"
+          ],
+          [
+            "next-safe-navigation",
+            "Next.js App Router",
+            "`defineRoute()`",
+            "✓",
+            "✓ + schema",
+            "—",
+            "✓ `routes.name()`",
+            "0.4.0 · 13k"
+          ],
+          [
+            "vite-plugin-kit-routes",
+            "SvelteKit",
+            "files",
+            "— `\"/about\"`",
+            "✓",
+            "—",
+            "✓ `route()`",
+            "1.1.2 · 24k"
+          ],
+          [
+            "typesafe-routes",
+            "any",
+            "`createRoutes({})`",
+            "✓ `routes.users.edit`",
+            "✓",
+            "—",
+            "✓ `renderPath()`",
+            "12.3.0 · 25k"
+          ],
+          [
+            "ziggy-js",
+            "any + Laravel",
+            "Laravel routes",
+            "✓ Laravel",
+            "✓",
+            "—",
+            "✓ `route()`",
+            "2.6.5 · 567k"
+          ],
+          [
+            "next-routes",
+            "Next.js Pages (React ≤ 16)",
+            "`routes.add()`",
+            "✓",
+            "—",
+            "—",
+            "✓ `pushRoute()`",
+            "1.4.2 · 49k"
+          ],
+          [
+            "next-named-routes",
+            "Next.js Pages",
+            "`add(name, path)`",
+            "✓ enum",
+            "½",
+            "—",
+            "✓ `pathnameForParams()`",
+            "0.1.0 · 0.3k"
+          ]
+        ]
+      },
+      {
+        "caption": {
+          "en": "Built into the frameworks",
+          "pt": "Nativos dos frameworks",
+          "es": "Integrado en los frameworks",
+          "ja": "フレームワーク組み込み"
+        },
+        "head": {
+          "en": [
+            "Framework",
+            "Feature",
+            "Route key",
+            "Typed params",
+            "Names shared across frameworks",
+            "Locales"
+          ],
+          "pt": [
+            "Framework",
+            "Recurso",
+            "Chave da rota",
+            "Parâmetros tipados",
+            "Nomes compartilhados entre frameworks",
+            "Idiomas"
+          ],
+          "es": [
+            "Framework",
+            "Función",
+            "Clave de ruta",
+            "Parámetros tipados",
+            "Nombres compartidos entre frameworks",
+            "Idiomas"
+          ],
+          "ja": [
+            "フレームワーク",
+            "機能",
+            "ルートのキー",
+            "型付きパラメーター",
+            "フレームワーク間で共通の名前",
+            "言語"
+          ]
+        },
+        "rows": [
+          [
+            "Next.js 16",
+            "`typedRoutes: true`",
+            "`\"/users/[id]\"`",
+            "✓",
+            "—",
+            "—"
+          ],
+          [
+            "React Router 7",
+            "`href()`",
+            "`\"/users/:id\"`",
+            "✓",
+            "—",
+            "—"
+          ],
+          [
+            "SvelteKit 2.26+",
+            "`resolve()`",
+            "`\"/blog/[slug]\"`",
+            "✓",
+            "—",
+            "—"
+          ],
+          [
+            "Nuxt 4",
+            "`experimental.typedPages`",
+            "`users-id`",
+            "✓",
+            "—",
+            "½ @nuxtjs/i18n"
+          ],
+          [
+            "TanStack Router",
+            "`<Link to>`",
+            "`\"/posts/$postId\"`",
+            "✓",
+            "—",
+            "—"
+          ],
+          [
+            "Astro 5",
+            "`getRelativeLocaleUrl()`",
+            "`string`",
+            "—",
+            "—",
+            "✓"
+          ]
+        ]
+      }
+    ],
+    "code": "",
+    "language": "text"
+  },
+  {
+    "id": "installation",
+    "title": {
+      "en": "Installation",
+      "pt": "Instalação",
+      "es": "Instalación",
+      "ja": "インストール"
+    },
+    "paragraphs": {
+      "en": [
+        "Install the package with your preferred package manager. It has no runtime dependencies. Node.js 20.19 or newer is required for the generator.",
+        "Then connect it once: withNamedRoutes in next.config for Next.js, or the namedRoutes() Vite plugin for Vite-based frameworks. You can also run the named-routes CLI (generate, check, watch) in any project."
+      ],
+      "pt": [
+        "Instale o pacote com o gerenciador que preferir. Ele não tem dependências de runtime. O gerador exige Node.js 20.19 ou superior.",
+        "Depois conecte uma única vez: withNamedRoutes no next.config para Next.js, ou o plugin Vite namedRoutes() nos frameworks baseados em Vite. Também é possível usar a CLI named-routes (generate, check, watch) em qualquer projeto."
+      ],
+      "es": [
+        "Instala el paquete con tu gestor de paquetes favorito. No tiene dependencias en runtime. El generador requiere Node.js 20.19 o superior.",
+        "Después conéctalo una sola vez: withNamedRoutes en next.config para Next.js, o el plugin de Vite namedRoutes() para los frameworks basados en Vite. También puedes usar la CLI named-routes (generate, check, watch) en cualquier proyecto."
+      ],
+      "ja": [
+        "お好みのパッケージマネージャーでインストールしてください。ランタイム依存はありません。ジェネレーターには Node.js 20.19 以上が必要です。",
+        "あとは一度だけ接続します。Next.js なら next.config の withNamedRoutes、Vite ベースのフレームワークなら Vite プラグインの namedRoutes() です。どのプロジェクトでも named-routes CLI（generate、check、watch）を使えます。"
+      ]
+    },
+    "code": "npm install @triooo/next-named-routes\n# pnpm\npnpm add @triooo/next-named-routes\n# Yarn\nyarn add @triooo/next-named-routes\n# Bun\nbun add @triooo/next-named-routes",
+    "language": "sh"
+  },
+  {
+    "id": "quick-start",
+    "title": {
+      "en": "One-time Next.js setup",
+      "pt": "Configuração única no Next.js",
+      "es": "Configuración única en Next.js",
+      "ja": "Next.js の初回セットアップ"
+    },
+    "paragraphs": {
+      "en": [
+        "Wrap the existing Next configuration once. No route map, page annotations or separate watcher command is needed. Next configuration objects, Promises and async configuration functions are supported.",
+        "The generated module defaults to src/routes.generated.ts and exports routes, route and RouteName. It is produced before dev/build starts. Use the generated helper from Server Components, Client Components or Pages Router code.",
+        "The import alias @/routes.generated below assumes @/* points to src/*. If your alias points to the project root, use @/src/routes.generated or a relative import. Next configuration may remain next.config.mjs or use next.config.ts."
+      ],
+      "pt": [
+        "Envolva a configuração existente do Next uma única vez. Não é necessário cadastrar rotas, anotar páginas ou executar outro watcher. São aceitos objetos, Promises e funções assíncronas de configuração do Next.",
+        "O módulo gerado usa src/routes.generated.ts por padrão e exporta routes, route e RouteName. Ele é criado antes do dev/build. Use o helper em Server Components, Client Components ou no Pages Router.",
+        "O alias @/routes.generated abaixo pressupõe que @/* aponta para src/*. Se ele aponta para a raiz, use @/src/routes.generated ou um import relativo. A configuração do Next pode continuar em next.config.mjs ou usar next.config.ts."
+      ],
+      "es": [
+        "Envuelve la configuración de Next existente una sola vez. No necesitas mapa de rutas, anotaciones en las páginas ni un comando de watcher aparte. Se admiten objetos de configuración, Promises y funciones de configuración asíncronas.",
+        "El módulo generado está por defecto en src/routes.generated.ts y exporta routes, route y RouteName. Se crea antes de que empiecen dev/build. Usa el helper generado desde Server Components, Client Components o código del Pages Router.",
+        "El alias de import @/routes.generated de abajo supone que @/* apunta a src/*. Si tu alias apunta a la raíz del proyecto, usa @/src/routes.generated o un import relativo. La configuración de Next puede seguir siendo next.config.mjs o usar next.config.ts."
+      ],
+      "ja": [
+        "既存の Next の設定を一度ラップするだけです。ルート表、ページへの注釈、別の watcher コマンドは不要です。設定オブジェクト、Promise、非同期の設定関数に対応しています。",
+        "生成されるモジュールはデフォルトで src/routes.generated.ts にあり、routes、route、RouteName をエクスポートします。dev/build の開始前に作られます。生成されたヘルパーは Server Components、Client Components、Pages Router のコードから使えます。",
+        "下の @/routes.generated というインポートエイリアスは、@/* が src/* を指している前提です。エイリアスがプロジェクトのルートを指す場合は @/src/routes.generated か相対インポートを使ってください。Next の設定は next.config.mjs のままでも next.config.ts でもかまいません。"
+      ]
+    },
+    "code": "// next.config.ts\nimport { withNamedRoutes } from \"@triooo/next-named-routes/next\";\nexport default withNamedRoutes({ reactStrictMode: true });\n\n// In your application:\nimport { route } from \"@/routes.generated\";\nroute(\"user.profile\");\nroute(\"users.$user\", { user: \"ana\" });",
+    "language": "ts"
+  },
+  {
+    "id": "frameworks",
+    "title": {
+      "en": "Other frameworks (Vite plugin)",
+      "pt": "Outros frameworks (plugin Vite)",
+      "es": "Otros frameworks (plugin de Vite)",
+      "ja": "ほかのフレームワーク（Vite プラグイン）"
+    },
+    "paragraphs": {
+      "en": [
+        "Add namedRoutes() from @triooo/next-named-routes/vite to the Vite plugins of Nuxt (vite.plugins in nuxt.config), Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, using Vite's own watcher.",
+        "The framework is detected from package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev or @remix-run/dev, TanStack router plugin/CLI/Start, unplugin-vue-router or vue-router). Set framework explicitly in monorepos or when detection is ambiguous. Run npx named-routes init to create a config for the detected framework.",
+        "Conventions are converted to the runtime syntax. Nuxt and Vue: index, [id], [[id]] optional, [...slug] (matches an empty remainder, so it becomes [[...slug]]), (group) folders, parent.vue + parent/ nesting, mixed segments such as v[major]-[minor]; Vue also treats dots as nesting (users.edit.vue) and supports [id]+ repeatable params. Nuxt ignores files starting with -, and with includeApi scans server/api (prefixed /api) and server/routes, removing .get/.post suffixes.",
+        "SvelteKit: +page.* files, [id=matcher] (the matcher is dropped), [[lang]], [...rest] (zero or more segments), (group), [x+2f] escapes and +server endpoints with includeApi. Astro: src/pages with .astro/.md/.mdx/.html, _private files ignored, [...slug] rest params and .ts/.js endpoints with includeApi.",
+        "React Router / Remix flat routes (app/routes): dots nest, _index, $param, ($optional), $ splat (named splat), _pathless layouts, name_ opt-out, [.] escapes and folder/route.tsx modules. TanStack Router (src/routes): flat and directory files, index/route, $param, {-$optional}, prefix{$param}, $ splat (named _splat), _layouts, -ignored files, (groups) and .lazy files. Optional static segments such as (beta) cannot be named; exclude the file or use extraRoutes.",
+        "Paths declared inside components (Nuxt definePageMeta({ path }), React Router routes.ts) are not visible to a file scanner: map those URLs with extraRoutes, or use the manual manifest described next."
+      ],
+      "pt": [
+        "Adicione namedRoutes() de @triooo/next-named-routes/vite aos plugins Vite do Nuxt (vite.plugins no nuxt.config), Vue, SvelteKit, Astro (vite.plugins no astro.config), React Router ou TanStack Router. Ele gera ao iniciar ou compilar o Vite e regenera quando arquivos são criados, removidos ou renomeados, usando o watcher do próprio Vite.",
+        "O framework é detectado pelo package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev ou @remix-run/dev, plugin/CLI/Start do TanStack Router, unplugin-vue-router ou vue-router). Defina framework explicitamente em monorepos ou quando a detecção for ambígua. Execute npx named-routes init para criar uma configuração para o framework detectado.",
+        "As convenções são convertidas para a sintaxe do runtime. Nuxt e Vue: index, [id], [[id]] opcional, [...slug] (aceita resto vazio, então vira [[...slug]]), pastas (grupo), aninhamento parent.vue + parent/, segmentos mistos como v[major]-[minor]; no Vue, pontos também aninham (users.edit.vue) e [id]+ indica parâmetro repetível. O Nuxt ignora arquivos iniciados por - e, com includeApi, varre server/api (com prefixo /api) e server/routes, removendo sufixos .get/.post.",
+        "SvelteKit: arquivos +page.*, [id=matcher] (o matcher é descartado), [[lang]], [...rest] (zero ou mais segmentos), (grupo), escapes [x+2f] e endpoints +server com includeApi. Astro: src/pages com .astro/.md/.mdx/.html, arquivos _privados ignorados, parâmetros [...slug] e endpoints .ts/.js com includeApi.",
+        "Flat routes do React Router / Remix (app/routes): pontos aninham, _index, $param, ($opcional), splat $ (chamado splat), layouts _sem-caminho, opt-out nome_, escapes [.] e módulos pasta/route.tsx. TanStack Router (src/routes): arquivos planos e em pastas, index/route, $param, {-$opcional}, prefixo{$param}, splat $ (chamado _splat), _layouts, arquivos -ignorados, (grupos) e arquivos .lazy. Segmentos estáticos opcionais como (beta) não podem ser nomeados; exclua o arquivo ou use extraRoutes.",
+        "Caminhos declarados dentro de componentes (definePageMeta({ path }) do Nuxt, routes.ts do React Router) não são visíveis para um scanner de arquivos: mapeie essas URLs com extraRoutes ou use o manifesto manual descrito a seguir."
+      ],
+      "es": [
+        "Añade namedRoutes() de @triooo/next-named-routes/vite a los plugins de Vite de Nuxt (vite.plugins en nuxt.config), Vue, SvelteKit, Astro (vite.plugins en astro.config), React Router o TanStack Router. Genera cuando Vite arranca o compila y regenera cuando se añaden, eliminan o renombran archivos, usando el propio watcher de Vite.",
+        "El framework se detecta a partir de package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev o @remix-run/dev, plugin/CLI/Start de TanStack Router, unplugin-vue-router o vue-router). Define framework explícitamente en monorepos o cuando la detección sea ambigua. Ejecuta npx named-routes init para crear una configuración para el framework detectado.",
+        "Las convenciones se convierten a la sintaxis del runtime. Nuxt y Vue: index, [id], [[id]] opcional, [...slug] (acepta un resto vacío, así que se convierte en [[...slug]]), carpetas (grupo), anidamiento parent.vue + parent/, segmentos mixtos como v[major]-[minor]; Vue además trata los puntos como anidamiento (users.edit.vue) y admite parámetros repetibles [id]+. Nuxt ignora los archivos que empiezan por - y, con includeApi, escanea server/api (con prefijo /api) y server/routes, quitando los sufijos .get/.post.",
+        "SvelteKit: archivos +page.*, [id=matcher] (el matcher se descarta), [[lang]], [...rest] (cero o más segmentos), (grupo), escapes [x+2f] y endpoints +server con includeApi. Astro: src/pages con .astro/.md/.mdx/.html, archivos _privados ignorados, parámetros [...slug] y endpoints .ts/.js con includeApi.",
+        "Flat routes de React Router / Remix (app/routes): los puntos anidan, _index, $param, ($opcional), splat $ (llamado splat), layouts _sin-ruta, exclusión con nombre_, escapes [.] y módulos carpeta/route.tsx. TanStack Router (src/routes): archivos planos y en carpetas, index/route, $param, {-$opcional}, prefijo{$param}, splat $ (llamado _splat), _layouts, archivos -ignorados, (grupos) y archivos .lazy. Los segmentos estáticos opcionales como (beta) no pueden nombrarse; excluye el archivo o usa extraRoutes.",
+        "Las rutas declaradas dentro de componentes (definePageMeta({ path }) de Nuxt, routes.ts de React Router) no son visibles para un escáner de archivos: mapea esas URLs con extraRoutes o usa el manifiesto manual que se describe a continuación."
+      ],
+      "ja": [
+        "@triooo/next-named-routes/vite の namedRoutes() を、Nuxt（nuxt.config の vite.plugins）、Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router の Vite プラグインに追加します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更があると Vite 自身の watcher で再生成します。",
+        "フレームワークは package.json から検出されます（nuxt、next、@sveltejs/kit、astro、@react-router/dev または @remix-run/dev、TanStack Router のプラグイン/CLI/Start、unplugin-vue-router または vue-router）。モノレポや検出があいまいな場合は framework を明示してください。npx named-routes init を実行すると、検出したフレームワーク用の設定ファイルを作れます。",
+        "各規約はランタイムの構文に変換されます。Nuxt と Vue: index、[id]、オプションの [[id]]、[...slug]（空の残りにも一致するため [[...slug]] になる）、(group) フォルダー、parent.vue + parent/ のネスト、v[major]-[minor] のような混在セグメント。Vue ではドットもネストとして扱い（users.edit.vue）、繰り返しパラメーター [id]+ に対応します。Nuxt は - で始まるファイルを無視し、includeApi を有効にすると server/api（/api 付き）と server/routes を読み取り、.get/.post の接尾辞を取り除きます。",
+        "SvelteKit: +page.* ファイル、[id=matcher]（matcher は捨てる）、[[lang]]、[...rest]（0 個以上のセグメント）、(group)、[x+2f] エスケープ、includeApi 時の +server エンドポイント。Astro: .astro/.md/.mdx/.html を含む src/pages、_ で始まるファイルは無視、[...slug] の rest パラメーター、includeApi 時の .ts/.js エンドポイント。",
+        "React Router / Remix の flat routes（app/routes）: ドットでネスト、_index、$param、($optional)、splat の $（名前は splat）、_ で始まるパスなしレイアウト、name_ によるネスト解除、[.] エスケープ、フォルダー/route.tsx モジュール。TanStack Router（src/routes）: フラットなファイルとフォルダーの併用、index/route、$param、{-$optional}、prefix{$param}、splat の $（名前は _splat）、_layout、- で始まる無視ファイル、(group)、.lazy ファイル。(beta) のようなオプションの静的セグメントには名前を付けられないため、ファイルを除外するか extraRoutes を使ってください。",
+        "コンポーネントの中で宣言されたパス（Nuxt の definePageMeta({ path })、React Router の routes.ts）はファイルスキャナーからは見えません。その URL は extraRoutes で対応付けるか、次に説明する手書きのマニフェストを使ってください。"
+      ]
+    },
+    "code": "// vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)\nimport { defineConfig } from \"vite\";\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineConfig({ plugins: [namedRoutes()] });\n\n// nuxt.config.ts\nexport default defineNuxtConfig({\n  vite: { plugins: [namedRoutes({ output: \"app/utils/routes.ts\" })] },\n});\n\n// astro.config.mjs\nexport default defineConfig({ vite: { plugins: [namedRoutes()] } });\n\n// Any component:\nimport { route } from \"~/utils/routes\"; // or your output path\nroute(\"users.$id\", { id: 42 }); // /users/42",
+    "language": "ts"
+  },
+  {
+    "id": "nextjs",
+    "title": {
+      "en": "Next.js",
+      "pt": "Next.js",
+      "es": "Next.js",
+      "ja": "Next.js"
+    },
+    "paragraphs": {
+      "en": [
+        "Wrap next.config with withNamedRoutes from @triooo/next-named-routes/next. The module is generated before next dev and next build, kept current by a watcher inside next dev, and never written during next start, so read-only deployments are safe. The wrapper inherits pageExtensions, basePath, trailingSlash and the Pages Router i18n config.",
+        "**Conventions.** app/ and pages/ (or src/app and src/pages) are scanned together. App Router: page files only; route groups and parallel slots are omitted, interceptions resolve to their canonical URL, _private folders are ignored and %5F becomes an underscore. Pages Router: index is removed and _app, _document and _error are skipped. Route Handlers and pages/api are opt-in with includeApi. appDir and pagesDir point to custom folders (or false to skip one).",
+        "**Navigation.** The helper returns plain strings for next/link, useRouter from next/navigation or next/router, and redirect. Link and the router add basePath themselves; pass { basePath: true } only for plain anchors or fetch. With next-intl, pass your routing object as i18n: app/[locale]/about becomes about, and next-intl's Link receives the internal path.",
+        "**Verified.** Real Next 16 dev servers (App Router and Pages Router, with basePath and live page discovery) run in CI. Demos: examples/app-router and examples/pages-router. See also the App Router and Pages Router recipes."
+      ],
+      "pt": [
+        "Envolva o next.config com withNamedRoutes de @triooo/next-named-routes/next. O módulo é gerado antes de next dev e next build, mantido atualizado por um watcher dentro do next dev e nunca é escrito durante o next start, então deploys somente leitura são seguros. O wrapper herda pageExtensions, basePath, trailingSlash e o i18n do Pages Router.",
+        "**Convenções.** app/ e pages/ (ou src/app e src/pages) são lidos juntos. App Router: apenas arquivos page; grupos de rotas e slots paralelos são omitidos, interceptações resolvem para a URL canônica, pastas _privadas são ignoradas e %5F vira underscore. Pages Router: index é removido e _app, _document e _error são ignorados. Route Handlers e pages/api são opcionais via includeApi. appDir e pagesDir apontam para pastas personalizadas (ou false para ignorar uma).",
+        "**Navegação.** O helper retorna strings para next/link, useRouter de next/navigation ou next/router e redirect. Link e router adicionam o basePath sozinhos; passe { basePath: true } apenas para âncoras simples ou fetch. Com next-intl, passe o objeto routing como i18n: app/[locale]/about vira about e o Link do next-intl recebe o caminho interno.",
+        "**Verificado.** Servidores reais do Next 16 (App Router e Pages Router, com basePath e descoberta de páginas ao vivo) rodam no CI. Demos: examples/app-router e examples/pages-router. Veja também as receitas de App Router e Pages Router."
+      ],
+      "es": [
+        "Envuelve next.config con withNamedRoutes de @triooo/next-named-routes/next. El módulo se genera antes de next dev y next build, se mantiene al día con un watcher dentro de next dev y nunca se escribe durante next start, así que los despliegues de solo lectura son seguros. El wrapper hereda pageExtensions, basePath, trailingSlash y la configuración i18n del Pages Router.",
+        "**Convenciones.** app/ y pages/ (o src/app y src/pages) se escanean juntos. App Router: solo archivos page; los grupos de rutas y los slots paralelos se omiten, las intercepciones se resuelven a su URL canónica, las carpetas _privadas se ignoran y %5F se convierte en guion bajo. Pages Router: index se elimina y _app, _document y _error se omiten. Los Route Handlers y pages/api son opcionales con includeApi. appDir y pagesDir apuntan a carpetas personalizadas (o false para omitir una).",
+        "**Navegación.** El helper devuelve strings simples para next/link, useRouter de next/navigation o next/router y redirect. Link y el router añaden el basePath por su cuenta; pasa { basePath: true } solo para enlaces simples o fetch. Con next-intl, pasa tu objeto routing como i18n: app/[locale]/about se convierte en about y el Link de next-intl recibe la ruta interna.",
+        "**Verificado.** Servidores de desarrollo reales de Next 16 (App Router y Pages Router, con basePath y descubrimiento de páginas en vivo) se ejecutan en CI. Demos: examples/app-router y examples/pages-router. Consulta también las recetas del App Router y del Pages Router."
+      ],
+      "ja": [
+        "next.config を @triooo/next-named-routes/next の withNamedRoutes でラップします。モジュールは next dev と next build の前に生成され、next dev の中では watcher が最新に保ち、next start では一切書き込まないため、読み取り専用のデプロイでも安全です。ラッパーは pageExtensions、basePath、trailingSlash、Pages Router の i18n 設定を引き継ぎます。",
+        "**規約。** app/ と pages/（または src/app と src/pages）を合わせて読み取ります。App Router: page ファイルのみ。ルートグループと並列スロットは省かれ、インターセプトは正規の URL に解決され、_ で始まるプライベートフォルダーは無視され、%5F はアンダースコアになります。Pages Router: index は取り除かれ、_app、_document、_error は対象外です。Route Handlers と pages/api は includeApi で有効にできます。appDir と pagesDir で独自のフォルダーを指定できます（片方を false にすると読み取りません）。",
+        "**ナビゲーション。** ヘルパーは next/link、next/navigation または next/router の useRouter、redirect で使える普通の文字列を返します。Link とルーターは basePath を自分で付けるので、{ basePath: true } は通常のリンクや fetch のときだけ指定してください。next-intl では routing オブジェクトを i18n として渡すと、app/[locale]/about は about になり、next-intl の Link には内部パスが渡ります。",
+        "**検証。** CI では実際の Next 16 開発サーバー（App Router と Pages Router、basePath とページのライブ検出を含む）を動かしています。デモ: examples/app-router と examples/pages-router。App Router と Pages Router のレシピもあわせて参照してください。"
+      ]
+    },
+    "code": "import { withNamedRoutes } from \"@triooo/next-named-routes/next\";\nexport default withNamedRoutes({ reactStrictMode: true });\n\n// app/users/[user]/page.tsx → users.$user\nimport Link from \"next/link\";\nimport { route } from \"@/routes.generated\";\n<Link href={route(\"users.$user\", { user: \"ana\" })}>Ana</Link>;",
+    "language": "tsx"
+  },
+  {
+    "id": "nuxt",
+    "title": {
+      "en": "Nuxt",
+      "pt": "Nuxt",
+      "es": "Nuxt",
+      "ja": "Nuxt"
+    },
+    "paragraphs": {
+      "en": [
+        "Add namedRoutes() to vite.plugins in nuxt.config. Keep the output inside your source directory and import it with the ~ alias: with Nuxt 4 (srcDir app/) use output app/routes.generated.ts and import ~/routes.generated. The plugin regenerates as you add, move or delete pages during nuxt dev.",
+        "**Conventions.** app/pages or pages: index.vue, [id], [[id]] optional, [...slug] (also matches an empty remainder, so it becomes [[...slug]]), (group) folders, mixed segments such as v[major]-[minor], and parent.vue + parent/ nesting merged into one route. Files starting with - are ignored. With includeApi, server/api (prefixed /api) and server/routes are scanned and .get/.post suffixes are removed.",
+        "**Navigation and i18n.** Use the URL with NuxtLink :to, navigateTo or useRouter().push. With @nuxtjs/i18n, configure the same locales here: strategy prefix_except_default maps to localePrefix as-needed, prefix (or prefix_and_default) to always, and no_prefix to never. Then route(name, params, { locale }) returns the localized URL; without a locale you get the internal path for localePath(). Translated paths from defineI18nRoute must be repeated in i18n.pathnames.",
+        "**Limits and verification.** Paths changed with definePageMeta({ path }) are not visible to the scanner; add them with extraRoutes. Names follow this package's dotted style (users.$id), not Nuxt's own route names (users-id). Verified by convention tests and by examples/nuxt, which builds and runs with Nuxt 4."
+      ],
+      "pt": [
+        "Adicione namedRoutes() em vite.plugins no nuxt.config. Mantenha a saída dentro do diretório de código e importe com o alias ~: no Nuxt 4 (srcDir app/) use output app/routes.generated.ts e importe ~/routes.generated. O plugin regenera conforme você cria, move ou apaga páginas durante o nuxt dev.",
+        "**Convenções.** app/pages ou pages: index.vue, [id], [[id]] opcional, [...slug] (também aceita resto vazio, então vira [[...slug]]), pastas (grupo), segmentos mistos como v[major]-[minor] e aninhamento parent.vue + parent/ mesclado em uma rota. Arquivos iniciados por - são ignorados. Com includeApi, server/api (com prefixo /api) e server/routes são lidos e os sufixos .get/.post são removidos.",
+        "**Navegação e i18n.** Use a URL com NuxtLink :to, navigateTo ou useRouter().push. Com @nuxtjs/i18n, configure os mesmos idiomas aqui: a estratégia prefix_except_default corresponde a localePrefix as-needed, prefix (ou prefix_and_default) a always e no_prefix a never. Assim route(nome, params, { locale }) retorna a URL localizada; sem locale você recebe o caminho interno para o localePath(). Caminhos traduzidos com defineI18nRoute precisam ser repetidos em i18n.pathnames.",
+        "**Limites e verificação.** Caminhos alterados com definePageMeta({ path }) não são vistos pelo scanner; adicione-os com extraRoutes. Os nomes seguem o estilo pontuado deste pacote (users.$id), não os nomes de rota do próprio Nuxt (users-id). Verificado por testes de convenção e pelo examples/nuxt, que compila e roda com Nuxt 4."
+      ],
+      "es": [
+        "Añade namedRoutes() a vite.plugins en nuxt.config. Mantén la salida dentro de tu directorio de código e impórtala con el alias ~: con Nuxt 4 (srcDir app/) usa output app/routes.generated.ts e importa ~/routes.generated. El plugin regenera mientras añades, mueves o eliminas páginas durante nuxt dev.",
+        "**Convenciones.** app/pages o pages: index.vue, [id], [[id]] opcional, [...slug] (también acepta un resto vacío, así que se convierte en [[...slug]]), carpetas (grupo), segmentos mixtos como v[major]-[minor] y anidamiento parent.vue + parent/ fusionado en una sola ruta. Los archivos que empiezan por - se ignoran. Con includeApi se escanean server/api (con prefijo /api) y server/routes y se quitan los sufijos .get/.post.",
+        "**Navegación e i18n.** Usa la URL con NuxtLink :to, navigateTo o useRouter().push. Con @nuxtjs/i18n, configura aquí los mismos idiomas: la estrategia prefix_except_default corresponde a localePrefix as-needed, prefix (o prefix_and_default) a always y no_prefix a never. Así route(nombre, params, { locale }) devuelve la URL localizada; sin locale obtienes la ruta interna para localePath(). Las rutas traducidas con defineI18nRoute deben repetirse en i18n.pathnames.",
+        "**Límites y verificación.** Las rutas cambiadas con definePageMeta({ path }) no son visibles para el escáner; añádelas con extraRoutes. Los nombres siguen el estilo con puntos de este paquete (users.$id), no los nombres de ruta propios de Nuxt (users-id). Verificado con pruebas de convención y con examples/nuxt, que compila y se ejecuta con Nuxt 4."
+      ],
+      "ja": [
+        "nuxt.config の vite.plugins に namedRoutes() を追加します。出力はソースディレクトリの中に置き、~ エイリアスでインポートしてください。Nuxt 4（srcDir が app/）なら output を app/routes.generated.ts にして ~/routes.generated をインポートします。nuxt dev 中にページを追加・移動・削除すると、プラグインが再生成します。",
+        "**規約。** app/pages または pages: index.vue、[id]、オプションの [[id]]、[...slug]（空の残りにも一致するため [[...slug]] になる）、(group) フォルダー、v[major]-[minor] のような混在セグメント、ひとつのルートにまとめられる parent.vue + parent/ のネスト。- で始まるファイルは無視されます。includeApi を有効にすると、server/api（/api 付き）と server/routes を読み取り、.get/.post の接尾辞を取り除きます。",
+        "**ナビゲーションと i18n。** URL は NuxtLink の :to、navigateTo、useRouter().push で使います。@nuxtjs/i18n を使う場合は、ここでも同じ言語を設定してください。戦略 prefix_except_default は localePrefix の as-needed、prefix（または prefix_and_default）は always、no_prefix は never に対応します。すると route(name, params, { locale }) がローカライズされた URL を返し、locale を省くと localePath() に渡す内部パスが得られます。defineI18nRoute で翻訳したパスは i18n.pathnames にも書く必要があります。",
+        "**制限と検証。** definePageMeta({ path }) で変更したパスはスキャナーからは見えないので、extraRoutes で追加してください。名前はこのパッケージのドット区切りの形式（users.$id）で、Nuxt 自身のルート名（users-id）とは異なります。規約テストと、Nuxt 4 でビルド・実行できる examples/nuxt で検証しています。"
+      ]
+    },
+    "code": "// nuxt.config.ts\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineNuxtConfig({\n  vite: { plugins: [namedRoutes({ output: \"app/routes.generated.ts\" })] },\n});\n\n<!-- app/pages/users/[id].vue → users.$id -->\n<script setup lang=\"ts\">\nimport { route } from \"~/routes.generated\";\n</script>\n<template>\n  <NuxtLink :to=\"route('users.$id', { id: 42 })\">User 42</NuxtLink>\n</template>",
+    "language": "vue"
+  },
+  {
+    "id": "vue",
+    "title": {
+      "en": "Vue Router",
+      "pt": "Vue Router",
+      "es": "Vue Router",
+      "ja": "Vue Router"
+    },
+    "paragraphs": {
+      "en": [
+        "For Vue apps with file-based routing (unplugin-vue-router conventions), add namedRoutes() before VueRouter() and vue() in vite.config. The framework is detected from unplugin-vue-router or vue-router; src/pages is scanned unless routesDir says otherwise. Apps that declare a routes array by hand should use a manual manifest instead.",
+        "**Conventions.** index.vue and (name).vue are index routes; dots nest (users.edit.vue is /users/edit); [id] and [[id]]; [id]+ is a one-or-more repeatable param ([...id]) and [[id]]+ zero-or-more ([[...id]]); [...path] also matches an empty remainder ([[...path]]); (group) folders are omitted; parent.vue + parent/ nesting merges; mixed segments like v[major]-[minor] work.",
+        "**Navigation.** Pass the URL to RouterLink :to or router.push. Vue Router resolves the string like any path, so the package does not need access to the router instance.",
+        "**Verified.** A real Vite 7 dev server with these conventions runs in CI, and examples/vue builds and runs with unplugin-vue-router."
+      ],
+      "pt": [
+        "Para apps Vue com roteamento por arquivos (convenções do unplugin-vue-router), adicione namedRoutes() antes de VueRouter() e vue() no vite.config. O framework é detectado por unplugin-vue-router ou vue-router; src/pages é lido, a menos que routesDir indique outra pasta. Apps que declaram um array de rotas manualmente devem usar um manifesto manual.",
+        "**Convenções.** index.vue e (nome).vue são rotas index; pontos aninham (users.edit.vue é /users/edit); [id] e [[id]]; [id]+ é parâmetro repetível de um ou mais ([...id]) e [[id]]+ de zero ou mais ([[...id]]); [...path] também aceita resto vazio ([[...path]]); pastas (grupo) são omitidas; aninhamento parent.vue + parent/ é mesclado; segmentos mistos como v[major]-[minor] funcionam.",
+        "**Navegação.** Passe a URL para RouterLink :to ou router.push. O Vue Router resolve a string como qualquer caminho, então o pacote não precisa acessar a instância do router.",
+        "**Verificado.** Um servidor real do Vite 7 com essas convenções roda no CI, e o examples/vue compila e roda com unplugin-vue-router."
+      ],
+      "es": [
+        "Para apps Vue con enrutamiento por archivos (convenciones de unplugin-vue-router), añade namedRoutes() antes de VueRouter() y vue() en vite.config. El framework se detecta por unplugin-vue-router o vue-router; se escanea src/pages salvo que routesDir indique otra carpeta. Las apps que declaran un array de rutas a mano deben usar un manifiesto manual.",
+        "**Convenciones.** index.vue y (nombre).vue son rutas index; los puntos anidan (users.edit.vue es /users/edit); [id] y [[id]]; [id]+ es un parámetro repetible de uno o más ([...id]) y [[id]]+ de cero o más ([[...id]]); [...path] también acepta un resto vacío ([[...path]]); las carpetas (grupo) se omiten; el anidamiento parent.vue + parent/ se fusiona; los segmentos mixtos como v[major]-[minor] funcionan.",
+        "**Navegación.** Pasa la URL a RouterLink :to o router.push. Vue Router resuelve el string como cualquier ruta, así que el paquete no necesita acceso a la instancia del router.",
+        "**Verificado.** Un servidor real de Vite 7 con estas convenciones se ejecuta en CI, y examples/vue compila y se ejecuta con unplugin-vue-router."
+      ],
+      "ja": [
+        "ファイルベースルーティング（unplugin-vue-router の規約）を使う Vue アプリでは、vite.config で VueRouter() と vue() の前に namedRoutes() を追加します。フレームワークは unplugin-vue-router または vue-router から検出され、routesDir を指定しない限り src/pages を読み取ります。ルートの配列を手書きしているアプリは、手書きのマニフェストを使ってください。",
+        "**規約。** index.vue と (name).vue はインデックスルート。ドットでネスト（users.edit.vue は /users/edit）。[id] と [[id]]。[id]+ は 1 個以上の繰り返しパラメーター（[...id]）、[[id]]+ は 0 個以上（[[...id]]）。[...path] は空の残りにも一致（[[...path]]）。(group) フォルダーは省かれ、parent.vue + parent/ のネストはまとめられ、v[major]-[minor] のような混在セグメントも使えます。",
+        "**ナビゲーション。** URL を RouterLink の :to や router.push に渡します。Vue Router は文字列を普通のパスとして解決するので、パッケージがルーターのインスタンスにアクセスする必要はありません。",
+        "**検証。** これらの規約を使った実際の Vite 7 開発サーバーを CI で動かしており、examples/vue は unplugin-vue-router でビルド・実行できます。"
+      ]
+    },
+    "code": "// vite.config.ts\nimport vue from \"@vitejs/plugin-vue\";\nimport VueRouter from \"unplugin-vue-router/vite\";\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineConfig({ plugins: [namedRoutes(), VueRouter(), vue()] });\n\n// src/pages/users/[id].vue → users.$id\n<RouterLink :to=\"route('users.$id', { id: 42 })\">User 42</RouterLink>",
+    "language": "ts"
+  },
+  {
+    "id": "sveltekit",
+    "title": {
+      "en": "SvelteKit",
+      "pt": "SvelteKit",
+      "es": "SvelteKit",
+      "ja": "SvelteKit"
+    },
+    "paragraphs": {
+      "en": [
+        "Add namedRoutes() before sveltekit() in vite.config. Writing the module to src/lib lets you import it as $lib/routes.generated from any component, load function or endpoint.",
+        "**Conventions.** src/routes with +page.svelte, +page.ts or +page.server.ts (they merge into one route); (group) folders are omitted; [id=matcher] keeps the parameter and drops the matcher; [[lang]] is optional; [...rest] matches zero or more segments ([[...rest]]) and may sit before static segments; +page@ layout resets are normal pages; [x+2f] and [u+0041] escapes are decoded. +server endpoints are opt-in with includeApi.",
+        "**Navigation.** Use <a href={route(...)}>, goto(route(...)) or redirect(303, route(...)). SvelteKit does not add paths.base to plain anchors, so set defaults.basePath to the same value and pass { basePath: true } when you deploy under a base path.",
+        "**Verified.** Convention tests plus examples/sveltekit, which builds and runs with SvelteKit 2 and Svelte 5."
+      ],
+      "pt": [
+        "Adicione namedRoutes() antes de sveltekit() no vite.config. Gerar o módulo em src/lib permite importá-lo como $lib/routes.generated em qualquer componente, função load ou endpoint.",
+        "**Convenções.** src/routes com +page.svelte, +page.ts ou +page.server.ts (eles se mesclam em uma rota); pastas (grupo) são omitidas; [id=matcher] mantém o parâmetro e descarta o matcher; [[lang]] é opcional; [...rest] aceita zero ou mais segmentos ([[...rest]]) e pode vir antes de segmentos estáticos; resets de layout +page@ são páginas normais; escapes [x+2f] e [u+0041] são decodificados. Endpoints +server são opcionais via includeApi.",
+        "**Navegação.** Use <a href={route(...)}>, goto(route(...)) ou redirect(303, route(...)). O SvelteKit não adiciona paths.base em âncoras simples, então defina defaults.basePath com o mesmo valor e passe { basePath: true } quando publicar sob um caminho base.",
+        "**Verificado.** Testes de convenção e o examples/sveltekit, que compila e roda com SvelteKit 2 e Svelte 5."
+      ],
+      "es": [
+        "Añade namedRoutes() antes de sveltekit() en vite.config. Escribir el módulo en src/lib te permite importarlo como $lib/routes.generated desde cualquier componente, función load o endpoint.",
+        "**Convenciones.** src/routes con +page.svelte, +page.ts o +page.server.ts (se fusionan en una ruta); las carpetas (grupo) se omiten; [id=matcher] conserva el parámetro y descarta el matcher; [[lang]] es opcional; [...rest] acepta cero o más segmentos ([[...rest]]) y puede ir antes de segmentos estáticos; los reinicios de layout +page@ son páginas normales; los escapes [x+2f] y [u+0041] se decodifican. Los endpoints +server son opcionales con includeApi.",
+        "**Navegación.** Usa <a href={route(...)}>, goto(route(...)) o redirect(303, route(...)). SvelteKit no añade paths.base a los enlaces simples, así que define defaults.basePath con el mismo valor y pasa { basePath: true } cuando despliegues bajo una ruta base.",
+        "**Verificado.** Pruebas de convención y examples/sveltekit, que compila y se ejecuta con SvelteKit 2 y Svelte 5."
+      ],
+      "ja": [
+        "vite.config で sveltekit() の前に namedRoutes() を追加します。モジュールを src/lib に書き出すと、どのコンポーネント、load 関数、エンドポイントからでも $lib/routes.generated としてインポートできます。",
+        "**規約。** +page.svelte、+page.ts、+page.server.ts を含む src/routes（ひとつのルートにまとめられる）。(group) フォルダーは省かれ、[id=matcher] はパラメーターを残して matcher を捨て、[[lang]] はオプション、[...rest] は 0 個以上のセグメントに一致し（[[...rest]]）、静的セグメントの前にも置けます。+page@ のレイアウトリセットも通常のページとして扱い、[x+2f] や [u+0041] のエスケープはデコードされます。+server エンドポイントは includeApi で有効にできます。",
+        "**ナビゲーション。** <a href={route(...)}>、goto(route(...))、redirect(303, route(...)) を使います。SvelteKit は通常のリンクに paths.base を付けないので、ベースパスの下にデプロイする場合は defaults.basePath に同じ値を設定し、{ basePath: true } を渡してください。",
+        "**検証。** 規約テストと、SvelteKit 2 と Svelte 5 でビルド・実行できる examples/sveltekit で検証しています。"
+      ]
+    },
+    "code": "// vite.config.ts\nimport { sveltekit } from \"@sveltejs/kit/vite\";\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineConfig({\n  plugins: [namedRoutes({ output: \"src/lib/routes.generated.ts\" }), sveltekit()],\n});\n\n<!-- src/routes/blog/[slug]/+page.svelte → blog.$slug -->\n<script lang=\"ts\">\n  import { route } from \"$lib/routes.generated\";\n</script>\n<a href={route(\"blog.$slug\", { slug: \"hello\" })}>Hello</a>",
+    "language": "svelte"
+  },
+  {
+    "id": "astro",
+    "title": {
+      "en": "Astro",
+      "pt": "Astro",
+      "es": "Astro",
+      "ja": "Astro"
+    },
+    "paragraphs": {
+      "en": [
+        "Add namedRoutes() to vite.plugins in astro.config. The module defaults to src/routes.generated.ts and can be imported from .astro frontmatter, framework islands and endpoints.",
+        "**Conventions.** src/pages with .astro, .md, .mdx, .markdown and .html pages; files and folders starting with _ are private; [id]; [...slug] matches zero or more segments ([[...slug]]); mixed segments such as [lang]-[version]. .ts/.js endpoints are opt-in with includeApi and keep their inner extension (api/data.json.ts is /api/data.json).",
+        "**i18n.** Astro's physical locale folders (src/pages/pt/about.astro) merge into the same named route as src/pages/about.astro when the locale is listed in i18n.locales. prefixDefaultLocale: false matches localePrefix as-needed and true matches always.",
+        "**Limits and verification.** Static builds still need getStaticPaths in dynamic pages: the package builds URLs, it does not enumerate parameters. Verified by convention tests and examples/astro, which builds and runs with Astro 5."
+      ],
+      "pt": [
+        "Adicione namedRoutes() em vite.plugins no astro.config. O módulo é gerado por padrão em src/routes.generated.ts e pode ser importado no frontmatter .astro, em ilhas de framework e em endpoints.",
+        "**Convenções.** src/pages com páginas .astro, .md, .mdx, .markdown e .html; arquivos e pastas iniciados por _ são privados; [id]; [...slug] aceita zero ou mais segmentos ([[...slug]]); segmentos mistos como [lang]-[version]. Endpoints .ts/.js são opcionais via includeApi e mantêm a extensão interna (api/data.json.ts é /api/data.json).",
+        "**i18n.** As pastas físicas de idioma do Astro (src/pages/pt/about.astro) se mesclam na mesma rota nomeada que src/pages/about.astro quando o idioma está em i18n.locales. prefixDefaultLocale: false corresponde a localePrefix as-needed e true a always.",
+        "**Limites e verificação.** Builds estáticos continuam precisando de getStaticPaths nas páginas dinâmicas: o pacote constrói URLs, não enumera parâmetros. Verificado por testes de convenção e pelo examples/astro, que compila e roda com Astro 5."
+      ],
+      "es": [
+        "Añade namedRoutes() a vite.plugins en astro.config. El módulo se genera por defecto en src/routes.generated.ts y puede importarse en el frontmatter .astro, en islas de framework y en endpoints.",
+        "**Convenciones.** src/pages con páginas .astro, .md, .mdx, .markdown y .html; los archivos y carpetas que empiezan por _ son privados; [id]; [...slug] acepta cero o más segmentos ([[...slug]]); segmentos mixtos como [lang]-[version]. Los endpoints .ts/.js son opcionales con includeApi y conservan su extensión interna (api/data.json.ts es /api/data.json).",
+        "**i18n.** Las carpetas físicas de idioma de Astro (src/pages/pt/about.astro) se fusionan en la misma ruta con nombre que src/pages/about.astro cuando el idioma está en i18n.locales. prefixDefaultLocale: false corresponde a localePrefix as-needed y true a always.",
+        "**Límites y verificación.** Las compilaciones estáticas siguen necesitando getStaticPaths en las páginas dinámicas: el paquete construye URLs, no enumera parámetros. Verificado con pruebas de convención y con examples/astro, que compila y se ejecuta con Astro 5."
+      ],
+      "ja": [
+        "astro.config の vite.plugins に namedRoutes() を追加します。モジュールはデフォルトで src/routes.generated.ts に生成され、.astro のフロントマター、フレームワークのアイランド、エンドポイントからインポートできます。",
+        "**規約。** .astro、.md、.mdx、.markdown、.html のページを含む src/pages。_ で始まるファイルやフォルダーはプライベート。[id]。[...slug] は 0 個以上のセグメントに一致（[[...slug]]）。[lang]-[version] のような混在セグメント。.ts/.js のエンドポイントは includeApi で有効になり、内側の拡張子を保ちます（api/data.json.ts は /api/data.json）。",
+        "**i18n。** Astro の物理的な言語フォルダー（src/pages/pt/about.astro）は、その言語が i18n.locales にあれば src/pages/about.astro と同じ名前付きルートにまとめられます。prefixDefaultLocale: false は localePrefix の as-needed、true は always に対応します。",
+        "**制限と検証。** 静的ビルドでは、動的ページに引き続き getStaticPaths が必要です。このパッケージは URL を作るだけで、パラメーターを列挙はしません。規約テストと、Astro 5 でビルド・実行できる examples/astro で検証しています。"
+      ]
+    },
+    "code": "// astro.config.mjs\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineConfig({ vite: { plugins: [namedRoutes()] } });\n\n---\n// src/pages/docs/[...slug].astro → docs.$slug\nimport { route } from \"../../routes.generated\";\n---\n<a href={route(\"docs.$slug\", { slug: [\"guide\", \"install\"] })}>Install guide</a>",
+    "language": "astro"
+  },
+  {
+    "id": "react-router",
+    "title": {
+      "en": "React Router / Remix",
+      "pt": "React Router / Remix",
+      "es": "React Router / Remix",
+      "ja": "React Router / Remix"
+    },
+    "paragraphs": {
+      "en": [
+        "For React Router 7 framework mode (and Remix v2) with flat routes, add namedRoutes() before reactRouter() in vite.config and keep app/routes.ts as flatRoutes() from @react-router/fs-routes. A good output is app/routes.generated.ts, outside app/routes.",
+        "**Conventions.** Dots nest (concerts.$city.tsx is /concerts/[city]); _index is the index; $param; ($lang) is optional ([[lang]]); a lone $ is a splat named splat ([[...splat]]); _auth leading underscores are pathless layouts; concerts_ opts out of nesting; [.] escapes keep characters; a folder with route.tsx is one route and deeper folders are ignored. A layout and its _index share a URL and merge.",
+        "**Navigation.** Use <Link to={route(...)}>, useNavigate() or redirect() in loaders and actions.",
+        "**Limits and verification.** Routes declared in code inside app/routes.ts (route(), index(), layout()) are not files: use a manual manifest or extraRoutes. Optional static segments such as (beta) cannot be named; the generator stops with a clear error so you can exclude the file. Verified by convention tests and examples/react-router, which builds and runs with React Router 7."
+      ],
+      "pt": [
+        "Para o React Router 7 em modo framework (e Remix v2) com flat routes, adicione namedRoutes() antes de reactRouter() no vite.config e mantenha o app/routes.ts como flatRoutes() de @react-router/fs-routes. Uma boa saída é app/routes.generated.ts, fora de app/routes.",
+        "**Convenções.** Pontos aninham (concerts.$city.tsx é /concerts/[city]); _index é o index; $param; ($lang) é opcional ([[lang]]); um $ isolado é um splat chamado splat ([[...splat]]); prefixos _auth são layouts sem caminho; concerts_ sai do aninhamento; escapes [.] mantêm caracteres; uma pasta com route.tsx é uma rota e pastas mais profundas são ignoradas. Um layout e seu _index compartilham a URL e se mesclam.",
+        "**Navegação.** Use <Link to={route(...)}>, useNavigate() ou redirect() em loaders e actions.",
+        "**Limites e verificação.** Rotas declaradas em código no app/routes.ts (route(), index(), layout()) não são arquivos: use um manifesto manual ou extraRoutes. Segmentos estáticos opcionais como (beta) não podem ser nomeados; o gerador para com um erro claro para que você exclua o arquivo. Verificado por testes de convenção e pelo examples/react-router, que compila e roda com React Router 7."
+      ],
+      "es": [
+        "Para React Router 7 en modo framework (y Remix v2) con flat routes, añade namedRoutes() antes de reactRouter() en vite.config y mantén app/routes.ts como flatRoutes() de @react-router/fs-routes. Una buena salida es app/routes.generated.ts, fuera de app/routes.",
+        "**Convenciones.** Los puntos anidan (concerts.$city.tsx es /concerts/[city]); _index es el índice; $param; ($lang) es opcional ([[lang]]); un $ solo es un splat llamado splat ([[...splat]]); los prefijos _auth son layouts sin ruta; concerts_ excluye el anidamiento; los escapes [.] conservan caracteres; una carpeta con route.tsx es una ruta y las carpetas más profundas se ignoran. Un layout y su _index comparten URL y se fusionan.",
+        "**Navegación.** Usa <Link to={route(...)}>, useNavigate() o redirect() en loaders y actions.",
+        "**Límites y verificación.** Las rutas declaradas en código dentro de app/routes.ts (route(), index(), layout()) no son archivos: usa un manifiesto manual o extraRoutes. Los segmentos estáticos opcionales como (beta) no pueden nombrarse; el generador se detiene con un error claro para que excluyas el archivo. Verificado con pruebas de convención y con examples/react-router, que compila y se ejecuta con React Router 7."
+      ],
+      "ja": [
+        "flat routes を使う React Router 7 のフレームワークモード（と Remix v2）では、vite.config で reactRouter() の前に namedRoutes() を追加し、app/routes.ts は @react-router/fs-routes の flatRoutes() のままにします。出力先は app/routes の外の app/routes.generated.ts がおすすめです。",
+        "**規約。** ドットでネスト（concerts.$city.tsx は /concerts/[city]）。_index はインデックス。$param。($lang) はオプション（[[lang]]）。単独の $ は splat という名前の splat（[[...splat]]）。_auth のように _ で始まるものはパスなしレイアウト。concerts_ はネストを解除。[.] エスケープは文字をそのまま残す。route.tsx を含むフォルダーはひとつのルートで、それより深いフォルダーは無視されます。レイアウトとその _index は同じ URL を共有し、まとめられます。",
+        "**ナビゲーション。** <Link to={route(...)}>、useNavigate()、loader や action の redirect() を使います。",
+        "**制限と検証。** app/routes.ts の中でコードとして宣言したルート（route()、index()、layout()）はファイルではないため、手書きのマニフェストか extraRoutes を使ってください。(beta) のようなオプションの静的セグメントには名前を付けられず、ジェネレーターはファイルを除外できるよう明確なエラーで停止します。規約テストと、React Router 7 でビルド・実行できる examples/react-router で検証しています。"
+      ]
+    },
+    "code": "// vite.config.ts\nimport { reactRouter } from \"@react-router/dev/vite\";\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineConfig({\n  plugins: [namedRoutes({ output: \"app/routes.generated.ts\" }), reactRouter()],\n});\n\n// app/routes/concerts.$city.tsx → concerts.$city\nimport { Link } from \"react-router\";\nimport { route } from \"../routes.generated\";\n<Link to={route(\"concerts.$city\", { city: \"lisbon\" })}>Lisbon</Link>;",
+    "language": "tsx"
+  },
+  {
+    "id": "tanstack-router",
+    "title": {
+      "en": "TanStack Router",
+      "pt": "TanStack Router",
+      "es": "TanStack Router",
+      "ja": "TanStack Router"
+    },
+    "paragraphs": {
+      "en": [
+        "Add namedRoutes() next to tanstackRouter() from @tanstack/router-plugin in vite.config. The plugin scans src/routes (or app/routes) and writes src/routes.generated.ts by default, outside the routes folder, so it never becomes a route.",
+        "**Conventions.** __root is skipped; index and route.tsx are the folder's route; flat (posts.$postId.tsx) and directory files mix; $param; {-$locale} is optional ([[locale]]); prefix{$id}suffix becomes a mixed segment; a lone $ is a splat named _splat ([[..._splat]]); _layout is pathless; posts_ opts out of nesting; -prefixed files and (group) folders are ignored; .lazy files belong to the same route.",
+        "**When to use it.** TanStack Router already types its own <Link to> by route id. Use route() where a plain string is needed: <a href>, redirects to other apps, emails, sitemaps, analytics, locale-prefixed URLs and names shared with other frameworks in a monorepo.",
+        "**Verified.** Convention tests plus examples/tanstack-router, which builds and runs with the TanStack router plugin."
+      ],
+      "pt": [
+        "Adicione namedRoutes() junto do tanstackRouter() de @tanstack/router-plugin no vite.config. O plugin lê src/routes (ou app/routes) e escreve src/routes.generated.ts por padrão, fora da pasta de rotas, então ele nunca vira uma rota.",
+        "**Convenções.** __root é ignorado; index e route.tsx são a rota da pasta; arquivos planos (posts.$postId.tsx) e em pastas se misturam; $param; {-$locale} é opcional ([[locale]]); prefixo{$id}sufixo vira um segmento misto; um $ isolado é um splat chamado _splat ([[..._splat]]); _layout não tem caminho; posts_ sai do aninhamento; arquivos com prefixo - e pastas (grupo) são ignorados; arquivos .lazy pertencem à mesma rota.",
+        "**Quando usar.** O TanStack Router já tipa o próprio <Link to> pelo id da rota. Use route() onde é preciso uma string simples: <a href>, redirects para outros apps, e-mails, sitemaps, analytics, URLs com prefixo de idioma e nomes compartilhados com outros frameworks em um monorepo.",
+        "**Verificado.** Testes de convenção e o examples/tanstack-router, que compila e roda com o plugin de router do TanStack."
+      ],
+      "es": [
+        "Añade namedRoutes() junto a tanstackRouter() de @tanstack/router-plugin en vite.config. El plugin escanea src/routes (o app/routes) y escribe src/routes.generated.ts por defecto, fuera de la carpeta de rutas, así que nunca se convierte en una ruta.",
+        "**Convenciones.** __root se omite; index y route.tsx son la ruta de la carpeta; los archivos planos (posts.$postId.tsx) y en carpetas se combinan; $param; {-$locale} es opcional ([[locale]]); prefijo{$id}sufijo se convierte en un segmento mixto; un $ solo es un splat llamado _splat ([[..._splat]]); _layout no tiene ruta; posts_ excluye el anidamiento; los archivos con prefijo - y las carpetas (grupo) se ignoran; los archivos .lazy pertenecen a la misma ruta.",
+        "**Cuándo usarlo.** TanStack Router ya tipa su propio <Link to> por id de ruta. Usa route() donde haga falta un string simple: <a href>, redirects a otras apps, emails, sitemaps, analítica, URLs con prefijo de idioma y nombres compartidos con otros frameworks en un monorepo.",
+        "**Verificado.** Pruebas de convención y examples/tanstack-router, que compila y se ejecuta con el plugin de router de TanStack."
+      ],
+      "ja": [
+        "vite.config で @tanstack/router-plugin の tanstackRouter() と並べて namedRoutes() を追加します。プラグインは src/routes（または app/routes）を読み取り、デフォルトではルートフォルダーの外にある src/routes.generated.ts に書き出すので、生成ファイルがルートになることはありません。",
+        "**規約。** __root はスキップ。index と route.tsx はそのフォルダーのルート。フラットなファイル（posts.$postId.tsx）とフォルダーを併用できる。$param。{-$locale} はオプション（[[locale]]）。prefix{$id}suffix は混在セグメントになる。単独の $ は _splat という名前の splat（[[..._splat]]）。_layout はパスなし。posts_ はネストを解除。- で始まるファイルと (group) フォルダーは無視され、.lazy ファイルは同じルートに属します。",
+        "**使いどころ。** TanStack Router は自前の <Link to> をルート ID で型付けしています。route() は普通の文字列が必要な場面で使ってください。<a href>、ほかのアプリへのリダイレクト、メール、サイトマップ、アナリティクス、言語プレフィックス付きの URL、モノレポでほかのフレームワークと共有する名前などです。",
+        "**検証。** 規約テストと、TanStack の router プラグインでビルド・実行できる examples/tanstack-router で検証しています。"
+      ]
+    },
+    "code": "// vite.config.ts\nimport { tanstackRouter } from \"@tanstack/router-plugin/vite\";\nimport { namedRoutes } from \"@triooo/next-named-routes/vite\";\nexport default defineConfig({\n  plugins: [namedRoutes(), tanstackRouter({ target: \"react\" }), react()],\n});\n\n// src/routes/posts/$postId.tsx → posts.$postId\nimport { route } from \"../../routes.generated\";\n<a href={route(\"posts.$postId\", { postId: 42 }, { absolute: true })}>Share</a>;",
+    "language": "tsx"
+  },
+  {
+    "id": "manual-routes",
+    "title": {
+      "en": "Manual routes (React, Vue, any router)",
+      "pt": "Rotas manuais (React, Vue, qualquer router)",
+      "es": "Rutas manuales (React, Vue, cualquier router)",
+      "ja": "手動ルート（React、Vue、任意のルーター）"
+    },
+    "paragraphs": {
+      "en": [
+        "When routes are declared in code (React Router <Route>, a vue-router routes array, Express-like servers), write the manifest yourself with createRoutes. You get the same name inference, parameter checking, encoding, query/hash, basePath and i18n options; only discovery is manual.",
+        "Patterns use the bracket syntax regardless of the router's own syntax: /users/:id becomes /users/[id], an optional :id? becomes [[id]], a splat * becomes [...splat] or [[...splat]]. Keep the object literal (or as const) so names and parameters are inferred.",
+        "To share a generated module anyway (for example from a monorepo package), set framework: \"manual\" and list routes in extraRoutes; the generator writes the same typed module without scanning."
+      ],
+      "pt": [
+        "Quando as rotas são declaradas em código (<Route> do React Router, array de rotas do vue-router, servidores no estilo Express), escreva o manifesto com createRoutes. Você recebe a mesma inferência de nomes, checagem de parâmetros, codificação, query/hash, basePath e opções de i18n; apenas a descoberta é manual.",
+        "Os padrões usam a sintaxe de colchetes independentemente da sintaxe do router: /users/:id vira /users/[id], um :id? opcional vira [[id]] e um splat * vira [...splat] ou [[...splat]]. Mantenha o objeto literal (ou as const) para que nomes e parâmetros sejam inferidos.",
+        "Para compartilhar um módulo gerado mesmo assim (por exemplo, a partir de um pacote de monorepo), use framework: \"manual\" e liste as rotas em extraRoutes; o gerador escreve o mesmo módulo tipado sem varrer arquivos."
+      ],
+      "es": [
+        "Cuando las rutas se declaran en código (<Route> de React Router, un array de rutas de vue-router, servidores tipo Express), escribe tú mismo el manifiesto con createRoutes. Obtienes la misma inferencia de nombres, comprobación de parámetros, codificación, query/hash, basePath e i18n; solo el descubrimiento es manual.",
+        "Los patrones usan la sintaxis de corchetes sin importar la sintaxis del router: /users/:id se convierte en /users/[id], un :id? opcional en [[id]] y un splat * en [...splat] o [[...splat]]. Mantén el objeto literal (o as const) para que se infieran los nombres y los parámetros.",
+        "Para compartir un módulo generado de todos modos (por ejemplo, desde un paquete de un monorepo), define framework: \"manual\" y lista las rutas en extraRoutes; el generador escribe el mismo módulo tipado sin escanear."
+      ],
+      "ja": [
+        "ルートをコードで宣言している場合（React Router の <Route>、vue-router のルート配列、Express のようなサーバー）は、createRoutes でマニフェストを自分で書きます。名前の推論、パラメーターのチェック、エンコード、query/hash、basePath、i18n はそのまま使え、手動なのは検出だけです。",
+        "パターンはルーター自身の構文にかかわらず角かっこの構文を使います。/users/:id は /users/[id]、オプションの :id? は [[id]]、splat の * は [...splat] または [[...splat]] になります。名前とパラメーターを推論させるため、オブジェクトリテラル（または as const）のまま保ってください。",
+        "それでも生成されたモジュールを共有したい場合（たとえばモノレポのパッケージから）は、framework: \"manual\" を指定して extraRoutes にルートを並べてください。ジェネレーターはスキャンせずに同じ型付きモジュールを書き出します。"
+      ]
+    },
+    "code": "// src/routes.ts\nimport { createRoutes } from \"@triooo/next-named-routes\";\nexport const route = createRoutes({\n  home: \"/\",\n  \"users.show\": \"/users/[id]\",       // <Route path=\"/users/:id\">\n  \"docs.page\": \"/docs/[[...path]]\",   // <Route path=\"/docs/*\">\n});\n\n// React Router\n<Link to={route(\"users.show\", { id: 42 })}>Ana</Link>\n// Vue Router\n<RouterLink :to=\"route('users.show', { id: 42 })\">Ana</RouterLink>",
+    "language": "tsx"
+  },
+  {
+    "id": "naming",
+    "title": {
+      "en": "Automatic naming rules",
+      "pt": "Regras de nomes automáticos",
+      "es": "Reglas de nombres automáticos",
+      "ja": "自動命名のルール"
+    },
+    "paragraphs": {
+      "en": [
+        "Static URL segments are joined with dots. Dynamic, optional, catch-all and optional catch-all parameters use $ followed by the parameter name; mixed segments such as v[major]-[minor] become v$major-$minor. The root page is home. The dollar sign distinguishes a dynamic parameter from a literal segment.",
+        "Framework file names (page.tsx, index, +page.svelte, _index, route.tsx) do not become name segments. Route groups, parallel slots and pathless layouts are omitted. Creating, moving or deleting a page changes the inferred public name; optional aliases can keep a stable name when URLs move.",
+        "The style is configurable with naming: separator (default \".\"), paramPrefix (default \"$\", may be empty) and home (default \"home\"). In a JavaScript or TypeScript config, naming.transform(route) can return a different name for any automatic route."
+      ],
+      "pt": [
+        "Segmentos estáticos são unidos por pontos. Parâmetros dinâmicos, opcionais, catch-all e catch-all opcionais usam $ seguido do nome do parâmetro; segmentos mistos como v[major]-[minor] viram v$major-$minor. A página raiz é home. O cifrão diferencia um parâmetro dinâmico de um segmento literal.",
+        "Nomes de arquivo do framework (page.tsx, index, +page.svelte, _index, route.tsx) não viram segmentos do nome. Grupos de rotas, slots paralelos e layouts sem caminho são omitidos. Criar, mover ou excluir uma página altera o nome público inferido; aliases opcionais preservam um nome estável quando URLs mudam.",
+        "O estilo é configurável com naming: separator (padrão \".\"), paramPrefix (padrão \"$\", pode ser vazio) e home (padrão \"home\"). Em uma configuração JavaScript ou TypeScript, naming.transform(rota) pode retornar outro nome para qualquer rota automática."
+      ],
+      "es": [
+        "Los segmentos estáticos de la URL se unen con puntos. Los parámetros dinámicos, opcionales, catch-all y catch-all opcionales usan $ seguido del nombre del parámetro; los segmentos mixtos como v[major]-[minor] se convierten en v$major-$minor. La página raíz es home. El signo de dólar distingue un parámetro dinámico de un segmento literal.",
+        "Los nombres de archivo del framework (page.tsx, index, +page.svelte, _index, route.tsx) no se convierten en segmentos del nombre. Los grupos de rutas, los slots paralelos y los layouts sin ruta se omiten. Crear, mover o eliminar una página cambia el nombre público inferido; los alias opcionales mantienen un nombre estable cuando las URLs cambian.",
+        "El estilo se configura con naming: separator (por defecto \".\"), paramPrefix (por defecto \"$\", puede estar vacío) y home (por defecto \"home\"). En una configuración JavaScript o TypeScript, naming.transform(route) puede devolver otro nombre para cualquier ruta automática."
+      ],
+      "ja": [
+        "URL の静的セグメントはドットで連結されます。動的、オプション、catch-all、オプションの catch-all のパラメーターは $ の後にパラメーター名を付けます。v[major]-[minor] のような混在セグメントは v$major-$minor になります。ルートページは home です。ドル記号によって、動的パラメーターと文字どおりのセグメントを区別します。",
+        "フレームワークのファイル名（page.tsx、index、+page.svelte、_index、route.tsx）は名前のセグメントになりません。ルートグループ、並列スロット、パスなしレイアウトは省かれます。ページを作成・移動・削除すると推論される公開名も変わりますが、任意のエイリアスを使えば URL が変わっても名前を固定できます。",
+        "スタイルは naming で設定できます。separator（デフォルトは \".\"）、paramPrefix（デフォルトは \"$\"、空にもできる）、home（デフォルトは \"home\"）です。JavaScript や TypeScript の設定では、naming.transform(route) で任意の自動ルートに別の名前を返せます。"
+      ]
+    },
+    "code": "App Router                           Pages Router                     Name\napp/page.tsx                         pages/index.tsx                  home\napp/user/page.tsx                    pages/user/index.tsx             user\napp/user/profile/page.tsx            pages/user/profile.tsx           user.profile\napp/users/[user]/page.tsx            pages/users/[user].tsx           users.$user\napp/docs/[...slug]/page.tsx          pages/docs/[...slug].tsx          docs.$slug\napp/shop/[[...path]]/page.tsx        pages/shop/[[...path]].tsx        shop.$path",
+    "language": "text"
+  },
+  {
+    "id": "app-router",
+    "title": {
+      "en": "App Router recipes",
+      "pt": "Exemplos com App Router",
+      "es": "Recetas para el App Router",
+      "ja": "App Router のレシピ"
+    },
+    "paragraphs": {
+      "en": [
+        "The helper returns a normal URL string. Use it with next/link, redirect or the App Router useRouter hook from next/navigation. Run redirects from the appropriate server or event flow; named routes do not change Next.js redirect semantics.",
+        "Each name in these snippets assumes the corresponding page exists: posts/page.tsx, posts/[post]/page.tsx and posts/[post]/edit/page.tsx."
+      ],
+      "pt": [
+        "O helper retorna uma string de URL normal. Use com next/link, redirect ou useRouter do App Router, importado de next/navigation. Execute redirects no fluxo de servidor ou evento adequado; rotas nomeadas não mudam a semântica de redirect do Next.",
+        "Cada nome abaixo pressupõe uma página correspondente: posts/page.tsx, posts/[post]/page.tsx e posts/[post]/edit/page.tsx."
+      ],
+      "es": [
+        "El helper devuelve un string de URL normal. Úsalo con next/link, redirect o el hook useRouter del App Router de next/navigation. Ejecuta los redirects desde el flujo de servidor o de eventos adecuado; las rutas con nombre no cambian la semántica de los redirects de Next.js.",
+        "Cada nombre de estos fragmentos supone que existe la página correspondiente: posts/page.tsx, posts/[post]/page.tsx y posts/[post]/edit/page.tsx."
+      ],
+      "ja": [
+        "ヘルパーは普通の URL 文字列を返します。next/link、redirect、next/navigation の App Router 用 useRouter フックと組み合わせて使ってください。リダイレクトは適切なサーバー処理やイベント処理の中で実行します。名前付きルートが Next.js のリダイレクトの意味を変えることはありません。",
+        "これらのスニペットの名前は、対応するページ（posts/page.tsx、posts/[post]/page.tsx、posts/[post]/edit/page.tsx）が存在する前提です。"
+      ]
+    },
+    "code": "// Server Component\nimport Link from \"next/link\";\nimport { route } from \"@/routes.generated\";\nexport default function PostLink() {\n  return <Link href={route(\"posts.$post\", { post: 42 })}>Post</Link>;\n}\n\n// A separate Client Component file:\n\"use client\";\nimport { useRouter } from \"next/navigation\";\nimport { route } from \"@/routes.generated\";\nexport function EditPost({ post }: { post: number }) {\n  const router = useRouter();\n  return <button onClick={() => router.push(\n    route(\"posts.$post.edit\", { post })\n  )}>Edit</button>;\n}\n\n// In a server-side redirect flow:\n// import { redirect } from \"next/navigation\";\n// redirect(route(\"posts\"));",
+    "language": "tsx"
+  },
+  {
+    "id": "pages-router",
+    "title": {
+      "en": "Pages Router recipes",
+      "pt": "Exemplos com Pages Router",
+      "es": "Recetas para el Pages Router",
+      "ja": "Pages Router のレシピ"
+    },
+    "paragraphs": {
+      "en": [
+        "Use the same generated helper. The router hook comes from next/router in Pages Router applications. Link does not need a custom adapter. The discovery process can scan both router directories during migration, but conflicting canonical URLs fail generation."
+      ],
+      "pt": [
+        "Use o mesmo helper gerado. Em aplicações Pages Router, o hook do router vem de next/router. O Link não precisa de adapter. A descoberta pode examinar os dois diretórios durante uma migração, mas URLs canônicas conflitantes interrompem a geração."
+      ],
+      "es": [
+        "Usa el mismo helper generado. En las aplicaciones con Pages Router, el hook del router viene de next/router. Link no necesita un adaptador propio. El descubrimiento puede escanear ambos directorios de router durante una migración, pero las URLs canónicas en conflicto hacen fallar la generación."
+      ],
+      "ja": [
+        "同じ生成ヘルパーを使います。Pages Router のアプリでは、ルーターのフックは next/router から取得します。Link に専用のアダプターは不要です。移行中は両方のルーターのディレクトリをスキャンできますが、正規 URL が衝突すると生成は失敗します。"
+      ]
+    },
+    "code": "import Link from \"next/link\";\nimport { useRouter } from \"next/router\";\nimport { route } from \"@/routes.generated\";\nexport default function Page() {\n  const router = useRouter();\n  return <>\n    <Link href={route(\"users.$user\", { user: 42 })}>User</Link>\n    <button onClick={() => router.replace(route(\"user.profile\"))}>\n      Profile\n    </button>\n  </>;\n}",
+    "language": "tsx"
+  },
+  {
+    "id": "parameters",
+    "title": {
+      "en": "Parameters and encoding",
+      "pt": "Parâmetros e codificação",
+      "es": "Parámetros y codificación",
+      "ja": "パラメーターとエンコード"
+    },
+    "paragraphs": {
+      "en": [
+        "[id] requires a nonempty string or finite number. [[id]] (Nuxt, Vue, SvelteKit, React Router, TanStack) is an optional scalar; omitting it removes the segment. [...slug] requires a nonempty array of strings/numbers. [[...slug]] accepts an optional array; an omitted value, null or [] removes the catch-all portion. Mixed segments require every parameter they contain.",
+        "Each parameter segment is encoded individually. A slash inside a scalar is encoded, while a catch-all array produces separate path segments. Extra parameters, empty required values, NaN, Infinity, objects and standalone . or .. segments fail. These checks validate URL construction, not your application’s business identifiers."
+      ],
+      "pt": [
+        "[id] exige string não vazia ou número finito. [[id]] (Nuxt, Vue, SvelteKit, React Router, TanStack) é um escalar opcional; omiti-lo remove o segmento. [...slug] exige um array não vazio de strings/números. [[...slug]] aceita array opcional; valor omitido, null ou [] remove a parte catch-all. Segmentos mistos exigem todos os parâmetros que contêm.",
+        "Cada segmento de parâmetro é codificado separadamente. Uma barra dentro de um escalar é codificada; um array catch-all gera segmentos separados. Parâmetros extras, valores obrigatórios vazios, NaN, Infinity, objetos e segmentos . ou .. isolados falham. Essas verificações validam a construção da URL, não os identificadores de negócio da aplicação."
+      ],
+      "es": [
+        "[id] requiere un string no vacío o un número finito. [[id]] (Nuxt, Vue, SvelteKit, React Router, TanStack) es un escalar opcional; omitirlo elimina el segmento. [...slug] requiere un array no vacío de strings/números. [[...slug]] acepta un array opcional; un valor omitido, null o [] elimina la parte catch-all. Los segmentos mixtos requieren todos los parámetros que contienen.",
+        "Cada segmento de parámetro se codifica por separado. Una barra dentro de un escalar se codifica, mientras que un array catch-all produce segmentos de ruta separados. Los parámetros extra, los valores obligatorios vacíos, NaN, Infinity, los objetos y los segmentos . o .. aislados fallan. Estas comprobaciones validan la construcción de la URL, no los identificadores de negocio de tu aplicación."
+      ],
+      "ja": [
+        "[id] には空でない文字列か有限の数値が必要です。[[id]]（Nuxt、Vue、SvelteKit、React Router、TanStack）はオプションのスカラーで、省略するとそのセグメントがなくなります。[...slug] には空でない文字列/数値の配列が必要です。[[...slug]] はオプションの配列を受け付け、省略、null、[] のいずれでも catch-all の部分がなくなります。混在セグメントでは、含まれるすべてのパラメーターが必要です。",
+        "パラメーターのセグメントはひとつずつエンコードされます。スカラーの中のスラッシュはエンコードされ、catch-all の配列は別々のパスセグメントになります。余分なパラメーター、空の必須値、NaN、Infinity、オブジェクト、単独の . や .. のセグメントはエラーになります。これらのチェックは URL の組み立てを検証するもので、アプリケーションの業務上の ID を検証するものではありません。"
+      ]
+    },
+    "code": "route(\"users.$user\", { user: \"Ana Silva\" }); // /users/Ana%20Silva\nroute(\"users.$user\", { user: \"a/b\" });       // /users/a%2Fb\n// app/docs/[[...slug]]/page.tsx:\nroute(\"docs.$slug\");                         // /docs\nroute(\"docs.$slug\", { slug: [\"guide\", \"install\"] });\n// /docs/guide/install\n// pages/[[lang]]/about.vue and pages/v[major]-[minor].vue:\nroute(\"$lang.about\");                        // /about\nroute(\"v$major-$minor\", { major: 2, minor: 1 }); // /v2-1",
+    "language": "ts"
+  },
+  {
+    "id": "query-hash",
+    "title": {
+      "en": "Query strings and fragments",
+      "pt": "Query strings e fragmentos",
+      "es": "Query strings y fragmentos",
+      "ja": "クエリ文字列とフラグメント"
+    },
+    "paragraphs": {
+      "en": [
+        "Pass query and hash in the third argument. Query values can be strings, finite numbers, booleans or readonly arrays of these values. null and undefined are omitted, including array entries. Arrays repeat the key; they do not use bracket notation.",
+        "The hash is a string without the leading # and is encoded by the helper. It stays in the browser and is not sent to the server. Hash strings and query objects are validated at runtime."
+      ],
+      "pt": [
+        "Passe query e hash no terceiro argumento. A query aceita strings, números finitos, booleanos e arrays readonly desses valores. null e undefined são omitidos, inclusive dentro de arrays. Arrays repetem a chave; não usam colchetes.",
+        "O hash é uma string sem # inicial, codificada pelo helper. Ele fica no navegador e não é enviado ao servidor. Strings de hash e objetos de query são validados em runtime."
+      ],
+      "es": [
+        "Pasa query y hash en el tercer argumento. Los valores de query pueden ser strings, números finitos, booleanos o arrays de solo lectura con esos valores. null y undefined se omiten, también dentro de arrays. Los arrays repiten la clave; no usan notación de corchetes.",
+        "El hash es un string sin el # inicial y el helper lo codifica. Permanece en el navegador y no se envía al servidor. Los strings de hash y los objetos de query se validan en runtime."
+      ],
+      "ja": [
+        "query と hash は第 3 引数で渡します。query の値には文字列、有限の数値、真偽値、またはそれらの読み取り専用配列を使えます。null と undefined は、配列の要素であっても省かれます。配列はキーを繰り返し、角かっこ記法は使いません。",
+        "hash は先頭の # を除いた文字列で、ヘルパーがエンコードします。ブラウザーにとどまり、サーバーには送られません。hash の文字列と query のオブジェクトは実行時に検証されます。"
+      ]
+    },
+    "code": "route(\"users.$user\", { user: 42 }, {\n  query: { page: 2, tag: [\"next\", \"react\"], draft: false, omit: null },\n  hash: \"activity\",\n});\n// /users/42?page=2&tag=next&tag=react&draft=false#activity",
+    "language": "ts"
+  },
+  {
+    "id": "base-path",
+    "title": {
+      "en": "basePath, trailing slashes and origins",
+      "pt": "basePath, barras finais e origens",
+      "es": "basePath, barras finales y orígenes",
+      "ja": "basePath、末尾スラッシュ、オリジン"
+    },
+    "paragraphs": {
+      "en": [
+        "Next Link and router navigation add basePath themselves. Relative helper URLs omit it by default to prevent duplicate prefixes. For plain anchors, fetch or other consumers, request basePath: true. absolute: true always includes basePath and requires defaults.origin.",
+        "withNamedRoutes inherits basePath and trailingSlash from Next configuration. An explicit defaults option overrides inherited values. Origin must be an HTTP(S) origin without credentials, a non-root path, query or hash; it is never guessed from a request or window.",
+        "All defaults are serialized into the public generated module. Never put secrets in them. trailingSlash formats generated paths; Next remains responsible for redirects and final normalization."
+      ],
+      "pt": [
+        "Next Link e navegação pelo router já adicionam basePath. As URLs relativas do helper o omitem por padrão para evitar prefixos duplicados. Para links comuns, fetch ou outras integrações, use basePath: true. absolute: true sempre inclui basePath e exige defaults.origin.",
+        "withNamedRoutes herda basePath e trailingSlash da configuração Next. Uma opção defaults explícita sobrescreve valores herdados. A origem deve usar HTTP(S), sem credenciais, caminho além da raiz, query ou hash; nunca é inferida do request ou de window.",
+        "Os defaults são serializados no módulo público gerado. Nunca inclua segredos. trailingSlash formata os caminhos gerados; redirects e normalização final continuam sendo responsabilidade do Next."
+      ],
+      "es": [
+        "Next Link y la navegación del router añaden el basePath por su cuenta. Las URLs relativas del helper lo omiten por defecto para evitar prefijos duplicados. Para enlaces simples, fetch u otros consumidores, pide basePath: true. absolute: true siempre incluye el basePath y requiere defaults.origin.",
+        "withNamedRoutes hereda basePath y trailingSlash de la configuración de Next. Una opción defaults explícita prevalece sobre los valores heredados. El origin debe ser un origen HTTP(S) sin credenciales, ruta distinta de la raíz, query ni hash; nunca se adivina a partir de una petición o de window.",
+        "Todos los defaults se serializan en el módulo generado, que es público. Nunca pongas secretos en ellos. trailingSlash da formato a las rutas generadas; Next sigue siendo responsable de los redirects y de la normalización final."
+      ],
+      "ja": [
+        "Next の Link とルーターのナビゲーションは basePath を自分で付けます。ヘルパーの相対 URL は、プレフィックスの重複を避けるため、デフォルトでは basePath を含みません。通常のリンク、fetch、その他の利用先では basePath: true を指定してください。absolute: true は常に basePath を含み、defaults.origin が必要です。",
+        "withNamedRoutes は Next の設定から basePath と trailingSlash を引き継ぎます。defaults を明示すると、引き継いだ値より優先されます。origin は、認証情報、ルート以外のパス、query、hash を含まない HTTP(S) のオリジンでなければなりません。リクエストや window から推測されることはありません。",
+        "defaults はすべて、公開される生成モジュールにシリアライズされます。秘密情報は絶対に入れないでください。trailingSlash は生成されるパスの形を整えるだけで、リダイレクトや最終的な正規化は引き続き Next が担当します。"
+      ]
+    },
+    "code": "// next.config.ts\nexport default withNamedRoutes({ basePath: \"/admin\" }, {\n  defaults: { origin: \"https://triooo.com.br\" },\n});\nroute(\"users.$user\", { user: 42 }); // /users/42 (Next Link/router)\nroute(\"users.$user\", { user: 42 }, { basePath: true });\n// /admin/users/42 (plain anchor/fetch)\nroute(\"users.$user\", { user: 42 }, { absolute: true });\n// https://triooo.com.br/admin/users/42",
+    "language": "ts"
+  },
+  {
+    "id": "i18n",
+    "title": {
+      "en": "Locales and i18n",
+      "pt": "Idiomas e i18n",
+      "es": "Idiomas e i18n",
+      "ja": "言語と i18n"
+    },
+    "paragraphs": {
+      "en": [
+        "Configure i18n with locales, defaultLocale and optionally localePrefix, pathnames and domains. The shape matches next-intl's defineRouting(), so you can pass that routing object directly; next-intl-only keys such as localeCookie are accepted and ignored. In Next.js Pages Router projects, withNamedRoutes inherits next.config i18n automatically (localePrefix as-needed, domains included).",
+        "A dynamic first folder named locale or lang (app/[locale]/…, pages/[lang]/…, change it with localeParam) is removed from names and patterns: app/[locale]/about/page.tsx becomes about → /about. Physical locale folders (src/pages/pt/about.astro) merge into the same route. Without a locale folder (Pages Router i18n, @nuxtjs/i18n, middleware rewrites), every page is localized. Endpoints and routes outside [locale] are listed as unlocalized and never get a prefix.",
+        "route(name, params) without a locale returns the internal path, which is what next-intl's Link, Pages Router Link and @nuxtjs/i18n's localePath expect. Pass { locale } for plain anchors, redirects, sitemaps, emails or language switchers. route.forLocale(locale) returns a helper bound to that locale, and route.locales() lists the configured locales.",
+        "localePrefix: always (default) prefixes every locale; as-needed omits the default locale; never omits all prefixes; { mode, prefixes: { \"en-US\": \"/us\" } } customizes them. pathnames maps an internal pattern to localized patterns with the same parameters. With absolute: true, a locale served by a configured domain uses that domain as the origin. Locales are typed: the generated module exports RouteLocale and unknown locales are type and runtime errors."
+      ],
+      "pt": [
+        "Configure i18n com locales, defaultLocale e, opcionalmente, localePrefix, pathnames e domains. O formato é o mesmo do defineRouting() do next-intl, então você pode passar esse objeto de routing diretamente; chaves exclusivas do next-intl, como localeCookie, são aceitas e ignoradas. Em projetos Next.js com Pages Router, o withNamedRoutes herda automaticamente o i18n do next.config (localePrefix as-needed, incluindo domains).",
+        "Uma primeira pasta dinâmica chamada locale ou lang (app/[locale]/…, pages/[lang]/…, altere com localeParam) é removida dos nomes e padrões: app/[locale]/about/page.tsx vira about → /about. Pastas físicas de idioma (src/pages/pt/about.astro) são mescladas na mesma rota. Sem pasta de idioma (i18n do Pages Router, @nuxtjs/i18n, rewrites de middleware), todas as páginas são localizadas. Endpoints e rotas fora de [locale] ficam como unlocalized e nunca recebem prefixo.",
+        "route(nome, params) sem locale retorna o caminho interno, que é o esperado pelo Link do next-intl, pelo Link do Pages Router e pelo localePath do @nuxtjs/i18n. Passe { locale } para âncoras simples, redirects, sitemaps, e-mails ou seletores de idioma. route.forLocale(locale) retorna um helper vinculado a esse idioma, e route.locales() lista os idiomas configurados.",
+        "localePrefix: always (padrão) prefixa todos os idiomas; as-needed omite o idioma padrão; never omite todos os prefixos; { mode, prefixes: { \"en-US\": \"/us\" } } personaliza os prefixos. pathnames mapeia um padrão interno para padrões traduzidos com os mesmos parâmetros. Com absolute: true, um idioma atendido por um domínio configurado usa esse domínio como origem. Os idiomas são tipados: o módulo gerado exporta RouteLocale e idiomas desconhecidos são erros de tipo e de runtime."
+      ],
+      "es": [
+        "Configura i18n con locales, defaultLocale y, opcionalmente, localePrefix, pathnames y domains. La forma coincide con defineRouting() de next-intl, así que puedes pasar ese objeto routing directamente; las claves exclusivas de next-intl como localeCookie se aceptan y se ignoran. En proyectos Next.js con Pages Router, withNamedRoutes hereda automáticamente el i18n de next.config (localePrefix as-needed, dominios incluidos).",
+        "Una primera carpeta dinámica llamada locale o lang (app/[locale]/…, pages/[lang]/…, cámbialo con localeParam) se elimina de los nombres y patrones: app/[locale]/about/page.tsx se convierte en about → /about. Las carpetas físicas de idioma (src/pages/pt/about.astro) se fusionan en la misma ruta. Sin carpeta de idioma (i18n del Pages Router, @nuxtjs/i18n, rewrites de middleware), todas las páginas se localizan. Los endpoints y las rutas fuera de [locale] se listan como unlocalized y nunca reciben prefijo.",
+        "route(nombre, params) sin locale devuelve la ruta interna, que es lo que esperan el Link de next-intl, el Link del Pages Router y el localePath de @nuxtjs/i18n. Pasa { locale } para enlaces simples, redirects, sitemaps, emails o selectores de idioma. route.forLocale(locale) devuelve un helper ligado a ese idioma y route.locales() lista los idiomas configurados.",
+        "localePrefix: always (por defecto) pone prefijo a todos los idiomas; as-needed omite el idioma por defecto; never omite todos los prefijos; { mode, prefixes: { \"en-US\": \"/us\" } } los personaliza. pathnames asigna a un patrón interno patrones localizados con los mismos parámetros. Con absolute: true, un idioma servido por un dominio configurado usa ese dominio como origen. Los idiomas están tipados: el módulo generado exporta RouteLocale y los idiomas desconocidos son errores de tipos y de runtime."
+      ],
+      "ja": [
+        "i18n は locales と defaultLocale、必要に応じて localePrefix、pathnames、domains で設定します。形は next-intl の defineRouting() と同じなので、その routing オブジェクトをそのまま渡せます。localeCookie のような next-intl 専用のキーは受け付けたうえで無視します。Next.js の Pages Router のプロジェクトでは、withNamedRoutes が next.config の i18n を自動で引き継ぎます（localePrefix は as-needed、domains も含む）。",
+        "locale または lang という名前の最初の動的フォルダー（app/[locale]/…、pages/[lang]/…。localeParam で変更可能）は、名前とパターンから取り除かれます。app/[locale]/about/page.tsx は about → /about になります。物理的な言語フォルダー（src/pages/pt/about.astro）は同じルートにまとめられます。言語フォルダーがない場合（Pages Router の i18n、@nuxtjs/i18n、ミドルウェアのリライト）は、すべてのページがローカライズ対象です。エンドポイントと [locale] の外にあるルートは unlocalized として扱われ、プレフィックスは付きません。",
+        "locale なしの route(name, params) は内部パスを返します。これは next-intl の Link、Pages Router の Link、@nuxtjs/i18n の localePath が期待する形です。通常のリンク、リダイレクト、サイトマップ、メール、言語切り替えには { locale } を渡してください。route.forLocale(locale) はその言語に固定したヘルパーを返し、route.locales() は設定済みの言語を一覧にします。",
+        "localePrefix: always（デフォルト）はすべての言語にプレフィックスを付け、as-needed はデフォルト言語だけ省き、never はすべて省きます。{ mode, prefixes: { \"en-US\": \"/us\" } } で個別に変更することもできます。pathnames は内部パターンを、同じパラメーターを持つ翻訳済みのパターンに対応付けます。absolute: true のとき、設定したドメインで配信される言語ではそのドメインがオリジンになります。言語は型付きで、生成モジュールは RouteLocale をエクスポートし、未知の言語は型エラーにも実行時エラーにもなります。"
+      ]
+    },
+    "code": "// next.config.ts — next-intl with app/[locale]/…\nimport { routing } from \"./src/i18n/routing\"; // defineRouting({...})\nexport default withNamedRoutes(withNextIntl({}), { i18n: routing });\n\n// or named-routes.config.mjs (any framework)\nexport default defineConfig({\n  i18n: {\n    locales: [\"en\", \"pt\"],\n    defaultLocale: \"en\",\n    localePrefix: \"as-needed\",\n    pathnames: { \"/about\": { pt: \"/sobre\" } },\n  },\n});\n\nroute(\"about\");                     // /about (next-intl Link adds the locale)\nroute(\"about\", {}, { locale: \"pt\" }); // /pt/sobre\nroute(\"about\", {}, { locale: \"en\" }); // /about\nconst pt = route.forLocale(\"pt\");\npt(\"users.$user\", { user: 42 });      // /pt/users/42",
+    "language": "ts"
+  },
+  {
+    "id": "typescript",
+    "title": {
+      "en": "TypeScript and Next typedRoutes",
+      "pt": "TypeScript e typedRoutes do Next",
+      "es": "TypeScript y typedRoutes de Next",
+      "ja": "TypeScript と Next の typedRoutes"
+    },
+    "paragraphs": {
+      "en": [
+        "Literal patterns infer name unions and parameter objects. Required parameters are checked at compile time; optional catch-all routes can be called without parameters. The runtime still validates JavaScript callers.",
+        "route() returns string, not Next’s generated Route type. When Next typedRoutes is enabled, its separate Link validation may require a Route assertion. The package still checks the route name and parameters. Do not assert untrusted arbitrary input to a route name to bypass validation."
+      ],
+      "pt": [
+        "Padrões literais inferem a união de nomes e os objetos de parâmetros. Parâmetros obrigatórios são verificados na compilação; catch-all opcionais podem ser chamados sem parâmetros. O runtime também valida chamadas em JavaScript.",
+        "route() retorna string, não o tipo Route gerado pelo Next. Com typedRoutes ativado, a validação adicional do Link pode exigir uma asserção Route. O pacote continua verificando nomes e parâmetros. Não use asserções para transformar entradas arbitrárias não confiáveis em nomes de rota."
+      ],
+      "es": [
+        "Los patrones literales infieren uniones de nombres y objetos de parámetros. Los parámetros obligatorios se comprueban en tiempo de compilación; las rutas catch-all opcionales pueden llamarse sin parámetros. El runtime sigue validando las llamadas desde JavaScript.",
+        "route() devuelve string, no el tipo Route generado por Next. Cuando typedRoutes de Next está activado, su validación de Link puede requerir una aserción a Route. El paquete sigue comprobando el nombre de la ruta y los parámetros. No hagas aserciones de entradas arbitrarias no confiables a un nombre de ruta para saltarte la validación."
+      ],
+      "ja": [
+        "リテラルのパターンから名前のユニオン型とパラメーターのオブジェクト型が推論されます。必須パラメーターはコンパイル時にチェックされ、オプションの catch-all ルートはパラメーターなしで呼び出せます。JavaScript からの呼び出しも、ランタイムが引き続き検証します。",
+        "route() が返すのは string で、Next が生成する Route 型ではありません。Next の typedRoutes を有効にしている場合、Link 側の検証で Route へのアサーションが必要になることがあります。それでもパッケージはルート名とパラメーターをチェックします。検証を回避するために、信頼できない任意の入力をルート名にアサーションしないでください。"
+      ]
+    },
+    "code": "import type { Route } from \"next\";\nimport type { RouteName } from \"@/routes.generated\";\nimport { route } from \"@/routes.generated\";\nconst name: RouteName = \"user.profile\";\nroute(\"users.$user\", { user: 42 });\n// route(\"unknown\");          // Type error\n// route(\"users.$user\");     // Missing user\n// route(\"users.$user\", { id: 42 }); // Wrong parameter\n// With Next typedRoutes:\n// <Link href={route(name) as Route}>Profile</Link>",
+    "language": "ts"
+  },
+  {
+    "id": "runtime-api",
+    "title": {
+      "en": "Runtime API reference",
+      "pt": "Referência da API de runtime",
+      "es": "Referencia de la API del runtime",
+      "ja": "ランタイム API リファレンス"
+    },
+    "paragraphs": {
+      "en": [
+        "route(name, params?, options?) returns a URL string. params is optional only when the pattern has no required parameters. options contains query, hash, absolute, basePath and locale. route.has(name) checks existence and narrows a string to a known name; route.names() returns available names; route.pattern(name, locale?) returns the original or localized pattern; route.locales() lists locales; route.forLocale(locale) returns a helper bound to a locale.",
+        "createRoutes(manifest, defaults?) creates an independent frozen helper and snapshots the manifest. Defaults contains basePath, trailingSlash, origin and i18n. parsePattern(pattern) returns static/dynamic/optionalDynamic/catchAll/optional/mixed segment records and validates route syntax; formatPattern is its inverse and patternParameters lists parameter names. RouteValue, QueryValue, RouteParams, RouteOptions, RouteDefaults, I18nOptions, LocalePrefix, LocaleDomain, NamedRoutes and PatternSegment are exported types.",
+        "A manifest typed as a plain Record<string, string> (for example loaded from JSON) still works: names become string and parameters become a loose record, while the runtime keeps validating every call."
+      ],
+      "pt": [
+        "route(nome, params?, opções?) retorna uma string de URL. params só é opcional quando o padrão não tem parâmetros obrigatórios. options contém query, hash, absolute, basePath e locale. route.has(nome) verifica a existência e restringe uma string a um nome conhecido; route.names() retorna os nomes; route.pattern(nome, locale?) retorna o padrão original ou traduzido; route.locales() lista os idiomas; route.forLocale(locale) retorna um helper vinculado a um idioma.",
+        "createRoutes(manifesto, defaults?) cria um helper congelado e independente e copia o manifesto. Defaults contém basePath, trailingSlash, origin e i18n. parsePattern(padrão) retorna segmentos static/dynamic/optionalDynamic/catchAll/optional/mixed e valida a sintaxe; formatPattern faz o inverso e patternParameters lista os nomes dos parâmetros. RouteValue, QueryValue, RouteParams, RouteOptions, RouteDefaults, I18nOptions, LocalePrefix, LocaleDomain, NamedRoutes e PatternSegment são tipos exportados.",
+        "Um manifesto tipado como Record<string, string> simples (por exemplo, carregado de JSON) também funciona: os nomes viram string e os parâmetros, um registro flexível, enquanto o runtime continua validando cada chamada."
+      ],
+      "es": [
+        "route(nombre, params?, opciones?) devuelve un string de URL. params solo es opcional cuando el patrón no tiene parámetros obligatorios. options contiene query, hash, absolute, basePath y locale. route.has(nombre) comprueba que exista y restringe un string a un nombre conocido; route.names() devuelve los nombres disponibles; route.pattern(nombre, locale?) devuelve el patrón original o localizado; route.locales() lista los idiomas; route.forLocale(locale) devuelve un helper ligado a un idioma.",
+        "createRoutes(manifiesto, defaults?) crea un helper independiente y congelado y copia el manifiesto. Defaults contiene basePath, trailingSlash, origin e i18n. parsePattern(patrón) devuelve segmentos static/dynamic/optionalDynamic/catchAll/optional/mixed y valida la sintaxis; formatPattern es su inverso y patternParameters lista los nombres de los parámetros. RouteValue, QueryValue, RouteParams, RouteOptions, RouteDefaults, I18nOptions, LocalePrefix, LocaleDomain, NamedRoutes y PatternSegment son tipos exportados.",
+        "Un manifiesto tipado como un simple Record<string, string> (por ejemplo, cargado desde JSON) sigue funcionando: los nombres pasan a ser string y los parámetros un registro flexible, mientras el runtime sigue validando cada llamada."
+      ],
+      "ja": [
+        "route(name, params?, options?) は URL 文字列を返します。params を省略できるのは、パターンに必須パラメーターがないときだけです。options には query、hash、absolute、basePath、locale を指定できます。route.has(name) は存在を確認し、文字列を既知の名前に絞り込みます。route.names() は利用できる名前を返し、route.pattern(name, locale?) は元のパターンまたは翻訳済みのパターンを返し、route.locales() は言語を一覧にし、route.forLocale(locale) はその言語に固定したヘルパーを返します。",
+        "createRoutes(manifest, defaults?) は独立した凍結済みのヘルパーを作り、マニフェストをコピーします。defaults には basePath、trailingSlash、origin、i18n を指定します。parsePattern(pattern) は static/dynamic/optionalDynamic/catchAll/optional/mixed のセグメント情報を返して構文を検証し、formatPattern はその逆、patternParameters はパラメーター名を一覧にします。RouteValue、QueryValue、RouteParams、RouteOptions、RouteDefaults、I18nOptions、LocalePrefix、LocaleDomain、NamedRoutes、PatternSegment は型としてエクスポートされています。",
+        "単なる Record<string, string> として型付けされたマニフェスト（たとえば JSON から読み込んだもの）でも動作します。名前は string、パラメーターは緩いレコードになりますが、ランタイムはすべての呼び出しを引き続き検証します。"
+      ]
+    },
+    "code": "import { createRoutes } from \"@triooo/next-named-routes\";\nconst route = createRoutes({\n  \"users.show\": \"/users/[user]\",\n  search: \"/search/[[...terms]]\",\n});\nroute(\"users.show\", { user: 1 });\nroute.names(); // [\"users.show\", \"search\"]\nroute.pattern(\"users.show\"); // /users/[user]\nconst input: string = \"search\";\nif (route.has(input)) console.log(route.pattern(input));",
+    "language": "ts"
+  },
+  {
+    "id": "configuration",
+    "title": {
+      "en": "Generator configuration",
+      "pt": "Configuração do gerador",
+      "es": "Configuración del generador",
+      "ja": "ジェネレーターの設定"
+    },
+    "paragraphs": {
+      "en": [
+        "No configuration file is required. Optional files are searched in this order: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. TypeScript configs need Node.js 22.18+ (built-in type stripping); use .mjs on older versions. Export defineConfig({...}) from @triooo/next-named-routes/config for autocomplete. The CLI --config flag selects another file; root inside a config file is relative to that file. Unknown or misspelled options fail with INVALID_CONFIG.",
+        "Discovery: framework (auto by default, or next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app or pages), appDir/pagesDir (Next.js custom folders or false), routesDir (custom pages/routes folder for other frameworks), pageExtensions (framework defaults; multi-part extensions such as page.tsx work), includeApi (false), exclude (globs relative to root with *, ** and ?).",
+        "Names: names (URL pattern → custom name, every path must exist), extraRoutes (explicit name → pattern, e.g. rewrite destinations), naming (separator, paramPrefix, home, transform) and i18n (locales, defaultLocale, localePrefix, pathnames, domains, localeParam, unlocalized).",
+        "Output: output (default src/routes.generated.ts; .ts, .mts, .js or .mjs, never inside a routable file), importSource (module the generated file imports createRoutes from, default the package name), exportNames (rename routes, route, RouteName and RouteLocale) and defaults (public basePath, trailingSlash and origin; only these keys are serialized). Plugins add watch (default true); withNamedRoutes also accepts watchInterval (750 ms, 25–60000). Inline plugin options override the config file."
+      ],
+      "pt": [
+        "Nenhum arquivo de configuração é obrigatório. Arquivos opcionais são procurados nesta ordem: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Configurações TypeScript exigem Node.js 22.18+ (remoção nativa de tipos); use .mjs em versões anteriores. Exporte defineConfig({...}) de @triooo/next-named-routes/config para ter autocomplete. A flag --config da CLI seleciona outro arquivo; root dentro da configuração é relativo ao próprio arquivo. Opções desconhecidas ou com erro de digitação falham com INVALID_CONFIG.",
+        "Descoberta: framework (auto por padrão, ou next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app ou pages), appDir/pagesDir (pastas personalizadas do Next.js ou false), routesDir (pasta de páginas/rotas personalizada nos outros frameworks), pageExtensions (padrões de cada framework; extensões compostas como page.tsx funcionam), includeApi (false), exclude (globs relativos à raiz com *, ** e ?).",
+        "Nomes: names (padrão de URL → nome personalizado; todo caminho deve existir), extraRoutes (nome → padrão explícito, por exemplo destinos de rewrites), naming (separator, paramPrefix, home, transform) e i18n (locales, defaultLocale, localePrefix, pathnames, domains, localeParam, unlocalized).",
+        "Saída: output (padrão src/routes.generated.ts; .ts, .mts, .js ou .mjs, nunca dentro de um arquivo roteável), importSource (módulo de onde o arquivo gerado importa createRoutes; padrão, o nome do pacote), exportNames (renomeia routes, route, RouteName e RouteLocale) e defaults (basePath, trailingSlash e origin públicos; apenas essas chaves são serializadas). Os plugins aceitam watch (padrão true); o withNamedRoutes também aceita watchInterval (750 ms, 25–60000). Opções passadas ao plugin sobrescrevem o arquivo de configuração."
+      ],
+      "es": [
+        "No se requiere ningún archivo de configuración. Los archivos opcionales se buscan en este orden: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Las configuraciones TypeScript necesitan Node.js 22.18+ (eliminación de tipos integrada); usa .mjs en versiones anteriores. Exporta defineConfig({...}) de @triooo/next-named-routes/config para tener autocompletado. La opción --config de la CLI selecciona otro archivo; root dentro de un archivo de configuración es relativo a ese archivo. Las opciones desconocidas o mal escritas fallan con INVALID_CONFIG.",
+        "Descubrimiento: framework (auto por defecto, o next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app o pages), appDir/pagesDir (carpetas personalizadas de Next.js o false), routesDir (carpeta de páginas/rutas personalizada en otros frameworks), pageExtensions (valores por defecto de cada framework; funcionan extensiones compuestas como page.tsx), includeApi (false), exclude (globs relativos a la raíz con *, ** y ?).",
+        "Nombres: names (patrón de URL → nombre personalizado; cada ruta debe existir), extraRoutes (nombre → patrón explícito, por ejemplo destinos de rewrites), naming (separator, paramPrefix, home, transform) e i18n (locales, defaultLocale, localePrefix, pathnames, domains, localeParam, unlocalized).",
+        "Salida: output (por defecto src/routes.generated.ts; .ts, .mts, .js o .mjs, nunca dentro de un archivo enrutable), importSource (módulo desde el que el archivo generado importa createRoutes; por defecto, el nombre del paquete), exportNames (renombra routes, route, RouteName y RouteLocale) y defaults (basePath, trailingSlash y origin públicos; solo se serializan estas claves). Los plugins añaden watch (por defecto true); withNamedRoutes también acepta watchInterval (750 ms, 25–60000). Las opciones pasadas al plugin prevalecen sobre el archivo de configuración."
+      ],
+      "ja": [
+        "設定ファイルは必須ではありません。任意の設定ファイルは named-routes.config.ts、.mts、.mjs、.js、.cjs、.json の順に探されます。TypeScript の設定には Node.js 22.18 以上（組み込みの型除去）が必要で、それより古いバージョンでは .mjs を使ってください。補完を効かせるには @triooo/next-named-routes/config の defineConfig({...}) をエクスポートします。CLI の --config で別のファイルを指定でき、設定ファイル内の root はそのファイルからの相対パスです。未知のオプションや綴りの誤りは INVALID_CONFIG で失敗します。",
+        "検出: framework（デフォルトは auto、または next、nuxt、vue、sveltekit、astro、react-router、tanstack-router、manual）、router（Next.js: auto、app、pages）、appDir/pagesDir（Next.js の独自フォルダー、または false）、routesDir（ほかのフレームワークのページ/ルートの独自フォルダー）、pageExtensions（各フレームワークのデフォルト。page.tsx のような複数ドットの拡張子も可）、includeApi（false）、exclude（ルートからの相対 glob。*、**、? を使用）。",
+        "名前: names（URL パターン → 独自の名前。各パスは実在する必要がある）、extraRoutes（明示的な名前 → パターン。リライト先など）、naming（separator、paramPrefix、home、transform）、i18n（locales、defaultLocale、localePrefix、pathnames、domains、localeParam、unlocalized）。",
+        "出力: output（デフォルトは src/routes.generated.ts。.ts、.mts、.js、.mjs のいずれかで、ルーティング対象のファイルの中には置けない）、importSource（生成ファイルが createRoutes をインポートするモジュール。デフォルトはパッケージ名）、exportNames（routes、route、RouteName、RouteLocale の名前を変更）、defaults（公開される basePath、trailingSlash、origin。シリアライズされるのはこれらのキーだけ）。プラグインには watch（デフォルト true）があり、withNamedRoutes では watchInterval（750 ms、25〜60000）も使えます。プラグインに直接渡したオプションは設定ファイルより優先されます。"
+      ]
+    },
+    "code": "// named-routes.config.ts (or .mjs)\nimport { defineConfig } from \"@triooo/next-named-routes/config\";\n\nexport default defineConfig({\n  framework: \"auto\",                 // next, nuxt, vue, sveltekit, astro, ...\n  routesDir: \"app/pages\",            // non-Next frameworks\n  // appDir: \"src/app\", pagesDir: false, // Next.js\n  output: \"app/utils/routes.ts\",     // .ts .mts .js .mjs\n  importSource: \"@triooo/next-named-routes\",\n  exportNames: { route: \"url\", routeName: \"UrlName\" },\n  pageExtensions: [\"vue\"],\n  includeApi: false,\n  exclude: [\"**/__tests__/**\", \"app/pages/drafts/**\"],\n  names: { \"/users/[user]\": \"users.show\" },\n  extraRoutes: { \"public.login\": \"/login\" },\n  naming: { separator: \".\", paramPrefix: \"$\", home: \"home\" },\n  i18n: { locales: [\"en\", \"pt\"], defaultLocale: \"en\", localePrefix: \"as-needed\" },\n  defaults: { origin: \"https://triooo.com.br\", trailingSlash: false },\n});",
+    "language": "ts"
+  },
+  {
+    "id": "stable-names",
+    "title": {
+      "en": "Optional stable names",
+      "pt": "Nomes estáveis opcionais",
+      "es": "Nombres estables opcionales",
+      "ja": "固定名（任意）"
+    },
+    "paragraphs": {
+      "en": [
+        "Automatic names follow URL structure. If a refactor moves a public URL and you need a stable semantic name, update the optional names map. Every aliased path must exist. Unlisted routes keep automatic names. Duplicate names and typos fail generation instead of silently creating broken links.",
+        "A custom name replaces the automatic name for that path; it does not add a second alias automatically. This is useful for Laravel-style names such as posts.show, but it is not required for normal use."
+      ],
+      "pt": [
+        "Nomes automáticos acompanham a estrutura da URL. Se uma refatoração mover uma URL pública e você precisar de um nome semântico estável, atualize o mapa opcional names. Todo caminho apelidado deve existir. Rotas não listadas mantêm nomes automáticos. Nomes duplicados e erros de digitação interrompem a geração.",
+        "Um nome personalizado substitui o automático daquele caminho; não adiciona um segundo alias automaticamente. Isso é útil para nomes no estilo Laravel, como posts.show, mas não é obrigatório no fluxo normal."
+      ],
+      "es": [
+        "Los nombres automáticos siguen la estructura de la URL. Si una refactorización mueve una URL pública y necesitas un nombre semántico estable, actualiza el mapa opcional names. Cada ruta con alias debe existir. Las rutas no listadas conservan sus nombres automáticos. Los nombres duplicados y los errores de escritura hacen fallar la generación en lugar de crear enlaces rotos en silencio.",
+        "Un nombre personalizado reemplaza el nombre automático de esa ruta; no añade automáticamente un segundo alias. Es útil para nombres al estilo Laravel como posts.show, pero no es necesario para el uso normal."
+      ],
+      "ja": [
+        "自動の名前は URL の構造に従います。リファクタリングで公開 URL が変わっても意味のある名前を保ちたい場合は、任意の names マップを更新してください。エイリアスを付けるパスはすべて実在する必要があります。リストにないルートは自動の名前のままです。名前の重複や綴りの誤りは、壊れたリンクを黙って作る代わりに生成を失敗させます。",
+        "独自の名前はそのパスの自動の名前を置き換えるもので、2 つ目のエイリアスが自動で追加されるわけではありません。posts.show のような Laravel 風の名前に便利ですが、通常の使い方では不要です。"
+      ]
+    },
+    "code": "export default {\n  names: {\n    \"/posts\": \"posts.index\",\n    \"/posts/[post]\": \"posts.show\",\n    \"/posts/[post]/edit\": \"posts.edit\",\n  },\n};\n// After generation:\n// route(\"posts.show\", { post: 42 });",
+    "language": "ts"
+  },
+  {
+    "id": "discovery",
+    "title": {
+      "en": "Discovery edge cases",
+      "pt": "Casos especiais de descoberta",
+      "es": "Casos límite del descubrimiento",
+      "ja": "検出のエッジケース"
+    },
+    "paragraphs": {
+      "en": [
+        "Next.js: the scanner considers app and pages together. The root app directory takes precedence over src/app, independently of the same pages/src/pages rule. Other frameworks use their standard folders (Nuxt app/pages or pages, Vue src/pages, SvelteKit src/routes, Astro src/pages, React Router app/routes, TanStack src/routes) unless routesDir is set. Directory symlinks, hidden folders and node_modules are not followed; .d.ts files are ignored.",
+        "App Router: only page files are included by default. Groups and slots do not compose URLs. Interceptions are resolved to canonical paths and equivalent variants are consolidated. Private _ folders are ignored; %5F produces a public underscore. Layout, loading, default, error and metadata files are excluded.",
+        "Pages Router: root _app, _document and _error are excluded; other underscore pages remain valid. index is removed. API Routes, Route Handlers and other frameworks' endpoints are opt-in through includeApi or --api. URLs do not model HTTP methods, permissions or endpoint validation.",
+        "Conflicting URL shapes (for example [id] and [slug] at the same place) and inferred name collisions fail generation. In Next.js, duplicate canonical URLs and optional catch-all specificity conflicts also fail, as they do in Next. In nested-layout routers (Nuxt, Vue, React Router, TanStack), a layout and its index sharing a URL merge into one route."
+      ],
+      "pt": [
+        "Next.js: o scanner considera app e pages juntos. O diretório app na raiz tem prioridade sobre src/app, independentemente da mesma regra entre pages/src/pages. Os outros frameworks usam suas pastas padrão (Nuxt app/pages ou pages, Vue src/pages, SvelteKit src/routes, Astro src/pages, React Router app/routes, TanStack src/routes), a menos que routesDir seja definido. Symlinks de diretório, pastas ocultas e node_modules não são seguidos; arquivos .d.ts são ignorados.",
+        "App Router: por padrão, apenas arquivos page são incluídos. Grupos e slots não compõem URLs. Interceptações são resolvidas para caminhos canônicos e variantes equivalentes são consolidadas. Pastas privadas _ são ignoradas; %5F produz um underscore público. Arquivos layout, loading, default, error e de metadados são excluídos.",
+        "Pages Router: _app, _document e _error da raiz são excluídos; outras páginas com underscore continuam válidas. index é removido. API Routes, Route Handlers e endpoints dos outros frameworks são opcionais via includeApi ou --api. As URLs não modelam métodos HTTP, permissões ou validação de endpoints.",
+        "Formatos de URL conflitantes (por exemplo, [id] e [slug] no mesmo lugar) e colisões de nomes inferidos interrompem a geração. No Next.js, URLs canônicas duplicadas e conflitos de especificidade com catch-all opcional também falham, assim como no Next. Em routers com layouts aninhados (Nuxt, Vue, React Router, TanStack), um layout e seu index com a mesma URL são mesclados em uma única rota."
+      ],
+      "es": [
+        "Next.js: el escáner considera app y pages a la vez. El directorio app de la raíz tiene prioridad sobre src/app, de forma independiente de la misma regla entre pages y src/pages. Los demás frameworks usan sus carpetas estándar (Nuxt app/pages o pages, Vue src/pages, SvelteKit src/routes, Astro src/pages, React Router app/routes, TanStack src/routes) salvo que se defina routesDir. No se siguen los enlaces simbólicos de directorios, las carpetas ocultas ni node_modules; los archivos .d.ts se ignoran.",
+        "App Router: por defecto solo se incluyen los archivos page. Los grupos y los slots no forman parte de las URLs. Las intercepciones se resuelven a rutas canónicas y las variantes equivalentes se consolidan. Las carpetas privadas _ se ignoran; %5F produce un guion bajo público. Los archivos layout, loading, default, error y de metadatos se excluyen.",
+        "Pages Router: _app, _document y _error de la raíz se excluyen; las demás páginas con guion bajo siguen siendo válidas. index se elimina. Las API Routes, los Route Handlers y los endpoints de otros frameworks son opcionales mediante includeApi o --api. Las URLs no modelan métodos HTTP, permisos ni validación de endpoints.",
+        "Las formas de URL en conflicto (por ejemplo, [id] y [slug] en el mismo lugar) y las colisiones de nombres inferidos hacen fallar la generación. En Next.js, las URLs canónicas duplicadas y los conflictos de especificidad con catch-all opcional también fallan, igual que en Next. En los routers con layouts anidados (Nuxt, Vue, React Router, TanStack), un layout y su index que comparten URL se fusionan en una sola ruta."
+      ],
+      "ja": [
+        "Next.js: スキャナーは app と pages を合わせて扱います。ルート直下の app ディレクトリは src/app より優先され、pages と src/pages にも同じルールが独立して適用されます。ほかのフレームワークは、routesDir を指定しない限り標準のフォルダー（Nuxt は app/pages または pages、Vue は src/pages、SvelteKit は src/routes、Astro は src/pages、React Router は app/routes、TanStack は src/routes）を使います。ディレクトリのシンボリックリンク、隠しフォルダー、node_modules はたどらず、.d.ts ファイルは無視します。",
+        "App Router: デフォルトでは page ファイルだけが対象です。グループとスロットは URL に含まれません。インターセプトは正規のパスに解決され、同等のバリエーションはひとつにまとめられます。_ で始まるプライベートフォルダーは無視され、%5F は公開のアンダースコアになります。layout、loading、default、error、メタデータのファイルは対象外です。",
+        "Pages Router: ルート直下の _app、_document、_error は対象外で、それ以外のアンダースコア付きページは有効です。index は取り除かれます。API Routes、Route Handlers、ほかのフレームワークのエンドポイントは includeApi または --api で有効にします。URL は HTTP メソッド、権限、エンドポイントの検証を表現しません。",
+        "URL の形の衝突（たとえば同じ場所の [id] と [slug]）や、推論された名前の衝突は生成を失敗させます。Next.js では、正規 URL の重複やオプションの catch-all との優先度の衝突も、Next と同じように失敗します。レイアウトをネストするルーター（Nuxt、Vue、React Router、TanStack）では、同じ URL を共有するレイアウトとその index はひとつのルートにまとめられます。"
+      ]
+    },
+    "code": "",
+    "language": "ts"
+  },
+  {
+    "id": "development",
+    "title": {
+      "en": "Automatic development updates",
+      "pt": "Atualização automática em desenvolvimento",
+      "es": "Actualizaciones automáticas en desarrollo",
+      "ja": "開発中の自動更新"
+    },
+    "paragraphs": {
+      "en": [
+        "Next.js: the wrapper generates before Next starts, then runs a serialized polling watcher inside the development process. It sees additions, removals and renamed pages; the module changes only when its content changes. No webpack or Turbopack hooks are patched. It never writes during next start (production server), so read-only deployments are safe.",
+        "Vite frameworks: the plugin generates in buildStart and reacts to add/unlink events from Vite's watcher, plus changes to the named-routes config file. It finds the project root by walking up from Vite's root to package.json, so Nuxt's srcDir works.",
+        "Watchers do not run during production builds and do not keep the process alive by themselves. A generation error during editing preserves the last valid module and logs the error. Changes to modules imported by the config need a restart. watch: false disables only ongoing updates, not initial generation."
+      ],
+      "pt": [
+        "Next.js: o wrapper gera antes de o Next iniciar e depois executa um watcher por polling serializado dentro do processo de desenvolvimento. Ele percebe páginas criadas, removidas e renomeadas; o módulo só muda quando seu conteúdo muda. Nenhum hook de webpack ou Turbopack é alterado. Nunca escreve durante o next start (servidor de produção), então deploys somente leitura são seguros.",
+        "Frameworks Vite: o plugin gera no buildStart e reage aos eventos add/unlink do watcher do Vite, além de mudanças no arquivo de configuração do named-routes. Ele encontra a raiz do projeto subindo a partir da raiz do Vite até o package.json, então o srcDir do Nuxt funciona.",
+        "Os watchers não rodam em builds de produção e não mantêm o processo vivo sozinhos. Um erro de geração durante a edição preserva o último módulo válido e registra o erro. Mudanças em módulos importados pela configuração exigem reinício. watch: false desativa apenas as atualizações contínuas, não a geração inicial."
+      ],
+      "es": [
+        "Next.js: el wrapper genera antes de que Next arranque y luego ejecuta un watcher por sondeo, serializado, dentro del proceso de desarrollo. Detecta páginas añadidas, eliminadas y renombradas; el módulo solo cambia cuando cambia su contenido. No se modifican hooks de webpack ni de Turbopack. Nunca escribe durante next start (servidor de producción), así que los despliegues de solo lectura son seguros.",
+        "Frameworks con Vite: el plugin genera en buildStart y reacciona a los eventos add/unlink del watcher de Vite, además de los cambios en el archivo de configuración de named-routes. Encuentra la raíz del proyecto subiendo desde la raíz de Vite hasta package.json, así que el srcDir de Nuxt funciona.",
+        "Los watchers no se ejecutan durante las compilaciones de producción y no mantienen el proceso vivo por sí mismos. Un error de generación durante la edición conserva el último módulo válido y registra el error. Los cambios en módulos importados por la configuración requieren reiniciar. watch: false solo desactiva las actualizaciones continuas, no la generación inicial."
+      ],
+      "ja": [
+        "Next.js: ラッパーは Next の起動前に生成し、その後は開発プロセスの中で直列化されたポーリングの watcher を動かします。ページの追加、削除、名前変更を検知し、モジュールは内容が変わったときだけ更新されます。webpack や Turbopack のフックには手を加えません。next start（本番サーバー）では一切書き込まないため、読み取り専用のデプロイでも安全です。",
+        "Vite 系フレームワーク: プラグインは buildStart で生成し、Vite の watcher の add/unlink イベントと named-routes の設定ファイルの変更に反応します。Vite のルートから package.json までさかのぼってプロジェクトのルートを見つけるので、Nuxt の srcDir でも動作します。",
+        "watcher は本番ビルド中には動かず、それ自体がプロセスを生かし続けることもありません。編集中に生成エラーが起きても最後の有効なモジュールは保たれ、エラーがログに出ます。設定ファイルがインポートしているモジュールを変更したときは再起動が必要です。watch: false で止まるのは継続的な更新だけで、最初の生成は行われます。"
+      ]
+    },
+    "code": "",
+    "language": "ts"
+  },
+  {
+    "id": "cli",
+    "title": {
+      "en": "CLI and CI",
+      "pt": "CLI e CI",
+      "es": "CLI e integración continua",
+      "ja": "CLI と CI"
+    },
+    "paragraphs": {
+      "en": [
+        "The binary is named-routes (next-named-routes is an alias). generate (default) writes the manifest. list prints discovered entries as JSON. check compares without writing and exits with code 1 when stale. watch generates initially and polls until SIGINT/SIGTERM. init writes named-routes.config.mjs for the detected framework and never overwrites an existing config.",
+        "Flags: --root <directory>, --config <file>, --framework <name>, --output <file>, --routes-dir <dir>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Run commands from the consumer with the local package installed.",
+        "If you commit the generated file, run check before the build. The integrations regenerate at build time, so a check run after that build cannot detect a previously stale committed file. Generation is deterministic, atomic and timestamp-free. Existing files without the generator signature are never overwritten."
+      ],
+      "pt": [
+        "O binário se chama named-routes (next-named-routes é um alias). generate (padrão) escreve o manifesto. list imprime as entradas descobertas em JSON. check compara sem escrever e sai com código 1 quando está desatualizado. watch gera inicialmente e acompanha até SIGINT/SIGTERM. init cria named-routes.config.mjs para o framework detectado e nunca sobrescreve uma configuração existente.",
+        "Flags: --root <diretório>, --config <arquivo>, --framework <nome>, --output <arquivo>, --routes-dir <pasta>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Execute os comandos no projeto consumidor com o pacote instalado localmente.",
+        "Se você versiona o arquivo gerado, rode check antes do build. As integrações regeneram durante o build, então um check após esse build não detecta um arquivo versionado que já estava desatualizado. A geração é determinística, atômica e sem timestamps. Arquivos existentes sem a assinatura do gerador nunca são sobrescritos."
+      ],
+      "es": [
+        "El binario se llama named-routes (next-named-routes es un alias). generate (por defecto) escribe el manifiesto. list imprime las entradas descubiertas en JSON. check compara sin escribir y sale con código 1 cuando está desactualizado. watch genera al inicio y sondea hasta SIGINT/SIGTERM. init escribe named-routes.config.mjs para el framework detectado y nunca sobrescribe una configuración existente.",
+        "Opciones: --root <directorio>, --config <archivo>, --framework <nombre>, --output <archivo>, --routes-dir <carpeta>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Ejecuta los comandos desde el proyecto consumidor con el paquete instalado localmente.",
+        "Si versionas el archivo generado, ejecuta check antes del build. Las integraciones regeneran durante el build, así que un check posterior no puede detectar un archivo versionado que ya estaba desactualizado. La generación es determinista, atómica y sin marcas de tiempo. Los archivos existentes sin la firma del generador nunca se sobrescriben."
+      ],
+      "ja": [
+        "バイナリ名は named-routes です（next-named-routes はエイリアス）。generate（デフォルト）はマニフェストを書き出します。list は検出したエントリーを JSON で出力します。check は書き込まずに比較し、古くなっていれば終了コード 1 で終わります。watch は最初に生成し、SIGINT/SIGTERM までポーリングを続けます。init は検出したフレームワーク用の named-routes.config.mjs を書き出し、既存の設定は決して上書きしません。",
+        "フラグ: --root <directory>、--config <file>、--framework <name>、--output <file>、--routes-dir <dir>、--router <auto|app|pages>、--api、--watch-interval <ms>、--version (-v)、--help (-h)。コマンドは、パッケージをローカルにインストールした利用側のプロジェクトで実行してください。",
+        "生成ファイルをコミットする場合は、ビルドの前に check を実行してください。統合はビルド時に再生成するため、ビルド後の check では、すでに古くなっていたコミット済みファイルを検出できません。生成は決定的かつアトミックで、タイムスタンプも含みません。ジェネレーターの署名がない既存のファイルは決して上書きしません。"
+      ]
+    },
+    "code": "npx named-routes init\nnpx named-routes generate --root ./apps/web\nnpx named-routes list --framework sveltekit\nnpx named-routes generate --routes-dir app/pages --output app/utils/routes.ts\nnpx named-routes check\nnpx named-routes watch\nnpx named-routes --help",
+    "language": "sh"
+  },
+  {
+    "id": "generator-api",
+    "title": {
+      "en": "Programmatic generator API",
+      "pt": "API programática do gerador",
+      "es": "API programática del generador",
+      "ja": "ジェネレーターのプログラム API"
+    },
+    "paragraphs": {
+      "en": [
+        "discoverRoutes(options?) returns root, framework, directories, routes, entries and the runtime defaults without writing. Each entry has name, path, file, router, framework and optionally variant and localized. Explicit extra routes have file: null and router: explicit.",
+        "generateRoutes(options?, { check?: boolean }?) additionally returns output and changed. check mode rejects stale output without modifying it. validateOptions(options) throws INVALID_CONFIG for unknown keys. Import /generator and /config only in Node tooling, never in client code. withNamedRoutes comes from /next and namedRoutes from /vite."
+      ],
+      "pt": [
+        "discoverRoutes(opções?) retorna root, framework, directories, routes, entries e os defaults do runtime sem escrever. Cada entrada tem name, path, file, router, framework e, opcionalmente, variant e localized. Rotas extras explícitas têm file: null e router: explicit.",
+        "generateRoutes(opções?, { check?: boolean }?) também retorna output e changed. O modo check rejeita saída desatualizada sem modificá-la. validateOptions(opções) lança INVALID_CONFIG para chaves desconhecidas. Importe /generator e /config apenas em ferramentas Node, nunca em código cliente. withNamedRoutes vem de /next e namedRoutes de /vite."
+      ],
+      "es": [
+        "discoverRoutes(opciones?) devuelve root, framework, directories, routes, entries y los defaults del runtime sin escribir nada. Cada entrada tiene name, path, file, router, framework y, opcionalmente, variant y localized. Las rutas extra explícitas tienen file: null y router: explicit.",
+        "generateRoutes(opciones?, { check?: boolean }?) devuelve además output y changed. El modo check rechaza la salida desactualizada sin modificarla. validateOptions(opciones) lanza INVALID_CONFIG ante claves desconocidas. Importa /generator y /config solo en herramientas de Node, nunca en código de cliente. withNamedRoutes viene de /next y namedRoutes de /vite."
+      ],
+      "ja": [
+        "discoverRoutes(options?) は何も書き込まずに root、framework、directories、routes、entries、ランタイムの defaults を返します。各エントリーには name、path、file、router、framework があり、必要に応じて variant と localized も付きます。明示的に追加したルートは file: null、router: explicit です。",
+        "generateRoutes(options?, { check?: boolean }?) はさらに output と changed を返します。check モードは古い出力を変更せずに拒否します。validateOptions(options) は未知のキーに対して INVALID_CONFIG を投げます。/generator と /config は Node のツールの中だけでインポートし、クライアントのコードでは使わないでください。withNamedRoutes は /next から、namedRoutes は /vite からインポートします。"
+      ]
+    },
+    "code": "import { discoverRoutes, generateRoutes } from \"@triooo/next-named-routes/generator\";\nconst discovery = await discoverRoutes({ root: \"/path/to/app\", framework: \"nuxt\" });\nconsole.log(discovery.framework, discovery.entries);\nconst result = await generateRoutes({ root: \"/path/to/app\" });\nconsole.log(result.output, result.changed);\nawait generateRoutes({ root: \"/path/to/app\" }, { check: true });",
+    "language": "ts"
+  },
+  {
+    "id": "errors",
+    "title": {
+      "en": "Errors and troubleshooting",
+      "pt": "Erros e solução de problemas",
+      "es": "Errores y solución de problemas",
+      "ja": "エラーとトラブルシューティング"
+    },
+    "paragraphs": {
+      "en": [
+        "NamedRouteError extends Error and exposes a stable code. UNKNOWN_ROUTE means the name is absent; MISSING_PARAMETER means a required value was omitted; UNKNOWN_PARAMETER means an extra key belongs in query or is misspelled; INVALID_PARAMETER means a value has the wrong shape or contains a forbidden segment; INVALID_LOCALE means a locale was passed without i18n or is not configured.",
+        "INVALID_PATTERN, INVALID_NAME and INVALID_MANIFEST identify malformed route definitions. INVALID_OPTIONS, INVALID_QUERY and INVALID_HASH identify invalid options. INVALID_BASE_PATH, INVALID_ORIGIN and INVALID_I18N reject URL defaults. MISSING_ORIGIN requires an origin before requesting absolute URLs. GENERATION_ERROR covers discovery conflicts, unsafe output and stale check results; INVALID_CONFIG covers missing, malformed or misspelled configuration.",
+        "Cannot find routes.generated: confirm the integration runs, run generate, and check output/import aliases. Duplicate basePath or locale: use plain relative URLs with framework links and pass basePath/locale only for plain URLs. Stale names: confirm the watcher is enabled and inspect terminal errors. A type error after moving a page is expected: update the inferred name or define a stable override.",
+        "Generation refuses to overwrite a handwritten output file. Choose a different output rather than adding a generated signature to unrelated code. Keep generated output outside routable files. Dynamic interpolation does not authorize a request; validate permissions and application input at the destination."
+      ],
+      "pt": [
+        "NamedRouteError estende Error e expõe um code estável. UNKNOWN_ROUTE indica nome ausente; MISSING_PARAMETER indica valor obrigatório omitido; UNKNOWN_PARAMETER indica chave extra que pertence à query ou foi digitada errado; INVALID_PARAMETER indica formato inválido ou segmento proibido; INVALID_LOCALE indica idioma passado sem i18n ou não configurado.",
+        "INVALID_PATTERN, INVALID_NAME e INVALID_MANIFEST identificam definições de rota malformadas. INVALID_OPTIONS, INVALID_QUERY e INVALID_HASH identificam opções inválidas. INVALID_BASE_PATH, INVALID_ORIGIN e INVALID_I18N rejeitam defaults de URL. MISSING_ORIGIN exige uma origin antes de pedir URLs absolutas. GENERATION_ERROR cobre conflitos de descoberta, saída insegura e check desatualizado; INVALID_CONFIG cobre configuração ausente, malformada ou com erro de digitação.",
+        "Não encontra routes.generated: confirme que a integração está rodando, execute generate e verifique output/aliases de import. basePath ou idioma duplicado: use URLs relativas com os links do framework e passe basePath/locale apenas para URLs simples. Nomes desatualizados: confirme que o watcher está ativo e veja os erros do terminal. Erro de tipo após mover uma página é esperado: atualize o nome inferido ou defina um nome estável.",
+        "A geração se recusa a sobrescrever um arquivo escrito manualmente. Escolha outro output em vez de adicionar a assinatura de gerado a um código não relacionado. Mantenha a saída gerada fora de arquivos roteáveis. A interpolação dinâmica não autoriza uma requisição; valide permissões e entradas no destino."
+      ],
+      "es": [
+        "NamedRouteError extiende Error y expone un code estable. UNKNOWN_ROUTE indica que el nombre no existe; MISSING_PARAMETER, que se omitió un valor obligatorio; UNKNOWN_PARAMETER, que una clave extra pertenece a la query o está mal escrita; INVALID_PARAMETER, que un valor tiene una forma incorrecta o contiene un segmento prohibido; INVALID_LOCALE, que se pasó un idioma sin i18n o que no está configurado.",
+        "INVALID_PATTERN, INVALID_NAME e INVALID_MANIFEST identifican definiciones de ruta mal formadas. INVALID_OPTIONS, INVALID_QUERY e INVALID_HASH identifican opciones inválidas. INVALID_BASE_PATH, INVALID_ORIGIN e INVALID_I18N rechazan defaults de URL. MISSING_ORIGIN exige un origin antes de pedir URLs absolutas. GENERATION_ERROR cubre conflictos de descubrimiento, salidas inseguras y checks desactualizados; INVALID_CONFIG cubre configuraciones ausentes, mal formadas o mal escritas.",
+        "No se encuentra routes.generated: confirma que la integración se ejecuta, ejecuta generate y revisa output y los alias de import. basePath o idioma duplicados: usa URLs relativas con los enlaces del framework y pasa basePath/locale solo para URLs simples. Nombres desactualizados: confirma que el watcher está activo y revisa los errores de la terminal. Un error de tipos después de mover una página es lo esperado: actualiza el nombre inferido o define un nombre estable.",
+        "La generación se niega a sobrescribir un archivo de salida escrito a mano. Elige otro output en lugar de añadir la firma de generado a código no relacionado. Mantén la salida generada fuera de los archivos enrutables. La interpolación dinámica no autoriza una petición; valida los permisos y las entradas de la aplicación en el destino."
+      ],
+      "ja": [
+        "NamedRouteError は Error を継承し、安定した code を公開しています。UNKNOWN_ROUTE は名前が存在しないこと、MISSING_PARAMETER は必須の値が省略されたこと、UNKNOWN_PARAMETER は余分なキーが query に属するか綴りが誤っていること、INVALID_PARAMETER は値の形が誤っているか禁止されたセグメントを含むこと、INVALID_LOCALE は i18n なしで言語を渡したか未設定の言語であることを意味します。",
+        "INVALID_PATTERN、INVALID_NAME、INVALID_MANIFEST は不正なルート定義を示します。INVALID_OPTIONS、INVALID_QUERY、INVALID_HASH は不正なオプションを示します。INVALID_BASE_PATH、INVALID_ORIGIN、INVALID_I18N は URL の defaults を拒否します。MISSING_ORIGIN は、絶対 URL を求める前に origin が必要であることを示します。GENERATION_ERROR は検出の衝突、安全でない出力、check での古い結果を、INVALID_CONFIG は設定の欠落、不正、綴りの誤りを扱います。",
+        "routes.generated が見つからない場合: 統合が実行されているか確認し、generate を実行し、output とインポートのエイリアスを確認してください。basePath や言語が重複する場合: フレームワークのリンクには相対 URL を使い、basePath/locale は通常の URL のときだけ渡してください。名前が古い場合: watcher が有効か確認し、ターミナルのエラーを見てください。ページを移動した後の型エラーは想定どおりです。推論された名前を更新するか、固定名を定義してください。",
+        "生成処理は手書きの出力ファイルの上書きを拒否します。無関係なコードに生成の署名を付けるのではなく、別の output を選んでください。生成された出力はルーティング対象のファイルの外に置いてください。動的な補間はリクエストを認可するものではありません。権限とアプリケーションの入力は目的地で検証してください。"
+      ]
+    },
+    "code": "import { NamedRouteError } from \"@triooo/next-named-routes\";\ntry {\n  route(\"users.$user\", { user: \"\" });\n} catch (error) {\n  if (error instanceof NamedRouteError) console.error(error.code);\n  else throw error;\n}",
+    "language": "ts"
+  },
+  {
+    "id": "boundaries",
+    "title": {
+      "en": "Rewrites and boundaries",
+      "pt": "Rewrites e limites",
+      "es": "Rewrites y límites",
+      "ja": "リライトと境界"
+    },
+    "paragraphs": {
+      "en": [
+        "This is a URL builder, not a replacement router, middleware, authorization system or HTTP client. It does not create routes at runtime, validate resource existence, detect the visitor's locale or make backend requests.",
+        "Redirects, rewrites, middleware-based locale detection and paths declared in component code remain application concerns. Explicitly map any external or rewritten pattern you need with extraRoutes, and avoid applying locale or basePath twice. The scanner does not read framework config files; use withNamedRoutes or options to pass settings."
+      ],
+      "pt": [
+        "Este é um construtor de URLs, não um substituto para router, middleware, autorização ou cliente HTTP. Não cria rotas em runtime, não verifica a existência de recursos, não detecta o idioma do visitante e não faz requests de backend.",
+        "Redirects, rewrites, detecção de idioma por middleware e caminhos declarados no código dos componentes continuam sendo responsabilidade da aplicação. Mapeie explicitamente padrões externos ou reescritos com extraRoutes e evite aplicar locale ou basePath duas vezes. O scanner não lê arquivos de configuração do framework; use o withNamedRoutes ou as opções para repassar configurações."
+      ],
+      "es": [
+        "Es un constructor de URLs, no un reemplazo del router, un middleware, un sistema de autorización ni un cliente HTTP. No crea rutas en runtime, no valida que existan los recursos, no detecta el idioma del visitante ni hace peticiones al backend.",
+        "Los redirects, los rewrites, la detección de idioma por middleware y las rutas declaradas en el código de los componentes siguen siendo responsabilidad de la aplicación. Mapea explícitamente con extraRoutes cualquier patrón externo o reescrito que necesites y evita aplicar el idioma o el basePath dos veces. El escáner no lee los archivos de configuración del framework; usa withNamedRoutes o las opciones para pasar ajustes."
+      ],
+      "ja": [
+        "これは URL ビルダーであり、ルーター、ミドルウェア、認可システム、HTTP クライアントの代わりではありません。実行時にルートを作ったり、リソースの存在を確認したり、訪問者の言語を検出したり、バックエンドにリクエストしたりはしません。",
+        "リダイレクト、リライト、ミドルウェアによる言語検出、コンポーネントのコードで宣言したパスは、引き続きアプリケーションの責任です。必要な外部パターンやリライト後のパターンは extraRoutes で明示的に対応付け、言語や basePath を二重に付けないようにしてください。スキャナーはフレームワークの設定ファイルを読まないので、設定は withNamedRoutes かオプションで渡してください。"
+      ]
+    },
+    "code": "export default defineConfig({\n  // A rewrite destination with no page file:\n  extraRoutes: { \"legacy.post\": \"/blog/[slug]\" },\n});\nroute(\"legacy.post\", { slug: \"hello\" }); // /blog/hello",
+    "language": "ts"
+  },
+  {
+    "id": "website",
+    "title": {
+      "en": "Documentation website",
+      "pt": "Site de documentação",
+      "es": "Sitio de documentación",
+      "ja": "ドキュメントサイト"
+    },
+    "paragraphs": {
+      "en": [
+        "This documentation is a Next.js app in website/. It is the project's public site, built with the package itself: every internal link uses route(), the playground and destination pages are real App Router routes, and the English, Portuguese, Spanish and Japanese content comes from the same docs/content.json that renders the README files.",
+        "The landing page shows each supported framework as a line on a transit map, a departure board fed with real generator output, a compatibility table and an install journey. Motion is finite or user-driven, pauses off screen, and is disabled by prefers-reduced-motion.",
+        "To deploy on Vercel, create a project with Root Directory set to website and keep \"Include files outside the root directory\" enabled. website/vercel.json installs the repository, builds the package and then builds the site. No environment variables are required."
+      ],
+      "pt": [
+        "Esta documentação é um app Next.js em website/. É o site público do projeto, construído com o próprio pacote: todos os links internos usam route(), o playground e as páginas de destino são rotas reais do App Router, e o conteúdo em inglês, português, espanhol e japonês vem do mesmo docs/content.json que gera os READMEs.",
+        "A landing page mostra cada framework suportado como uma linha de um mapa de metrô, um painel de partidas alimentado com saídas reais do gerador, uma tabela de compatibilidade e uma jornada de instalação. As animações são finitas ou acionadas pelo usuário, pausam fora da tela e são desativadas por prefers-reduced-motion.",
+        "Para publicar na Vercel, crie um projeto com Root Directory em website e mantenha \"Include files outside the root directory\" ativado. O website/vercel.json instala o repositório, compila o pacote e depois compila o site. Nenhuma variável de ambiente é necessária."
+      ],
+      "es": [
+        "Esta documentación es una app Next.js en website/. Es el sitio público del proyecto, construido con el propio paquete: todos los enlaces internos usan route(), el playground y las páginas de destino son rutas reales del App Router, y el contenido en inglés, portugués, español y japonés sale del mismo docs/content.json que genera los README.",
+        "La página principal muestra cada framework compatible como una línea de un mapa de transporte, un panel de salidas alimentado con resultados reales del generador, una tabla de compatibilidad y un recorrido de instalación. Las animaciones son finitas o las inicia el usuario, se pausan fuera de pantalla y se desactivan con prefers-reduced-motion.",
+        "Para desplegar en Vercel, crea un proyecto con Root Directory en website y deja activada la opción \"Include files outside the root directory\". website/vercel.json instala el repositorio, compila el paquete y después compila el sitio. No se necesitan variables de entorno."
+      ],
+      "ja": [
+        "このドキュメントは website/ にある Next.js アプリです。プロジェクトの公開サイトで、パッケージ自身を使って作られています。内部リンクはすべて route() を使い、プレイグラウンドと目的地のページは実際の App Router のルートで、英語・ポルトガル語・スペイン語・日本語のコンテンツは README を生成するのと同じ docs/content.json から来ています。",
+        "ランディングページでは、対応する各フレームワークを路線図の路線として、ジェネレーターの実際の出力を流す出発案内板、互換性の表、インストールの道のりとともに紹介しています。アニメーションは有限かユーザー操作によるもので、画面外では止まり、prefers-reduced-motion では無効になります。",
+        "Vercel にデプロイするには、Root Directory を website にしたプロジェクトを作り、\"Include files outside the root directory\" を有効のままにしてください。website/vercel.json がリポジトリをインストールし、パッケージをビルドしてからサイトをビルドします。環境変数は不要です。"
+      ]
+    },
+    "code": "# From the repository root:\npnpm install\npnpm build\npnpm --dir website install\npnpm --dir website dev\n# http://localhost:3000\npnpm --dir website build",
+    "language": "sh"
+  },
+  {
+    "id": "demos",
+    "title": {
+      "en": "Try it: framework demos",
+      "pt": "Teste: demos por framework",
+      "es": "Pruébalo: demos por framework",
+      "ja": "試してみる: フレームワーク別デモ"
+    },
+    "paragraphs": {
+      "en": [
+        "examples/ holds a small runnable app per supported setup: app-router and pages-router (Next.js), nuxt, vue (unplugin-vue-router), sveltekit, astro, react-router (flat routes), tanstack-router and react (routes declared by hand with createRoutes). Each one links to a static page, a dynamic users page and a catch-all docs page by name.",
+        "The demos depend on the package through file:../.., so build the package once at the repository root, then install and run any demo with npm. The generated module appears on the first dev or build run and changes as you add pages. Each demo builds with its real framework."
+      ],
+      "pt": [
+        "examples/ tem um app pequeno e executável para cada configuração suportada: app-router e pages-router (Next.js), nuxt, vue (unplugin-vue-router), sveltekit, astro, react-router (flat routes), tanstack-router e react (rotas declaradas manualmente com createRoutes). Cada um aponta por nome para uma página estática, uma página dinâmica de usuários e uma página catch-all de docs.",
+        "As demos dependem do pacote via file:../.., então compile o pacote uma vez na raiz do repositório e depois instale e rode qualquer demo com npm. O módulo gerado aparece no primeiro dev ou build e muda conforme você cria páginas. Cada demo é compilada com o framework real."
+      ],
+      "es": [
+        "examples/ contiene una pequeña app ejecutable para cada configuración compatible: app-router y pages-router (Next.js), nuxt, vue (unplugin-vue-router), sveltekit, astro, react-router (flat routes), tanstack-router y react (rutas declaradas a mano con createRoutes). Cada una enlaza por nombre a una página estática, una página dinámica de usuarios y una página catch-all de documentación.",
+        "Las demos dependen del paquete mediante file:../.., así que compila el paquete una vez en la raíz del repositorio y después instala y ejecuta cualquier demo con npm. El módulo generado aparece en la primera ejecución de dev o build y cambia a medida que añades páginas. Cada demo compila con su framework real."
+      ],
+      "ja": [
+        "examples/ には、対応する構成ごとに小さな実行可能アプリがあります。app-router と pages-router（Next.js）、nuxt、vue（unplugin-vue-router）、sveltekit、astro、react-router（flat routes）、tanstack-router、react（createRoutes でルートを手書き）です。どれも静的ページ、ユーザーの動的ページ、ドキュメントの catch-all ページに名前でリンクしています。",
+        "デモは file:../.. でパッケージに依存しているので、まずリポジトリのルートでパッケージを一度ビルドし、その後は npm で任意のデモをインストールして実行してください。生成モジュールは最初の dev または build で作られ、ページを追加するたびに変わります。どのデモも実際のフレームワークでビルドできます。"
+      ]
+    },
+    "code": "# Repository root, once:\npnpm install && pnpm build\n\n# Any demo:\ncd examples/nuxt        # or vue, sveltekit, astro, react-router, tanstack-router, react\nnpm install\nnpm run dev\n# create a page and watch routes.generated.ts update",
+    "language": "sh"
+  },
+  {
+    "id": "contributing",
+    "title": {
+      "en": "Contribute step by step",
+      "pt": "Contribua passo a passo",
+      "es": "Contribuye paso a paso",
+      "ja": "ステップごとのコントリビュート"
+    },
+    "paragraphs": {
+      "en": [
+        "**1. Prerequisites.** Install Node.js 20.19 or newer (22.18+ if you want to load named-routes.config.ts files), Git and Python 3 (only used to render the README files). Enable pnpm 12.16.1, the version pinned in package.json: corepack enable, or npm install --global pnpm@12.16.1.",
+        "**2. Clone and build.** Clone the repository, run pnpm install at the root and then pnpm build. The build cleans dist/ and compiles src/*.ts to ESM JavaScript, declarations and source maps. Run pnpm build again after every change to src/: the website and the demos use dist/, not the TypeScript sources.",
+        "**3. Know the layout.** src/index.ts is the browser-safe runtime (createRoutes, i18n, patterns); src/frameworks.ts holds the file-convention adapters; src/generator.ts discovers, validates and writes the module; src/config.ts loads named-routes.config.*; src/next.ts and src/vite.ts are the integrations; src/cli.ts is the named-routes binary. tests/ has the Node test suite and smoke tests. docs/locales.json lists the languages, docs/content.json holds the multilingual documentation and website/messages/<code>.json the interface texts. website/ is this site, examples/ has one demo per framework and scripts/ has the release, documentation and language helpers.",
+        "**4. Test while you work.** pnpm check builds and runs every Node test plus the positive and negative TypeScript contracts; it is what CI runs on Node 20, 22, 24 and 26. pnpm test:next starts real Next.js dev servers (install examples/app-router first with pnpm --dir examples/app-router install). pnpm test:vite starts a real Vite dev server. pnpm test:package packs the tarball and installs it into a clean project. pnpm release:check runs all of them.",
+        "**5. Edit the documentation.** docs/content.json is the single source for the website and every README. Each section has an id, title.<code>, paragraphs.<code> (an array of paragraphs per language), code and language; the codes are en, pt, es and ja. English is the source language: write the English text first and keep the same number of paragraphs in every language. **text** renders as bold on the site and in the README. A new section must also be added to a group in website/lib/docs.ts (with a title for every language), otherwise it is not listed in the sidebar. Its page is /docs/<id>.",
+        "**6. Translate and synchronize the languages.** Run pnpm locales (node scripts/sync-locales.mjs) after changing English text. It compares every language with English in docs/content.json and website/messages/*.json, fills anything missing with the English text so the site keeps working, removes interface keys that no longer exist in English, reorders keys to match en.json and prints a \"Needs translation\" list. Translate each listed entry in its language, then run pnpm locales:check (node scripts/sync-locales.mjs --check): it changes nothing and fails on missing titles or paragraphs, a different paragraph count, unbalanced **bold** markers, missing or stale interface keys, different ICU placeholders such as {count}, keys out of order or a language missing from website/lib/locales.ts. CI runs this check. node scripts/sync-locales.mjs --untranslated also lists texts that are still identical to English, which helps to review a language before a release.",
+        "**7. Sync the README files.** Run pnpm docs (python3 scripts/sync-docs.py) to regenerate README.md, README.pt-BR.md, README.es.md and README.ja.md from docs/content.json and docs/locales.json, then commit all of them. pnpm docs:check fails when any README is out of date; CI runs it, so never edit the README files by hand. The usual order is: edit English, pnpm locales, translate, pnpm locales:check, pnpm docs.",
+        "**8. Add a new language.** (a) Add an entry to docs/locales.json with code, name, htmlLang, readme (for example README.fr.md) and the README labels contents, references and localGuide. (b) Add the code to the Locale union in website/lib/locales.ts and a title for it to every group in website/lib/docs.ts. (c) Run pnpm locales: it creates website/messages/<code>.json and fills docs/content.json with English placeholders. (d) Translate every entry it reports. (e) Add the new README to the files list in package.json. (f) If the script needs other fonts or line breaking (as Japanese does), add rules for html[lang=\"<code>\"] in website/app/transit.css. (g) Run pnpm locales:check, pnpm docs, pnpm --dir website check:i18n and pnpm --dir website build. The language switcher in the header picks the new language up automatically.",
+        "**9. Edit website texts.** Interface strings live in website/messages/<code>.json under ui, with identical keys in every file; ICU syntax is checked, so avoid unescaped braces and keep placeholders identical. Add new keys to en.json first, then run pnpm locales and translate them. pnpm --dir website check:i18n validates every catalog. Framework data shown on the landing page (board rows, map lines, compatibility table) lives in website/lib/transit.ts and must match real generator output.",
+        "**10. Run the website.** After pnpm build at the root, run pnpm --dir website install once and pnpm --dir website dev (or pnpm website). The site depends on the package through link:.., so rebuild the package and restart the dev server after changing src/. Switch languages with EN, PT, ES and JA in the header. Before a pull request run pnpm --dir website typecheck and pnpm --dir website build.",
+        "**11. Try a demo.** Each folder in examples/ is a small app: cd examples/sveltekit (or nuxt, vue, astro, react-router, tanstack-router, react), npm install, npm run dev. Add a page and watch its routes.generated.ts change. The Next.js demos use pnpm.",
+        "**12. Add a framework.** Write the adapter in src/frameworks.ts (sources, extensions, skipDirectory, map) and teach detectFramework its package; add convention tests to tests/frameworks.test.mjs; add a demo to examples/ and the demos workflow matrix; document it in docs/content.json in every language; add its line to website/lib/transit.ts only after the demo builds.",
+        "**13. Open a pull request.** Keep the change focused, add regression tests, update CHANGELOG.md under the next version, run pnpm release:check, pnpm locales:check and pnpm docs:check, and never commit generated files (dist/, routes.generated.ts, .next/, demo build output); .gitignore already excludes them.",
+        "**14. Releases (maintainers).** Bump version in package.json, move the CHANGELOG entry under it, run pnpm release:check, then publish a GitHub release tagged next-named-routes-vX.Y.Z. The publish workflow validates the tag, runs CI again and publishes to npm with provenance through npm trusted publishing (no npm token is stored). Apache License 2.0 applies; bundled fonts keep their OFL licenses."
+      ],
+      "pt": [
+        "**1. Pré-requisitos.** Instale Node.js 20.19 ou superior (22.18+ se quiser carregar arquivos named-routes.config.ts), Git e Python 3 (usado apenas para gerar os READMEs). Ative o pnpm 12.16.1, a versão fixada no package.json: corepack enable ou npm install --global pnpm@12.16.1.",
+        "**2. Clone e compile.** Clone o repositório, rode pnpm install na raiz e depois pnpm build. O build limpa o dist/ e compila src/*.ts para JavaScript ESM, declarações e source maps. Rode pnpm build de novo a cada mudança em src/: o site e as demos usam o dist/, não os fontes TypeScript.",
+        "**3. Conheça a estrutura.** src/index.ts é o runtime que roda no navegador (createRoutes, i18n, padrões); src/frameworks.ts tem os adaptadores de convenção de arquivos; src/generator.ts descobre, valida e escreve o módulo; src/config.ts carrega named-routes.config.*; src/next.ts e src/vite.ts são as integrações; src/cli.ts é o binário named-routes. tests/ tem a suíte Node e os smoke tests. docs/locales.json lista os idiomas, docs/content.json guarda a documentação multilíngue e website/messages/<código>.json os textos da interface. website/ é este site, examples/ tem uma demo por framework e scripts/ tem os utilitários de release, documentação e idiomas.",
+        "**4. Teste enquanto desenvolve.** pnpm check compila e roda todos os testes Node mais os contratos TypeScript positivos e negativos; é o que o CI executa no Node 20, 22, 24 e 26. pnpm test:next inicia servidores reais do Next.js (instale antes examples/app-router com pnpm --dir examples/app-router install). pnpm test:vite inicia um servidor Vite real. pnpm test:package empacota o tarball e o instala em um projeto limpo. pnpm release:check roda todos eles.",
+        "**5. Edite a documentação.** docs/content.json é a fonte única do site e de todos os READMEs. Cada seção tem id, title.<código>, paragraphs.<código> (uma lista de parágrafos por idioma), code e language; os códigos são en, pt, es e ja. O inglês é o idioma de origem: escreva primeiro o texto em inglês e mantenha o mesmo número de parágrafos em todos os idiomas. **texto** vira negrito no site e no README. Uma seção nova também precisa entrar em um grupo de website/lib/docs.ts (com título em todos os idiomas), senão não aparece na barra lateral. A página dela é /docs/<id>.",
+        "**6. Traduza e sincronize os idiomas.** Rode pnpm locales (node scripts/sync-locales.mjs) depois de mudar textos em inglês. Ele compara cada idioma com o inglês em docs/content.json e website/messages/*.json, preenche o que faltar com o texto em inglês para o site continuar funcionando, remove chaves da interface que não existem mais no inglês, reordena as chaves conforme o en.json e imprime a lista \"Needs translation\". Traduza cada item listado no seu idioma e depois rode pnpm locales:check (node scripts/sync-locales.mjs --check): ele não altera nada e falha quando faltam títulos ou parágrafos, quando o número de parágrafos é diferente, quando os marcadores **negrito** estão desbalanceados, quando faltam ou sobram chaves da interface, quando placeholders ICU como {count} diferem, quando as chaves estão fora de ordem ou quando um idioma não está em website/lib/locales.ts. O CI roda esse check. node scripts/sync-locales.mjs --untranslated também lista textos que ainda estão iguais ao inglês, útil para revisar um idioma antes de uma release.",
+        "**7. Sincronize os READMEs.** Rode pnpm docs (python3 scripts/sync-docs.py) para gerar README.md, README.pt-BR.md, README.es.md e README.ja.md a partir de docs/content.json e docs/locales.json e versione todos eles. pnpm docs:check falha quando qualquer README está desatualizado; o CI roda esse check, então nunca edite os READMEs à mão. A ordem usual é: editar o inglês, pnpm locales, traduzir, pnpm locales:check, pnpm docs.",
+        "**8. Adicione um idioma novo.** (a) Adicione uma entrada em docs/locales.json com code, name, htmlLang, readme (por exemplo README.fr.md) e os rótulos do README contents, references e localGuide. (b) Adicione o código à união Locale em website/lib/locales.ts e um título para ele em cada grupo de website/lib/docs.ts. (c) Rode pnpm locales: ele cria website/messages/<código>.json e preenche docs/content.json com o texto em inglês como provisório. (d) Traduza cada item que ele listar. (e) Adicione o README novo à lista files do package.json. (f) Se a escrita precisar de outras fontes ou de quebra de linha diferente (como o japonês), adicione regras para html[lang=\"<código>\"] em website/app/transit.css. (g) Rode pnpm locales:check, pnpm docs, pnpm --dir website check:i18n e pnpm --dir website build. O seletor de idioma do header passa a mostrar o idioma novo automaticamente.",
+        "**9. Edite os textos do site.** As strings da interface ficam em website/messages/<código>.json dentro de ui, com as mesmas chaves em todos os arquivos; a sintaxe ICU é verificada, então evite chaves sem escape e mantenha os placeholders idênticos. Adicione chaves novas primeiro no en.json, depois rode pnpm locales e traduza. pnpm --dir website check:i18n valida todos os catálogos. Os dados de frameworks da landing (linhas do painel, linhas do mapa, tabela de compatibilidade) ficam em website/lib/transit.ts e precisam corresponder a saídas reais do gerador.",
+        "**10. Rode o site.** Depois do pnpm build na raiz, rode pnpm --dir website install uma vez e pnpm --dir website dev (ou pnpm website). O site depende do pacote via link:.., então recompile o pacote e reinicie o servidor de desenvolvimento ao mudar src/. Troque de idioma com EN, PT, ES e JA no header. Antes de um pull request rode pnpm --dir website typecheck e pnpm --dir website build.",
+        "**11. Teste uma demo.** Cada pasta em examples/ é um app pequeno: cd examples/sveltekit (ou nuxt, vue, astro, react-router, tanstack-router, react), npm install, npm run dev. Crie uma página e veja o routes.generated.ts mudar. As demos de Next.js usam pnpm.",
+        "**12. Adicione um framework.** Escreva o adaptador em src/frameworks.ts (sources, extensions, skipDirectory, map) e ensine o detectFramework a reconhecer o pacote; adicione testes de convenção em tests/frameworks.test.mjs; crie uma demo em examples/ e inclua-a na matriz do workflow de demos; documente no docs/content.json em todos os idiomas; adicione a linha em website/lib/transit.ts somente depois que a demo compilar.",
+        "**13. Abra um pull request.** Mantenha a mudança focada, adicione testes de regressão, atualize o CHANGELOG.md na próxima versão, rode pnpm release:check, pnpm locales:check e pnpm docs:check e nunca versione arquivos gerados (dist/, routes.generated.ts, .next/, saída de build das demos); o .gitignore já os exclui.",
+        "**14. Releases (mantenedores).** Aumente a version no package.json, mova a entrada do CHANGELOG para ela, rode pnpm release:check e publique uma release no GitHub com a tag next-named-routes-vX.Y.Z. O workflow de publicação valida a tag, roda o CI de novo e publica no npm com provenance via trusted publishing do npm (nenhum token do npm é armazenado). Aplica-se a Licença Apache 2.0; as fontes incluídas mantêm suas licenças OFL."
+      ],
+      "es": [
+        "**1. Requisitos.** Instala Node.js 20.19 o superior (22.18+ si quieres cargar archivos named-routes.config.ts), Git y Python 3 (solo se usa para generar los README). Activa pnpm 12.16.1, la versión fijada en package.json: corepack enable o npm install --global pnpm@12.16.1.",
+        "**2. Clona y compila.** Clona el repositorio, ejecuta pnpm install en la raíz y luego pnpm build. El build limpia dist/ y compila src/*.ts a JavaScript ESM, declaraciones y source maps. Vuelve a ejecutar pnpm build después de cada cambio en src/: el sitio y las demos usan dist/, no los fuentes TypeScript.",
+        "**3. Conoce la estructura.** src/index.ts es el runtime que funciona en el navegador (createRoutes, i18n, patrones); src/frameworks.ts contiene los adaptadores de convenciones de archivos; src/generator.ts descubre, valida y escribe el módulo; src/config.ts carga named-routes.config.*; src/next.ts y src/vite.ts son las integraciones; src/cli.ts es el binario named-routes. tests/ tiene la suite de Node y los smoke tests. docs/locales.json lista los idiomas, docs/content.json guarda la documentación multilingüe y website/messages/<código>.json los textos de la interfaz. website/ es este sitio, examples/ tiene una demo por framework y scripts/ tiene las utilidades de versiones, documentación e idiomas.",
+        "**4. Prueba mientras trabajas.** pnpm check compila y ejecuta todas las pruebas de Node y los contratos TypeScript positivos y negativos; es lo que la CI ejecuta en Node 20, 22, 24 y 26. pnpm test:next inicia servidores reales de Next.js (instala antes examples/app-router con pnpm --dir examples/app-router install). pnpm test:vite inicia un servidor real de Vite. pnpm test:package empaqueta el tarball y lo instala en un proyecto limpio. pnpm release:check ejecuta todo lo anterior.",
+        "**5. Edita la documentación.** docs/content.json es la fuente única del sitio y de todos los README. Cada sección tiene id, title.<código>, paragraphs.<código> (una lista de párrafos por idioma), code y language; los códigos son en, pt, es y ja. El inglés es el idioma de origen: escribe primero el texto en inglés y mantén el mismo número de párrafos en todos los idiomas. **texto** se muestra en negrita en el sitio y en el README. Una sección nueva también debe añadirse a un grupo de website/lib/docs.ts (con título en todos los idiomas); si no, no aparece en la barra lateral. Su página es /docs/<id>.",
+        "**6. Traduce y sincroniza los idiomas.** Ejecuta pnpm locales (node scripts/sync-locales.mjs) después de cambiar texto en inglés. Compara cada idioma con el inglés en docs/content.json y website/messages/*.json, completa lo que falte con el texto en inglés para que el sitio siga funcionando, elimina las claves de interfaz que ya no existen en inglés, reordena las claves según en.json e imprime la lista \"Needs translation\". Traduce cada elemento listado en su idioma y luego ejecuta pnpm locales:check (node scripts/sync-locales.mjs --check): no modifica nada y falla si faltan títulos o párrafos, si el número de párrafos es distinto, si los marcadores **negrita** están desbalanceados, si faltan o sobran claves de interfaz, si difieren placeholders ICU como {count}, si las claves están fuera de orden o si falta un idioma en website/lib/locales.ts. La CI ejecuta esta comprobación. node scripts/sync-locales.mjs --untranslated también lista los textos que siguen siendo idénticos al inglés, útil para revisar un idioma antes de publicar.",
+        "**7. Sincroniza los README.** Ejecuta pnpm docs (python3 scripts/sync-docs.py) para regenerar README.md, README.pt-BR.md, README.es.md y README.ja.md a partir de docs/content.json y docs/locales.json, y versiónalos todos. pnpm docs:check falla cuando algún README está desactualizado; la CI lo ejecuta, así que nunca edites los README a mano. El orden habitual es: editar el inglés, pnpm locales, traducir, pnpm locales:check, pnpm docs.",
+        "**8. Añade un idioma nuevo.** (a) Añade una entrada en docs/locales.json con code, name, htmlLang, readme (por ejemplo README.fr.md) y las etiquetas del README contents, references y localGuide. (b) Añade el código a la unión Locale de website/lib/locales.ts y un título para él en cada grupo de website/lib/docs.ts. (c) Ejecuta pnpm locales: crea website/messages/<código>.json y completa docs/content.json con el texto en inglés como provisional. (d) Traduce cada elemento que liste. (e) Añade el nuevo README a la lista files de package.json. (f) Si la escritura necesita otras fuentes o un salto de línea distinto (como el japonés), añade reglas para html[lang=\"<código>\"] en website/app/transit.css. (g) Ejecuta pnpm locales:check, pnpm docs, pnpm --dir website check:i18n y pnpm --dir website build. El selector de idioma del header muestra el idioma nuevo automáticamente.",
+        "**9. Edita los textos del sitio.** Las cadenas de la interfaz están en website/messages/<código>.json dentro de ui, con las mismas claves en todos los archivos; la sintaxis ICU se comprueba, así que evita llaves sin escapar y mantén los placeholders idénticos. Añade las claves nuevas primero en en.json, luego ejecuta pnpm locales y tradúcelas. pnpm --dir website check:i18n valida todos los catálogos. Los datos de frameworks de la página principal (filas del panel, líneas del mapa, tabla de compatibilidad) están en website/lib/transit.ts y deben coincidir con resultados reales del generador.",
+        "**10. Ejecuta el sitio.** Después de pnpm build en la raíz, ejecuta pnpm --dir website install una vez y pnpm --dir website dev (o pnpm website). El sitio depende del paquete mediante link:.., así que recompila el paquete y reinicia el servidor de desarrollo al cambiar src/. Cambia de idioma con EN, PT, ES y JA en el header. Antes de un pull request ejecuta pnpm --dir website typecheck y pnpm --dir website build.",
+        "**11. Prueba una demo.** Cada carpeta de examples/ es una app pequeña: cd examples/sveltekit (o nuxt, vue, astro, react-router, tanstack-router, react), npm install, npm run dev. Añade una página y mira cómo cambia su routes.generated.ts. Las demos de Next.js usan pnpm.",
+        "**12. Añade un framework.** Escribe el adaptador en src/frameworks.ts (sources, extensions, skipDirectory, map) y enseña a detectFramework a reconocer su paquete; añade pruebas de convención en tests/frameworks.test.mjs; añade una demo en examples/ y en la matriz del workflow de demos; documéntalo en docs/content.json en todos los idiomas; añade su línea en website/lib/transit.ts solo cuando la demo compile.",
+        "**13. Abre un pull request.** Mantén el cambio acotado, añade pruebas de regresión, actualiza CHANGELOG.md en la próxima versión, ejecuta pnpm release:check, pnpm locales:check y pnpm docs:check, y nunca versiones archivos generados (dist/, routes.generated.ts, .next/, salida de build de las demos); .gitignore ya los excluye.",
+        "**14. Publicaciones (mantenedores).** Sube version en package.json, mueve la entrada del CHANGELOG a esa versión, ejecuta pnpm release:check y publica una release en GitHub con la etiqueta next-named-routes-vX.Y.Z. El workflow de publicación valida la etiqueta, vuelve a ejecutar la CI y publica en npm con provenance mediante trusted publishing de npm (no se guarda ningún token de npm). Se aplica la Licencia Apache 2.0; las fuentes incluidas conservan sus licencias OFL."
+      ],
+      "ja": [
+        "**1. 前提条件。** Node.js 20.19 以上（named-routes.config.ts を読み込むなら 22.18 以上）、Git、Python 3（README の生成にだけ使用）をインストールします。package.json で固定している pnpm 12.16.1 を有効にしてください: corepack enable、または npm install --global pnpm@12.16.1。",
+        "**2. クローンしてビルドする。** リポジトリをクローンし、ルートで pnpm install、続けて pnpm build を実行します。ビルドは dist/ を消してから src/*.ts を ESM の JavaScript、型宣言、ソースマップにコンパイルします。サイトとデモは TypeScript のソースではなく dist/ を使うので、src/ を変更するたびに pnpm build を実行し直してください。",
+        "**3. 構成を知る。** src/index.ts はブラウザーで動くランタイム（createRoutes、i18n、パターン）、src/frameworks.ts はファイル規約のアダプター、src/generator.ts は検出・検証・モジュールの書き出し、src/config.ts は named-routes.config.* の読み込み、src/next.ts と src/vite.ts は統合、src/cli.ts は named-routes バイナリです。tests/ には Node のテストスイートとスモークテストがあります。docs/locales.json が言語の一覧、docs/content.json が多言語のドキュメント、website/messages/<code>.json がインターフェースのテキストです。website/ はこのサイト、examples/ はフレームワークごとのデモ、scripts/ はリリース・ドキュメント・言語のヘルパーです。",
+        "**4. 作業しながらテストする。** pnpm check はビルドしてから、すべての Node テストと、正負両方の TypeScript の契約を実行します。CI が Node 20、22、24、26 で実行しているのもこれです。pnpm test:next は実際の Next.js 開発サーバーを起動します（先に pnpm --dir examples/app-router install で examples/app-router をインストール）。pnpm test:vite は実際の Vite 開発サーバーを起動します。pnpm test:package は tarball をパックして新しいプロジェクトにインストールします。pnpm release:check はこれらをすべて実行します。",
+        "**5. ドキュメントを編集する。** docs/content.json は、サイトとすべての README の唯一の情報源です。各セクションには id、title.<code>、paragraphs.<code>（言語ごとの段落の配列）、code、language があり、code は en、pt、es、ja です。原文は英語です。まず英語を書き、どの言語でも段落の数をそろえてください。**テキスト** はサイトでも README でも太字になります。新しいセクションは website/lib/docs.ts のグループにも（すべての言語のタイトル付きで）追加しないと、サイドバーに表示されません。ページは /docs/<id> です。",
+        "**6. 言語を翻訳して同期する。** 英語のテキストを変えたら pnpm locales（node scripts/sync-locales.mjs）を実行します。docs/content.json と website/messages/*.json の各言語を英語と比較し、サイトが動き続けるよう欠けている部分を英語で埋め、英語にもう存在しないインターフェースのキーを削除し、キーを en.json の順に並べ替え、\"Needs translation\" の一覧を出力します。一覧の項目をそれぞれの言語に翻訳したら pnpm locales:check（node scripts/sync-locales.mjs --check）を実行してください。何も変更せず、タイトルや段落の欠落、段落数の違い、**太字** の記号の不一致、インターフェースのキーの欠落や余り、{count} のような ICU のプレースホルダーの違い、キーの順序の乱れ、website/lib/locales.ts にない言語があると失敗します。CI もこのチェックを実行します。node scripts/sync-locales.mjs --untranslated は英語のままのテキストも一覧にするので、リリース前に言語を見直すのに役立ちます。",
+        "**7. README を同期する。** pnpm docs（python3 scripts/sync-docs.py）を実行すると、docs/content.json と docs/locales.json から README.md、README.pt-BR.md、README.es.md、README.ja.md を生成し直すので、すべてコミットしてください。どれかの README が古いと pnpm docs:check は失敗します。CI もこれを実行するので、README を手で編集しないでください。いつもの順序は、英語を編集 → pnpm locales → 翻訳 → pnpm locales:check → pnpm docs です。",
+        "**8. 新しい言語を追加する。** (a) docs/locales.json に code、name、htmlLang、readme（たとえば README.fr.md）と、README のラベル contents、references、localGuide を持つエントリーを追加します。(b) website/lib/locales.ts の Locale ユニオンにそのコードを追加し、website/lib/docs.ts の各グループにその言語のタイトルを追加します。(c) pnpm locales を実行すると、website/messages/<code>.json が作られ、docs/content.json は仮の英語テキストで埋められます。(d) 一覧に出た項目をすべて翻訳します。(e) 新しい README を package.json の files に追加します。(f) 日本語のように別のフォントや改行の扱いが必要な文字体系なら、website/app/transit.css に html[lang=\"<code>\"] のルールを追加します。(g) pnpm locales:check、pnpm docs、pnpm --dir website check:i18n、pnpm --dir website build を実行します。ヘッダーの言語切り替えには新しい言語が自動的に表示されます。",
+        "**9. サイトのテキストを編集する。** インターフェースの文字列は website/messages/<code>.json の ui の下にあり、すべてのファイルで同じキーを持ちます。ICU の構文はチェックされるので、エスケープしていない波かっこは避け、プレースホルダーは同一に保ってください。新しいキーはまず en.json に追加し、pnpm locales を実行してから翻訳します。pnpm --dir website check:i18n がすべてのカタログを検証します。ランディングページに表示するフレームワークのデータ（案内板の行、路線図の路線、互換性の表）は website/lib/transit.ts にあり、ジェネレーターの実際の出力と一致している必要があります。",
+        "**10. サイトを動かす。** ルートで pnpm build を実行した後、pnpm --dir website install を一度だけ実行し、pnpm --dir website dev（または pnpm website）で起動します。サイトは link:.. でパッケージに依存しているので、src/ を変更したらパッケージをビルドし直して開発サーバーを再起動してください。言語はヘッダーの EN、PT、ES、JA で切り替えられます。プルリクエストの前に pnpm --dir website typecheck と pnpm --dir website build を実行してください。",
+        "**11. デモを試す。** examples/ の各フォルダーは小さなアプリです: cd examples/sveltekit（または nuxt、vue、astro、react-router、tanstack-router、react）、npm install、npm run dev。ページを追加して routes.generated.ts が変わる様子を見てください。Next.js のデモは pnpm を使います。",
+        "**12. フレームワークを追加する。** src/frameworks.ts にアダプター（sources、extensions、skipDirectory、map）を書き、detectFramework にそのパッケージを教えます。tests/frameworks.test.mjs に規約テストを追加し、examples/ にデモを作ってデモ用ワークフローのマトリックスに加え、すべての言語で docs/content.json に記載します。website/lib/transit.ts に路線を追加するのは、デモがビルドできてからにしてください。",
+        "**13. プルリクエストを出す。** 変更は焦点を絞り、回帰テストを追加し、次のバージョンとして CHANGELOG.md を更新し、pnpm release:check、pnpm locales:check、pnpm docs:check を実行してください。生成ファイル（dist/、routes.generated.ts、.next/、デモのビルド出力）は決してコミットしないでください。.gitignore ですでに除外しています。",
+        "**14. リリース（メンテナー向け）。** package.json の version を上げ、CHANGELOG のエントリーをそのバージョンに移し、pnpm release:check を実行してから、next-named-routes-vX.Y.Z というタグで GitHub のリリースを公開します。公開用ワークフローがタグを検証し、CI をもう一度実行し、npm の trusted publishing を使って provenance 付きで npm に公開します（npm のトークンは保存しません）。Apache License 2.0 が適用され、同梱フォントはそれぞれの OFL ライセンスに従います。"
+      ]
+    },
+    "code": "# 1-2. Prepare the repository\ncorepack enable                  # or: npm i -g pnpm@12.16.1\ngit clone <repository-url> next-named-routes && cd next-named-routes\npnpm install\npnpm build\n\n# 4. Test\npnpm check                       # build + Node tests + TypeScript contracts\npnpm --dir examples/app-router install && pnpm test:next\npnpm test:vite\npnpm test:package\npnpm release:check               # everything above\n\n# 5-7. Documentation in every language\n$EDITOR docs/content.json        # English first\npnpm locales                     # fill gaps, list what needs translation\n$EDITOR docs/content.json website/messages/*.json   # translate pt, es, ja\npnpm locales:check               # what CI runs\nnode scripts/sync-locales.mjs --untranslated\npnpm docs                        # README.md, .pt-BR, .es, .ja\npnpm docs:check\n\n# 8. A new language (example: fr)\n$EDITOR docs/locales.json website/lib/locales.ts website/lib/docs.ts\npnpm locales && pnpm locales:check && pnpm docs\n\n# 10. Website\npnpm --dir website install\npnpm --dir website dev           # http://localhost:3000\npnpm --dir website check:i18n\npnpm --dir website typecheck && pnpm --dir website build\n\n# 11. A demo\ncd examples/nuxt && npm install && npm run dev",
+    "language": "sh"
+  },
+  {
+    "id": "versioning",
+    "title": {
+      "en": "Versions and upgrades",
+      "pt": "Versões e atualizações",
+      "es": "Versiones y actualizaciones",
+      "ja": "バージョンとアップグレード"
+    },
+    "paragraphs": {
+      "en": [
+        "Version 1.x defines the public contract for inferred names, typed URL generation, framework adapters, i18n, the Next.js wrapper, the Vite plugin and the CLI.",
+        "Patch releases preserve the documented API while fixing bugs. Minor releases add compatible functionality, such as new framework adapters. Breaking changes require a new major version. Review the changelog before upgrading.",
+        "After an upgrade, restart the dev server to regenerate the manifest and run your application’s type check and navigation tests. If you move a page and need to preserve its public route name, use an explicit alias."
+      ],
+      "pt": [
+        "A versão 1.x define o contrato público para nomes inferidos, geração tipada de URLs, adaptadores de framework, i18n, o wrapper do Next.js, o plugin Vite e a CLI.",
+        "Versões patch preservam a API documentada enquanto corrigem bugs. Versões minor adicionam funcionalidades compatíveis, como novos adaptadores de framework. Mudanças incompatíveis exigem uma nova versão major. Consulte o changelog antes de atualizar.",
+        "Depois de atualizar, reinicie o servidor de desenvolvimento para regenerar o manifesto e execute o type check e os testes de navegação da aplicação. Se mover uma página e precisar preservar o nome público da rota, use um alias explícito."
+      ],
+      "es": [
+        "La versión 1.x define el contrato público de los nombres inferidos, la generación tipada de URLs, los adaptadores de framework, i18n, el wrapper de Next.js, el plugin de Vite y la CLI.",
+        "Las versiones de parche preservan la API documentada mientras corrigen errores. Las versiones menores añaden funcionalidad compatible, como nuevos adaptadores de framework. Los cambios incompatibles requieren una nueva versión mayor. Revisa el changelog antes de actualizar.",
+        "Después de actualizar, reinicia el servidor de desarrollo para regenerar el manifiesto y ejecuta la comprobación de tipos y las pruebas de navegación de tu aplicación. Si mueves una página y necesitas conservar su nombre de ruta público, usa un alias explícito."
+      ],
+      "ja": [
+        "バージョン 1.x は、推論される名前、型付き URL 生成、フレームワークのアダプター、i18n、Next.js のラッパー、Vite プラグイン、CLI の公開契約を定めています。",
+        "パッチリリースは、ドキュメント化された API を保ったままバグを修正します。マイナーリリースは、新しいフレームワークのアダプターのような互換性のある機能を追加します。互換性を壊す変更には新しいメジャーバージョンが必要です。アップグレードの前に changelog を確認してください。",
+        "アップグレードしたら、開発サーバーを再起動してマニフェストを生成し直し、アプリケーションの型チェックとナビゲーションのテストを実行してください。ページを移動しても公開ルート名を保ちたい場合は、明示的なエイリアスを使ってください。"
+      ]
+    },
+    "code": "npm install @triooo/next-named-routes@^1\nnpx named-routes check\nnpx tsc --noEmit",
+    "language": "sh"
+  }
+]

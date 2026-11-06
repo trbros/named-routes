@@ -1,0 +1,122 @@
+{
+	"name": "@triooo/next-named-routes",
+	"version": "1.0.0",
+	"description": "Typed, automatically discovered named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router",
+	"keywords": [
+		"named-routes",
+		"typescript",
+		"nextjs",
+		"app-router",
+		"pages-router",
+		"nuxt",
+		"vue",
+		"vue-router",
+		"sveltekit",
+		"astro",
+		"react-router",
+		"remix",
+		"tanstack-router",
+		"vite-plugin",
+		"i18n",
+		"next-intl",
+		"laravel",
+		"triooo"
+	],
+	"license": "Apache-2.0",
+	"author": "triooo",
+	"type": "module",
+	"engines": {
+		"node": ">=20.19"
+	},
+	"sideEffects": false,
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"typesVersions": {
+		"*": {
+			"generator": [
+				"./dist/generator.d.ts"
+			],
+			"next": [
+				"./dist/next.d.ts"
+			],
+			"vite": [
+				"./dist/vite.d.ts"
+			],
+			"config": [
+				"./dist/config.d.ts"
+			]
+		}
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
+		"./generator": {
+			"types": "./dist/generator.d.ts",
+			"import": "./dist/generator.js",
+			"default": "./dist/generator.js"
+		},
+		"./next": {
+			"types": "./dist/next.d.ts",
+			"import": "./dist/next.js",
+			"default": "./dist/next.js"
+		},
+		"./config": {
+			"types": "./dist/config.d.ts",
+			"import": "./dist/config.js",
+			"default": "./dist/config.js"
+		},
+		"./vite": {
+			"types": "./dist/vite.d.ts",
+			"import": "./dist/vite.js",
+			"default": "./dist/vite.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"bin": {
+		"named-routes": "./dist/cli.js",
+		"next-named-routes": "./dist/cli.js"
+	},
+	"files": [
+		"dist",
+		"src",
+		"README.md",
+		"README.pt-BR.md",
+		"README.ja.md",
+		"README.es.md",
+		"CHANGELOG.md",
+		"LICENSE",
+		"SECURITY.md",
+		"assets"
+	],
+	"scripts": {
+		"test": "npm run build && node --test tests/*.test.mjs",
+		"test:types": "tsc --project tests/tsconfig.json",
+		"check": "npm test && npm run test:types",
+		"test:next": "node tests/next-smoke.mjs",
+		"build": "node scripts/clean.mjs && tsc -p tsconfig.json",
+		"prepack": "npm run build",
+		"prepare": "npm run build",
+		"website": "npm run dev --prefix website",
+		"prepublishOnly": "npm run check && npm run test:package",
+		"test:package": "node tests/pack-smoke.mjs",
+		"release:check": "npm run check && npm run test:next && npm run test:vite && npm run test:package",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"test:vite": "node tests/vite-smoke.mjs",
+		"docs": "python3 scripts/sync-docs.py",
+		"docs:check": "python3 scripts/sync-docs.py --check",
+		"locales": "node scripts/sync-locales.mjs",
+		"locales:check": "node scripts/sync-locales.mjs --check"
+	},
+	"devDependencies": {
+		"typescript": "^7.0.2",
+		"@types/node": "^26.6.6"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"packageManager": "pnpm@12.18.0"
+}
