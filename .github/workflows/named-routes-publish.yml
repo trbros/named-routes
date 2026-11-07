@@ -1,4 +1,4 @@
-name: Publish Next Named Routes
+name: Publish Named Routes
 
 on:
   release:

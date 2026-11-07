@@ -1,4 +1,4 @@
-name: Next Named Routes demos
+name: Named Routes demos
 
 # Builds every framework demo in examples/ with its real framework.
 on:

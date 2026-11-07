@@ -1,4 +1,4 @@
-name: Next Named Routes CI
+name: Named Routes CI
 
 on:
   push:
