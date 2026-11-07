@@ -76,7 +76,6 @@
 		"./package.json": "./package.json"
 	},
 	"bin": {
-		"named-routes": "./dist/cli.js",
 		"named-routes": "./dist/cli.js"
 	},
 	"files": [
