@@ -20,7 +20,7 @@ Next.js（App Router、Pages Router、src 構成、混在した移行プロジ�
 
 どのフレームワークもひとつのパターン構文とひとつの命名規則に変換されるため、app/users/[user]/page.tsx、pages/users/[user].vue、src/routes/users/[user]/+page.svelte、app/routes/users.$user.tsx はすべて users.$user になります。言語付き URL（next-intl、Pages Router の i18n、@nuxtjs/i18n など）は v1 から対応しています。
 
-URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上、公開される型には TypeScript 5 以上が必要です。Next 16 と Vite 7 は実際の統合テストで確認しています。
+URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上が必要です。ランタイムの型には TypeScript 5.0 以上（Zod 4 と Valibot 1 のスキーマは 5.4 以上）が必要です。examples/ のすべての例を、パッケージ化した tarball からインストールし、ビルドして配信し、CI の実ブラウザーで操作して確認しています。
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user

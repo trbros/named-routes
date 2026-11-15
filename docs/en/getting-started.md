@@ -20,7 +20,7 @@ Next.js (App Router, Pages Router, src layouts and mixed migrations) is integrat
 
 Every framework maps to one pattern syntax and one naming rule, so app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte and app/routes/users.$user.tsx all become users.$user. Locale-aware URLs (next-intl, Pages Router i18n, @nuxtjs/i18n and similar) are supported from v1.
 
-The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 20.19+ is required for tooling and TypeScript 5+ for the exported types. Next 16 and Vite 7 are covered by real integration tests.
+The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 20.19+ is required for tooling. The runtime types need TypeScript 5.0+ (Zod 4 and Valibot 1 schemas need 5.4+). Every example in examples/ is installed from the packed tarball, built, served and driven in a real browser in CI.
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user

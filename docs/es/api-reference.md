@@ -13,7 +13,7 @@
 
 ## Referencia de la API del runtime
 
-route(nombre, params?, opciones?) devuelve un string de URL. params solo es opcional cuando el patrón no tiene parámetros obligatorios. options contiene query, hash, absolute, basePath y locale. route.has(nombre) comprueba que exista y restringe un string a un nombre conocido; route.names() devuelve los nombres disponibles; route.pattern(nombre, locale?) devuelve el patrón original o localizado; route.locales() lista los idiomas; route.forLocale(locale) devuelve un helper ligado a un idioma.
+route(nombre, params?, opciones?) devuelve un string de URL. params solo es opcional cuando el patrón no tiene parámetros obligatorios. options contiene query, hash, absolute, basePath y locale. route.has(nombre) comprueba que exista y restringe un string a un nombre conocido; route.names() devuelve los nombres disponibles; route.pattern(nombre, locale?) devuelve el patrón original o localizado; route.locales() lista los idiomas; route.forLocale(locale) devuelve un helper ligado a un idioma. route.match(url), route.is(nombre, url) y route.breadcrumbs(url) convierten URLs de vuelta en nombres (consulta Enrutamiento inverso).
 
 createRoutes(manifiesto, defaults?) crea un helper independiente y congelado y copia el manifiesto. Defaults contiene basePath, trailingSlash, origin e i18n. parsePattern(patrón) devuelve segmentos static/dynamic/optionalDynamic/catchAll/optional/mixed y valida la sintaxis; formatPattern es su inverso y patternParameters lista los nombres de los parámetros. RouteValue, QueryValue, RouteParams, RouteOptions, RouteDefaults, I18nOptions, LocalePrefix, LocaleDomain, NamedRoutes y PatternSegment son tipos exportados.
 
@@ -42,7 +42,7 @@ Descubrimiento: framework (auto por defecto, o next, nuxt, vue, sveltekit, astro
 
 Nombres: names (patrón de URL → nombre personalizado; cada ruta debe existir), extraRoutes (nombre → patrón explícito, por ejemplo destinos de rewrites), naming (separator, paramPrefix, home, transform) e i18n (locales, defaultLocale, localePrefix, pathnames, domains, localeParam, unlocalized).
 
-Salida: output (por defecto src/routes.generated.ts; .ts, .mts, .js o .mjs, nunca dentro de un archivo enrutable), importSource (módulo desde el que el archivo generado importa createRoutes; por defecto, el nombre del paquete), exportNames (renombra routes, route, RouteName y RouteLocale) y defaults (basePath, trailingSlash y origin públicos; solo se serializan estas claves). Los plugins añaden watch (por defecto true); withNamedRoutes también acepta watchInterval (750 ms, 25–60000). Las opciones pasadas al plugin prevalecen sobre el archivo de configuración.
+Salida: output (por defecto src/routes.generated.ts; .ts, .mts, .js o .mjs, nunca dentro de un archivo enrutable), importSource (módulo desde el que el archivo generado importa createRoutes; por defecto, el nombre del paquete), exportNames (renombra routes, route, RouteName y RouteLocale), defaults (basePath, trailingSlash y origin públicos; solo se serializan estas claves), hrefs ("string" o "typed", solo de tipos), query (módulo de schemas de query por ruta) y validateQuery (empaqueta y ejecuta esos schemas; por defecto false). Los plugins añaden watch (por defecto true); withNamedRoutes también acepta watchInterval (750 ms, 25–60000) y watchMode (auto, native o poll). Las opciones pasadas al plugin prevalecen sobre el archivo de configuración.
 
 ```ts
 // named-routes.config.ts (or .mjs)

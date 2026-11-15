@@ -8,9 +8,12 @@
 - [Pages Router のレシピ](#pages-router)
 - [パラメーターとエンコード](#parameters)
 - [クエリ文字列とフラグメント](#query-hash)
+- [型付きのクエリパラメーター](#typed-query)
+- [逆引きルーティングとアクティブなルート](#reverse-routing)
 - [basePath、末尾スラッシュ、オリジン](#base-path)
 - [言語と i18n](#i18n)
 - [TypeScript と Next の typedRoutes](#typescript)
+- [Next.js の typedRoutes 向けの型付き href](#typed-hrefs)
 
 <a id="app-router"></a>
 
@@ -101,6 +104,56 @@ route("users.$user", { user: 42 }, {
 // /users/42?page=2&tag=next&tag=react&draft=false#activity
 ```
 
+<a id="typed-query"></a>
+
+## 型付きのクエリパラメーター
+
+ルートごとのクエリスキーマを、export default が defineQuery({...}) のモジュールに宣言し、query オプションでそのモジュールを指定します。キーはルート名で、値は Standard Schema のバリデーター（Zod 3.24 以上、Valibot 1 以上、ArkType など）か、TypeScript の型だけを使う defineQuery.type<T>() です。スキーマのないルートは 1.0 のクエリのままです。
+
+スキーマがあると、TypeScript は未知のキーや互換性のない値を拒否し、必須のキーがあれば options.query も必須になります。スキーマのライブラリが依存関係になることはありません。TypeScript の出力はモジュールを型としてだけインポートするので、何もバンドルされず、実行時の検証も行われません。
+
+validateQuery: true にすると、スキーマをバンドルし、URL を組み立てるたびにクエリのオブジェクトを検証します。失敗すると問題点を含む INVALID_QUERY が投げられます。検証で URL が変わることはありません。値は渡したとおりにシリアライズされ、スキーマのデフォルト値や変換は適用されません。route() は同期関数なので、非同期のスキーマは拒否されます。JavaScript の出力では、型を推論するためにモジュールを値としてインポートします。Zod 4 と Valibot 1 には TypeScript 5.4 以上が必要です。
+
+```ts
+// src/route-query.ts
+import { defineQuery } from "@triooo/named-routes";
+import { z } from "zod";
+
+export default defineQuery({
+  products: z.object({
+    page: z.number().int().min(1).optional(),
+    sort: z.enum(["newest", "price"]).optional(),
+  }),
+  search: defineQuery.type<{ q: string }>(),
+});
+
+// named-routes.config.ts: defineConfig({ query: "src/route-query.ts" })
+route("products", {}, { query: { page: 2, sort: "newest" } }); // /products?page=2&sort=newest
+route("products", {}, { query: { pgae: 2 } }); // type error: unknown key
+route("search"); // type error: q is required
+```
+
+<a id="reverse-routing"></a>
+
+## 逆引きルーティングとアクティブなルート
+
+route.match(url) は、パスが指す名前付きルートを、デコード済みの params、クエリ（繰り返されたキーは配列になる）、hash、言語とともに返し、該当しなければ null を返します。/users/42?tab=posts#bio のようなルート相対パスか URL オブジェクトを受け付けます。絶対 URL は、設定した origin か i18n のドメインのときだけ一致します。route.is(name, url) は URL とルートを比較し、{ exact: false } にすると子孫のパスも一致とみなすので、ナビゲーションのアクティブなセクションに使えます。route.breadcrumbs(url) は祖先のパスそれぞれの一致結果を返します。
+
+静的なセグメントが最優先で、次に混在、動的、オプション、catch-all、オプションの catch-all の順に、左から右へ比較します。同じだけ具体的なパターンは宣言順で決まります。セグメントはデコードする前に分割するので、%2F はパラメーターの中にとどまります。不正なパーセントエンコーディング、空のセグメント、相対 URL やプロトコル相対 URL は null になります。URL に basePath が含まれる場合（window.location.pathname）は { basePath: true } を渡してください。言語のプレフィックス、カスタムのプレフィックス、翻訳されたパス名も認識します。
+
+一致の判定はルートの表を表すだけです。認可ではなく、リソースの存在や遷移の成功を保証するものでもなく、フレームワークのルーターの代わりにもなりません。クエリは文字列で返されるので、自分のスキーマで解析してください（たとえば型変換付きの schema.parse(found.query)）。
+
+```ts
+const found = route.match("/users/42?tab=posts");
+// { name: "users.$user", params: { user: "42" }, query: { tab: "posts" }, hash: "", locale: undefined, ... }
+if (found?.name === "users.$user") found.params.user; // string
+
+route.is("users.$user", "/users/new"); // false when /users/new is its own page
+route.is("users", pathname, { exact: false }); // active section
+route.breadcrumbs("/users/42/edit").map((item) => item.name);
+// ["home", "users", "users.$user", "users.$user.edit"]
+```
+
 <a id="base-path"></a>
 
 ## basePath、末尾スラッシュ、オリジン
@@ -163,10 +216,9 @@ pt("users.$user", { user: 42 });      // /pt/users/42
 
 リテラルのパターンから名前のユニオン型とパラメーターのオブジェクト型が推論されます。必須パラメーターはコンパイル時にチェックされ、オプションの catch-all ルートはパラメーターなしで呼び出せます。JavaScript からの呼び出しも、ランタイムが引き続き検証します。
 
-route() が返すのは string で、Next が生成する Route 型ではありません。Next の typedRoutes を有効にしている場合、Link 側の検証で Route へのアサーションが必要になることがあります。それでもパッケージはルート名とパラメーターをチェックします。検証を回避するために、信頼できない任意の入力をルート名にアサーションしないでください。
+デフォルトでは route() は string を返します。Next.js の typedRoutes を使う場合は、Route へのアサーションではなく hrefs: "typed" を設定してください（「型付き href」を参照）。route() が <Link> と router.push() に受け入れられるテンプレートリテラル型を返すようになります。検証を回避するために、信頼できない任意の入力をルート名にアサーションしないでください。
 
 ```ts
-import type { Route } from "next";
 import type { RouteName } from "@/routes.generated";
 import { route } from "@/routes.generated";
 const name: RouteName = "user.profile";
@@ -174,8 +226,28 @@ route("users.$user", { user: 42 });
 // route("unknown");          // Type error
 // route("users.$user");     // Missing user
 // route("users.$user", { id: 42 }); // Wrong parameter
-// With Next typedRoutes:
-// <Link href={route(name) as Route}>Profile</Link>
+// With Next typedRoutes and hrefs: "typed":
+// <Link href={route(name)}>Profile</Link>   // no cast
+```
+
+<a id="typed-hrefs"></a>
+
+## Next.js の typedRoutes 向けの型付き href
+
+named-routes.config、withNamedRoutes()、Vite プラグインのいずれかで hrefs: "typed" を設定すると、route() は string ではなくテンプレートリテラル型を返します。route("users.$user", { user: 42 }) の型は `/users/${string}` です。Next.js の typedRoutes は、両方のルーターで <Link href>、router.push()、replace()、prefetch() にこれらの値をキャストなしで受け入れます。このオプションは型だけに影響し、URL は変わりません。
+
+query や hash を指定した呼び出しは、パスに `?${string}` または `#${string}` が付いた型を返します。absolute、basePath、locale を指定した呼び出しは string を返します。Next は basePath と言語を自分で付け、型付きリンクでは絶対 URL を受け付けないためです。オプションのセグメントはユニオン型になるので、パラメーターなしの /shop/[[...path]] の型は "/shop" になります。Next.js の typedRoutes 自体が、オプションの catch-all のこの基底パスをリテラルであっても拒否するため、その場合はセグメントを渡してください。
+
+1.x ではオプトインです。戻り値の型が狭くなると、ルートを変数に保存して後で別の文字列を代入するコードが壊れる可能性があるためです。このオプションなしで typedRoutes を有効にすると、withNamedRoutes() がヒントを表示し、named-routes doctor が warning を報告します。Next 16 の実際の next typegen と tsc で検証しています（App Router と Pages Router、webpack と Turbopack）。
+
+```tsx
+// next.config.ts
+export default withNamedRoutes({ typedRoutes: true }, { hrefs: "typed" });
+
+// app/page.tsx
+<Link href={route("users.$user", { user: 42 })}>Profile</Link>; // no cast
+router.push(route("posts.$post", { post: 7 }, { query: { tab: "comments" } }));
+const href = route("users.$user", { user: 42 }); // `/users/${string}`
 ```
 
 ---

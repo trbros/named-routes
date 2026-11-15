@@ -33,7 +33,7 @@ pnpm --dir website build
 
 ## Try it: framework demos
 
-examples/ holds a small runnable app per supported setup: app-router and pages-router (Next.js), nuxt, vue (unplugin-vue-router), sveltekit, astro, react-router (flat routes), tanstack-router and react (routes declared by hand with createRoutes). Each one links to a static page, a dynamic users page and a catch-all docs page by name.
+examples/ holds a small runnable app per supported setup: app-router and pages-router (Next.js), nuxt, vue (Vue Router 5), sveltekit, astro, react-router (flat routes), tanstack-router and react (routes declared by hand with createRoutes). Each one links to a static page, a dynamic users or posts page and a catch-all docs page by name; the Next.js demos also use typedRoutes with typed hrefs (App Router) and i18n with query strings (Pages Router). pnpm test:e2e installs the packed tarball into a copy of each demo and checks build, production server, browser navigation and live page discovery.
 
 The demos depend on the package through file:../.., so build the package once at the repository root, then install and run any demo with npm. The generated module appears on the first dev or build run and changes as you add pages. Each demo builds with its real framework.
 

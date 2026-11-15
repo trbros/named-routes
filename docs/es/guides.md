@@ -7,6 +7,7 @@
 - [Casos límite del descubrimiento](#discovery)
 - [Actualizaciones automáticas en desarrollo](#development)
 - [CLI e integración continua](#cli)
+- [Diagnóstico: named-routes doctor](#doctor)
 - [Errores y solución de problemas](#errors)
 - [Rewrites y límites](#boundaries)
 
@@ -26,19 +27,21 @@ Las formas de URL en conflicto (por ejemplo, [id] y [slug] en el mismo lugar) y 
 
 ## Actualizaciones automáticas en desarrollo
 
-Next.js: el wrapper genera antes de que Next arranque y luego ejecuta un watcher por sondeo, serializado, dentro del proceso de desarrollo. Detecta páginas añadidas, eliminadas y renombradas; el módulo solo cambia cuando cambia su contenido. No se modifican hooks de webpack ni de Turbopack. Nunca escribe durante next start (servidor de producción), así que los despliegues de solo lectura son seguros.
+Next.js: el wrapper genera antes de que Next arranque y luego mantiene el módulo al día dentro del proceso de desarrollo. Por defecto (watchMode: "auto"), reacciona a eventos de archivos de los directorios de rutas y de la raíz del proyecto, con debounce y ejecución serializada, más un nuevo escaneo cada 5 segundos para los eventos que el sistema operativo haya perdido. Detecta páginas añadidas, eliminadas y renombradas; el módulo solo cambia cuando cambia su contenido. No se modifican hooks de webpack ni de Turbopack. Nunca escribe durante next start (servidor de producción), así que los despliegues de solo lectura son seguros.
 
 Frameworks con Vite: el plugin genera en buildStart y reacciona a los eventos add/unlink del watcher de Vite, además de los cambios en el archivo de configuración de named-routes. Encuentra la raíz del proyecto subiendo desde la raíz de Vite hasta package.json, así que el srcDir de Nuxt funciona.
 
 Los watchers no se ejecutan durante las compilaciones de producción y no mantienen el proceso vivo por sí mismos. Un error de generación durante la edición conserva el último módulo válido y registra el error. Los cambios en módulos importados por la configuración requieren reiniciar. watch: false solo desactiva las actualizaciones continuas, no la generación inicial.
 
+Donde los eventos de archivos no son fiables, el sondeo toma el control: rutas de WSL bajo /mnt, WATCHPACK_POLLING o CHOKIDAR_USEPOLLING definidos, NAMED_ROUTES_WATCH=poll o cuando el sistema operativo rechaza los watchers (por ejemplo, EMFILE o ENOSPC, que se informa una vez). watchMode: "poll" restablece el comportamiento de la 1.0 (un escaneo completo cada watchInterval). En un benchmark reproducible (pnpm bench:watch, Linux, Node 26) con 200 rutas, la CPU en reposo bajó de 36 a 6 ms por segundo y una página nueva llegó al módulo en 90 ms en lugar de 478 ms; con 2000 rutas, de 153 a 29 ms por segundo y 203 ms en lugar de 582 ms.
+
 <a id="cli"></a>
 
 ## CLI e integración continua
 
-El binario se llama named-routes (named-routes es un alias). generate (por defecto) escribe el manifiesto. list imprime las entradas descubiertas en JSON. check compara sin escribir y sale con código 1 cuando está desactualizado. watch genera al inicio y sondea hasta SIGINT/SIGTERM. init escribe named-routes.config.mjs para el framework detectado y nunca sobrescribe una configuración existente.
+El binario se llama named-routes. generate (por defecto) escribe el manifiesto. list imprime las entradas descubiertas en JSON. check compara sin escribir y sale con código 1 cuando está desactualizado. watch genera al inicio y mantiene el módulo al día hasta SIGINT/SIGTERM (eventos de archivos con un nuevo escaneo, o sondeo con --watch-mode poll). init escribe named-routes.config.mjs para el framework detectado y nunca sobrescribe una configuración existente. doctor diagnostica el proyecto sin escribir nada (consulta Diagnóstico).
 
-Opciones: --root <directorio>, --config <archivo>, --framework <nombre>, --output <archivo>, --routes-dir <carpeta>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Ejecuta los comandos desde el proyecto consumidor con el paquete instalado localmente.
+Opciones: --root <directorio>, --config <archivo>, --framework <nombre>, --output <archivo>, --routes-dir <carpeta>, --router <auto|app|pages>, --api, --watch-interval <ms>, --watch-mode <auto|native|poll>, --json, --strict y --no-color (doctor), --version (-v), --help (-h). Ejecuta los comandos desde el proyecto consumidor con el paquete instalado localmente. Los errores muestran su code y, cuando se conocen, el archivo, la ruta, la opción y una corrección.
 
 Si versionas el archivo generado, ejecuta check antes del build. Las integraciones regeneran durante el build, así que un check posterior no puede detectar un archivo versionado que ya estaba desactualizado. La generación es determinista, atómica y sin marcas de tiempo. Los archivos existentes sin la firma del generador nunca se sobrescriben.
 
@@ -50,6 +53,27 @@ npx named-routes generate --routes-dir app/pages --output app/utils/routes.ts
 npx named-routes check
 npx named-routes watch
 npx named-routes --help
+npx named-routes watch --watch-mode poll   # containers, network drives
+npx named-routes doctor --json --strict    # CI
+```
+
+<a id="doctor"></a>
+
+## Diagnóstico: named-routes doctor
+
+npx named-routes doctor comprueba las versiones de Node.js y TypeScript, el archivo de configuración, el framework detectado, las rutas descubiertas, los conflictos y las colisiones de nombres, si el módulo generado existe y está al día, la integración con Next.js o Vite, typedRoutes sin hrefs tipados, i18n sin rutas localizadas y las declaraciones de rutas que el escáner de archivos no ve (definePageMeta({ path }) de Nuxt y llamadas a route() en un app/routes.ts de React Router).
+
+Es de solo lectura: nunca escribe archivos ni ejecuta código de la aplicación. Las comprobaciones de integración y de declaraciones son heurísticas de texto, y así lo indica. Las opciones pasadas directamente a un plugin son código, así que doctor avisa de que no puede verlas; mueve las opciones compartidas a named-routes.config.* o pasa opciones como --output.
+
+Cada diagnóstico es error, warning o info, con un id estable y, cuando se conocen, el archivo, la ruta, la opción y una corrección. --json imprime un informe legible por máquinas para CI y --strict también falla con warnings; los colores solo se usan en un TTY y nunca con NO_COLOR o --no-color. El código de salida 0 indica que no hay errores; 1, que hay errores, o warnings con --strict.
+
+```sh
+npx named-routes doctor
+npx named-routes doctor --json --strict   # CI
+
+# warning  Next.js typedRoutes is enabled but hrefs is not "typed"; <Link> will reject route() results.
+#          option: hrefs
+#          fix:   Set hrefs: "typed" in withNamedRoutes() options or named-routes.config.
 ```
 
 <a id="errors"></a>
@@ -63,6 +87,8 @@ INVALID_PATTERN, INVALID_NAME e INVALID_MANIFEST identifican definiciones de rut
 No se encuentra routes.generated: confirma que la integración se ejecuta, ejecuta generate y revisa output y los alias de import. basePath o idioma duplicados: usa URLs relativas con los enlaces del framework y pasa basePath/locale solo para URLs simples. Nombres desactualizados: confirma que el watcher está activo y revisa los errores de la terminal. Un error de tipos después de mover una página es lo esperado: actualiza el nombre inferido o define un nombre estable.
 
 La generación se niega a sobrescribir un archivo de salida escrito a mano. Elige otro output en lugar de añadir la firma de generado a código no relacionado. Mantén la salida generada fuera de los archivos enrutables. La interpolación dinámica no autoriza una petición; valida los permisos y las entradas de la aplicación en el destino.
+
+Desde la 1.1, todo NamedRouteError también tiene details: { file, files, route, pattern, option, hint } con lo que se conozca, por ejemplo los dos archivos de un conflicto de rutas o "Did you mean users.show?" para un nombre, una opción o una clave de names mal escritos. INVALID_QUERY indica que una query no cumplió su schema o que un mapa de schemas no es válido; INVALID_URL, que match() recibió algo que no es una ruta ni una URL. Los codes y los mensajes no cambian.
 
 ```ts
 import { NamedRouteError } from "@triooo/named-routes";

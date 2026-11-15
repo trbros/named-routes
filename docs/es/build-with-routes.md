@@ -8,9 +8,12 @@
 - [Recetas para el Pages Router](#pages-router)
 - [Parámetros y codificación](#parameters)
 - [Query strings y fragmentos](#query-hash)
+- [Parámetros de query tipados](#typed-query)
+- [Enrutamiento inverso y ruta activa](#reverse-routing)
 - [basePath, barras finales y orígenes](#base-path)
 - [Idiomas e i18n](#i18n)
 - [TypeScript y typedRoutes de Next](#typescript)
+- [Hrefs tipados para typedRoutes de Next.js](#typed-hrefs)
 
 <a id="app-router"></a>
 
@@ -101,6 +104,56 @@ route("users.$user", { user: 42 }, {
 // /users/42?page=2&tag=next&tag=react&draft=false#activity
 ```
 
+<a id="typed-query"></a>
+
+## Parámetros de query tipados
+
+Declara schemas de query por ruta en un módulo cuyo export default es defineQuery({...}) y apunta la opción query a él. Las claves son nombres de ruta; los valores son validadores Standard Schema (Zod 3.24+, Valibot 1+, ArkType y otros) o defineQuery.type<T>() para tipos solo de TypeScript. Las rutas sin schema conservan la query de la 1.0.
+
+Con un schema, TypeScript rechaza claves desconocidas y valores incompatibles, y las claves obligatorias hacen obligatorio options.query. Ninguna biblioteca de schemas se convierte en dependencia: las salidas TypeScript importan el módulo solo como tipos, así que no se empaqueta nada ni se valida nada en runtime.
+
+Define validateQuery: true para empaquetar los schemas y validar cada objeto de query al construir una URL; los fallos lanzan INVALID_QUERY con los problemas encontrados. La validación nunca cambia la URL: los valores se serializan tal como los pasas, sin los valores por defecto ni las transformaciones del schema. Los schemas asíncronos se rechazan porque route() es síncrono. Las salidas JavaScript importan el módulo como valor para inferir sus tipos. Zod 4 y Valibot 1 requieren TypeScript 5.4+.
+
+```ts
+// src/route-query.ts
+import { defineQuery } from "@triooo/named-routes";
+import { z } from "zod";
+
+export default defineQuery({
+  products: z.object({
+    page: z.number().int().min(1).optional(),
+    sort: z.enum(["newest", "price"]).optional(),
+  }),
+  search: defineQuery.type<{ q: string }>(),
+});
+
+// named-routes.config.ts: defineConfig({ query: "src/route-query.ts" })
+route("products", {}, { query: { page: 2, sort: "newest" } }); // /products?page=2&sort=newest
+route("products", {}, { query: { pgae: 2 } }); // type error: unknown key
+route("search"); // type error: q is required
+```
+
+<a id="reverse-routing"></a>
+
+## Enrutamiento inverso y ruta activa
+
+route.match(url) devuelve la ruta con nombre a la que apunta una ruta, con los params decodificados, la query (las claves repetidas se convierten en arrays), el hash y el idioma, o null. Acepta una ruta relativa a la raíz, como /users/42?tab=posts#bio, o un objeto URL; las URLs absolutas solo coinciden en el origin configurado o en un dominio de i18n. route.is(nombre, url) compara una URL con una ruta; { exact: false } también acepta descendientes, para secciones activas de la navegación. route.breadcrumbs(url) devuelve las coincidencias de cada ruta antecesora.
+
+Los segmentos estáticos ganan, luego los mixtos, dinámicos, opcionales, catch-all y catch-all opcionales, comparados de izquierda a derecha; los patrones igual de específicos se resuelven por orden de declaración. Los segmentos se separan antes de decodificarse, así que %2F permanece dentro de un parámetro; un percent-encoding mal formado, los segmentos vacíos y las URLs relativas o sin protocolo devuelven null. Pasa { basePath: true } cuando la URL incluye basePath (window.location.pathname). Se reconocen los prefijos de idioma, los prefijos personalizados y los pathnames localizados.
+
+La coincidencia describe solo tu tabla de rutas: no es autorización, no demuestra que un recurso exista ni que una navegación vaya a funcionar, y no sustituye al router del framework. La query se devuelve como strings; analízala con tu propio schema, por ejemplo schema.parse(found.query) con coerción.
+
+```ts
+const found = route.match("/users/42?tab=posts");
+// { name: "users.$user", params: { user: "42" }, query: { tab: "posts" }, hash: "", locale: undefined, ... }
+if (found?.name === "users.$user") found.params.user; // string
+
+route.is("users.$user", "/users/new"); // false when /users/new is its own page
+route.is("users", pathname, { exact: false }); // active section
+route.breadcrumbs("/users/42/edit").map((item) => item.name);
+// ["home", "users", "users.$user", "users.$user.edit"]
+```
+
 <a id="base-path"></a>
 
 ## basePath, barras finales y orígenes
@@ -163,10 +216,9 @@ pt("users.$user", { user: 42 });      // /pt/users/42
 
 Los patrones literales infieren uniones de nombres y objetos de parámetros. Los parámetros obligatorios se comprueban en tiempo de compilación; las rutas catch-all opcionales pueden llamarse sin parámetros. El runtime sigue validando las llamadas desde JavaScript.
 
-route() devuelve string, no el tipo Route generado por Next. Cuando typedRoutes de Next está activado, su validación de Link puede requerir una aserción a Route. El paquete sigue comprobando el nombre de la ruta y los parámetros. No hagas aserciones de entradas arbitrarias no confiables a un nombre de ruta para saltarte la validación.
+Por defecto, route() devuelve string. Con typedRoutes de Next.js, define hrefs: "typed" (consulta Hrefs tipados) en lugar de hacer aserciones a Route: route() pasa a devolver tipos template literal que <Link> y router.push() aceptan. No hagas aserciones de entradas arbitrarias no confiables a un nombre de ruta para saltarte la validación.
 
 ```ts
-import type { Route } from "next";
 import type { RouteName } from "@/routes.generated";
 import { route } from "@/routes.generated";
 const name: RouteName = "user.profile";
@@ -174,8 +226,28 @@ route("users.$user", { user: 42 });
 // route("unknown");          // Type error
 // route("users.$user");     // Missing user
 // route("users.$user", { id: 42 }); // Wrong parameter
-// With Next typedRoutes:
-// <Link href={route(name) as Route}>Profile</Link>
+// With Next typedRoutes and hrefs: "typed":
+// <Link href={route(name)}>Profile</Link>   // no cast
+```
+
+<a id="typed-hrefs"></a>
+
+## Hrefs tipados para typedRoutes de Next.js
+
+Define hrefs: "typed" en named-routes.config, en withNamedRoutes() o en el plugin de Vite, y route() devolverá tipos template literal en lugar de string: route("users.$user", { user: 42 }) tiene el tipo `/users/${string}`. typedRoutes de Next.js acepta estos valores en <Link href>, router.push(), replace() y prefetch() en ambos routers, sin cast. La opción solo afecta a los tipos: las URLs son idénticas.
+
+Las llamadas con query o hash devuelven la ruta más `?${string}` o `#${string}`. Las llamadas con absolute, basePath y locale devuelven string, porque Next añade basePath e idiomas por su cuenta y rechaza URLs absolutas en enlaces tipados. Los segmentos opcionales se convierten en uniones, así que /shop/[[...path]] sin parámetros tiene el tipo "/shop"; el propio typedRoutes de Next.js rechaza esa ruta base de un catch-all opcional, incluso como literal, así que pasa un segmento en ese caso.
+
+En la serie 1.x hay que activarla porque un tipo de retorno más estrecho puede romper código que guarda una ruta en una variable que luego se reasigna a otro string. Con typedRoutes activo y sin la opción, withNamedRoutes() muestra una sugerencia y named-routes doctor emite un warning. Verificado con next typegen y tsc reales en Next 16 (App Router y Pages Router, webpack y Turbopack).
+
+```tsx
+// next.config.ts
+export default withNamedRoutes({ typedRoutes: true }, { hrefs: "typed" });
+
+// app/page.tsx
+<Link href={route("users.$user", { user: 42 })}>Profile</Link>; // no cast
+router.push(route("posts.$post", { post: 7 }, { query: { tab: "comments" } }));
+const href = route("users.$user", { user: 42 }); // `/users/${string}`
 ```
 
 ---

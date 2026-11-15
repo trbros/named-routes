@@ -61,6 +61,8 @@ next.config を @triooo/named-routes/next の withNamedRoutes でラップしま
 
 **検証。** CI では実際の Next 16 開発サーバー（App Router と Pages Router、basePath とページのライブ検出を含む）を動かしています。デモ: examples/app-router と examples/pages-router。App Router と Pages Router のレシピもあわせて参照してください。
 
+Next の設定で typedRoutes: true にしている場合は hrefs: "typed" を渡してください。route() の結果がキャストなしで <Link>、router.push()、replace()、prefetch() に受け入れられます。このオプションなしで typedRoutes が有効だと、ラッパーがヒントを表示します。Next 16 の両方のルーターで、webpack と Turbopack の両方について、実際の next typegen と TypeScript で検証しています。
+
 ```tsx
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
@@ -103,18 +105,18 @@ import { route } from "~/routes.generated";
 
 ## Vue Router
 
-ファイルベースルーティング（unplugin-vue-router の規約）を使う Vue アプリでは、vite.config で VueRouter() と vue() の前に namedRoutes() を追加します。フレームワークは unplugin-vue-router または vue-router から検出され、routesDir を指定しない限り src/pages を読み取ります。ルートの配列を手書きしているアプリは、手書きのマニフェストを使ってください。
+ファイルベースルーティング（Vue Router 5 の vue-router/vite、または Vue Router 4 の unplugin-vue-router）を使う Vue アプリでは、vite.config で VueRouter() と vue() の前に namedRoutes() を追加します。users/_parent.vue は Vue Router 5.0.3+ と同じく、users/ のマッチしない親として扱われます。フレームワークは unplugin-vue-router または vue-router から検出され、routesDir を指定しない限り src/pages を読み取ります。ルートの配列を手書きしているアプリは、手書きのマニフェストを使ってください。
 
 **規約。** index.vue と (name).vue はインデックスルート。ドットでネスト（users.edit.vue は /users/edit）。[id] と [[id]]。[id]+ は 1 個以上の繰り返しパラメーター（[...id]）、[[id]]+ は 0 個以上（[[...id]]）。[...path] は空の残りにも一致（[[...path]]）。(group) フォルダーは省かれ、parent.vue + parent/ のネストはまとめられ、v[major]-[minor] のような混在セグメントも使えます。
 
 **ナビゲーション。** URL を RouterLink の :to や router.push に渡します。Vue Router は文字列を普通のパスとして解決するので、パッケージがルーターのインスタンスにアクセスする必要はありません。
 
-**検証。** これらの規約を使った実際の Vite 7 開発サーバーを CI で動かしており、examples/vue は unplugin-vue-router でビルド・実行できます。
+**検証。** これらの規約を使った実際の Vite 7 開発サーバーを CI で動かしており、examples/vue は Vue Router 5（vue-router/vite）で、users/_parent.vue のレイアウトも含めてビルド・実行し、ブラウザーで操作して確認しています。
 
 ```ts
 // vite.config.ts
 import vue from "@vitejs/plugin-vue";
-import VueRouter from "unplugin-vue-router/vite";
+import VueRouter from "vue-router/vite"; // Vue Router 5 (Vue Router 4: "unplugin-vue-router/vite")
 import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes(), VueRouter(), vue()] });
 
@@ -177,13 +179,13 @@ import { route } from "../../routes.generated";
 
 ## React Router / Remix
 
-flat routes を使う React Router 7 のフレームワークモード（と Remix v2）では、vite.config で reactRouter() の前に namedRoutes() を追加し、app/routes.ts は @react-router/fs-routes の flatRoutes() のままにします。出力先は app/routes の外の app/routes.generated.ts がおすすめです。
+flat routes を使う React Router 7 と 8 のフレームワークモード（と Remix v2）では、vite.config で reactRouter() の前に namedRoutes() を追加し、app/routes.ts は @react-router/fs-routes の flatRoutes() のままにします。出力先は app/routes の外の app/routes.generated.ts がおすすめです。
 
 **規約。** ドットでネスト（concerts.$city.tsx は /concerts/[city]）。_index はインデックス。$param。($lang) はオプション（[[lang]]）。単独の $ は splat という名前の splat（[[...splat]]）。_auth のように _ で始まるものはパスなしレイアウト。concerts_ はネストを解除。[.] エスケープは文字をそのまま残す。route.tsx を含むフォルダーはひとつのルートで、それより深いフォルダーは無視されます。レイアウトとその _index は同じ URL を共有し、まとめられます。
 
 **ナビゲーション。** <Link to={route(...)}>、useNavigate()、loader や action の redirect() を使います。
 
-**制限と検証。** app/routes.ts の中でコードとして宣言したルート（route()、index()、layout()）はファイルではないため、手書きのマニフェストか extraRoutes を使ってください。(beta) のようなオプションの静的セグメントには名前を付けられず、ジェネレーターはファイルを除外できるよう明確なエラーで停止します。規約テストと、React Router 7 でビルド・実行できる examples/react-router で検証しています。
+**制限と検証。** app/routes.ts の中でコードとして宣言したルート（route()、index()、layout()）はファイルではないため、手書きのマニフェストか extraRoutes を使ってください。(beta) のようなオプションの静的セグメントには名前を付けられず、ジェネレーターはファイルを除外できるよう明確なエラーで停止します。規約テストと、React Router 8 でビルド・実行できる examples/react-router で検証しています。
 
 ```tsx
 // vite.config.ts

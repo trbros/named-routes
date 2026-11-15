@@ -7,6 +7,7 @@
 - [Discovery edge cases](#discovery)
 - [Automatic development updates](#development)
 - [CLI and CI](#cli)
+- [Diagnostics: named-routes doctor](#doctor)
 - [Errors and troubleshooting](#errors)
 - [Rewrites and boundaries](#boundaries)
 
@@ -26,19 +27,21 @@ Conflicting URL shapes (for example [id] and [slug] at the same place) and infer
 
 ## Automatic development updates
 
-Next.js: the wrapper generates before Next starts, then runs a serialized polling watcher inside the development process. It sees additions, removals and renamed pages; the module changes only when its content changes. No webpack or Turbopack hooks are patched. It never writes during next start (production server), so read-only deployments are safe.
+Next.js: the wrapper generates before Next starts, then keeps the module current inside the development process. By default (watchMode: "auto") it reacts to file events from the route directories and the project root, debounced and serialized, plus a rescan every 5 seconds for events the OS dropped. It sees additions, removals and renamed pages; the module changes only when its content changes. No webpack or Turbopack hooks are patched. It never writes during next start (production server), so read-only deployments are safe.
 
 Vite frameworks: the plugin generates in buildStart and reacts to add/unlink events from Vite's watcher, plus changes to the named-routes config file. It finds the project root by walking up from Vite's root to package.json, so Nuxt's srcDir works.
 
 Watchers do not run during production builds and do not keep the process alive by themselves. A generation error during editing preserves the last valid module and logs the error. Changes to modules imported by the config need a restart. watch: false disables only ongoing updates, not initial generation.
 
+Where file events are unreliable, polling takes over: WSL paths under /mnt, WATCHPACK_POLLING or CHOKIDAR_USEPOLLING set, NAMED_ROUTES_WATCH=poll, or the OS refusing watchers (for example EMFILE or ENOSPC, reported once). watchMode: "poll" restores the 1.0 behavior (a full rescan every watchInterval). In a reproducible benchmark (pnpm bench:watch, Linux, Node 26) with 200 routes, idle CPU fell from 36 to 6 ms per second and a new page reached the module in 90 ms instead of 478 ms; with 2000 routes, from 153 to 29 ms per second and 203 ms instead of 582 ms.
+
 <a id="cli"></a>
 
 ## CLI and CI
 
-The binary is named-routes (named-routes is an alias). generate (default) writes the manifest. list prints discovered entries as JSON. check compares without writing and exits with code 1 when stale. watch generates initially and polls until SIGINT/SIGTERM. init writes named-routes.config.mjs for the detected framework and never overwrites an existing config.
+The binary is named-routes. generate (default) writes the manifest. list prints discovered entries as JSON. check compares without writing and exits with code 1 when stale. watch generates initially and keeps the module current until SIGINT/SIGTERM (file events with a rescan, or polling with --watch-mode poll). init writes named-routes.config.mjs for the detected framework and never overwrites an existing config. doctor diagnoses the project without writing (see Diagnostics).
 
-Flags: --root <directory>, --config <file>, --framework <name>, --output <file>, --routes-dir <dir>, --router <auto|app|pages>, --api, --watch-interval <ms>, --version (-v), --help (-h). Run commands from the consumer with the local package installed.
+Flags: --root <directory>, --config <file>, --framework <name>, --output <file>, --routes-dir <dir>, --router <auto|app|pages>, --api, --watch-interval <ms>, --watch-mode <auto|native|poll>, --json, --strict and --no-color (doctor), --version (-v), --help (-h). Run commands from the consumer with the local package installed. Errors print their code and, when known, the file, route, option and a fix.
 
 If you commit the generated file, run check before the build. The integrations regenerate at build time, so a check run after that build cannot detect a previously stale committed file. Generation is deterministic, atomic and timestamp-free. Existing files without the generator signature are never overwritten.
 
@@ -50,6 +53,27 @@ npx named-routes generate --routes-dir app/pages --output app/utils/routes.ts
 npx named-routes check
 npx named-routes watch
 npx named-routes --help
+npx named-routes watch --watch-mode poll   # containers, network drives
+npx named-routes doctor --json --strict    # CI
+```
+
+<a id="doctor"></a>
+
+## Diagnostics: named-routes doctor
+
+npx named-routes doctor checks the Node.js and TypeScript versions, the configuration file, the detected framework, discovered routes, conflicts and name collisions, whether the generated module exists and is current, the Next.js or Vite integration, typedRoutes without typed hrefs, i18n without localized routes, and route declarations the file scanner cannot see (Nuxt definePageMeta({ path }) and route() calls in a React Router app/routes.ts).
+
+It is read-only: it never writes files and never executes application code. Integration and declaration checks are plain-text heuristics and say so. Options passed inline to a plugin are code, so doctor reports them as not visible; move shared options to named-routes.config.* or pass flags such as --output.
+
+Each diagnostic is error, warning or info, with a stable id and, when known, the file, route, option and a fix. --json prints a machine-readable report for CI and --strict also fails on warnings; colors are used only on a TTY and never with NO_COLOR or --no-color. Exit code 0 means no errors; 1 means errors, or warnings with --strict.
+
+```sh
+npx named-routes doctor
+npx named-routes doctor --json --strict   # CI
+
+# warning  Next.js typedRoutes is enabled but hrefs is not "typed"; <Link> will reject route() results.
+#          option: hrefs
+#          fix:   Set hrefs: "typed" in withNamedRoutes() options or named-routes.config.
 ```
 
 <a id="errors"></a>
@@ -63,6 +87,8 @@ INVALID_PATTERN, INVALID_NAME and INVALID_MANIFEST identify malformed route defi
 Cannot find routes.generated: confirm the integration runs, run generate, and check output/import aliases. Duplicate basePath or locale: use plain relative URLs with framework links and pass basePath/locale only for plain URLs. Stale names: confirm the watcher is enabled and inspect terminal errors. A type error after moving a page is expected: update the inferred name or define a stable override.
 
 Generation refuses to overwrite a handwritten output file. Choose a different output rather than adding a generated signature to unrelated code. Keep generated output outside routable files. Dynamic interpolation does not authorize a request; validate permissions and application input at the destination.
+
+Since 1.1 every NamedRouteError also has details: { file, files, route, pattern, option, hint } with whatever is known, for example both files of a route conflict or "Did you mean users.show?" for a misspelled name, option or names key. INVALID_QUERY means a query failed its schema or a schema map is invalid; INVALID_URL means match() received something that is not a path or URL. Codes and messages are unchanged.
 
 ```ts
 import { NamedRouteError } from "@triooo/named-routes";

@@ -15,7 +15,7 @@
     "id": "use",
     "page": "build-with-routes.md",
     "title": { "en": "Build with routes", "pt": "Desenvolva com rotas", "es": "Construye con rutas", "ja": "ルートで構築する" },
-    "items": ["app-router", "pages-router", "parameters", "query-hash", "base-path", "i18n", "typescript"]
+    "items": ["app-router", "pages-router", "parameters", "query-hash", "typed-query", "reverse-routing", "base-path", "i18n", "typescript", "typed-hrefs"]
   },
   {
     "id": "reference",
@@ -27,7 +27,7 @@
     "id": "advanced",
     "page": "guides.md",
     "title": { "en": "Guides", "pt": "Guias", "es": "Guías", "ja": "ガイド" },
-    "items": ["discovery", "development", "cli", "errors", "boundaries"]
+    "items": ["discovery", "development", "cli", "doctor", "errors", "boundaries"]
   },
   {
     "id": "project",

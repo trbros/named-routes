@@ -30,7 +30,7 @@ references = " · ".join([
     "[Next.js App Router](https://nextjs.org/docs/app)",
     "[Pages Router](https://nextjs.org/docs/pages)",
     "[Nuxt pages](https://nuxt.com/docs/guide/directory-structure/pages)",
-    "[Vue Router file-based routing](https://uvr.esm.is/guide/file-based-routing)",
+    "[Vue Router file-based routing](https://router.vuejs.org/file-based-routing/file-based-routing)",
     "[SvelteKit routing](https://svelte.dev/docs/kit/routing)",
     "[Astro routing](https://docs.astro.build/en/guides/routing/)",
     "[React Router file route conventions](https://reactrouter.com/how-to/file-route-conventions)",

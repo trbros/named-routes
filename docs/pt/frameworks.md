@@ -61,6 +61,8 @@ Envolva o next.config com withNamedRoutes de @triooo/named-routes/next. O módul
 
 **Verificado.** Servidores reais do Next 16 (App Router e Pages Router, com basePath e descoberta de páginas ao vivo) rodam no CI. Demos: examples/app-router e examples/pages-router. Veja também as receitas de App Router e Pages Router.
 
+Com typedRoutes: true na configuração do Next, passe hrefs: "typed" para que os resultados de route() sejam aceitos por <Link>, router.push(), replace() e prefetch() sem casts; o wrapper mostra uma dica quando o typedRoutes está ativo sem essa opção. Verificado com o next typegen e o TypeScript reais no Next 16, nos dois routers, com webpack e Turbopack.
+
 ```tsx
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ reactStrictMode: true });
@@ -103,18 +105,18 @@ import { route } from "~/routes.generated";
 
 ## Vue Router
 
-Para apps Vue com roteamento por arquivos (convenções do unplugin-vue-router), adicione namedRoutes() antes de VueRouter() e vue() no vite.config. O framework é detectado por unplugin-vue-router ou vue-router; src/pages é lido, a menos que routesDir indique outra pasta. Apps que declaram um array de rotas manualmente devem usar um manifesto manual.
+Para apps Vue com roteamento por arquivos (vue-router/vite do Vue Router 5, ou unplugin-vue-router no Vue Router 4), adicione namedRoutes() antes de VueRouter() e vue() no vite.config. users/_parent.vue é tratado como o pai não navegável de users/, como no Vue Router 5.0.3+. O framework é detectado por unplugin-vue-router ou vue-router; src/pages é lido, a menos que routesDir indique outra pasta. Apps que declaram um array de rotas manualmente devem usar um manifesto manual.
 
 **Convenções.** index.vue e (nome).vue são rotas index; pontos aninham (users.edit.vue é /users/edit); [id] e [[id]]; [id]+ é parâmetro repetível de um ou mais ([...id]) e [[id]]+ de zero ou mais ([[...id]]); [...path] também aceita resto vazio ([[...path]]); pastas (grupo) são omitidas; aninhamento parent.vue + parent/ é mesclado; segmentos mistos como v[major]-[minor] funcionam.
 
 **Navegação.** Passe a URL para RouterLink :to ou router.push. O Vue Router resolve a string como qualquer caminho, então o pacote não precisa acessar a instância do router.
 
-**Verificado.** Um servidor real do Vite 7 com essas convenções roda no CI, e o examples/vue compila e roda com unplugin-vue-router.
+**Verificado.** Um servidor real do Vite 7 com essas convenções roda no CI, e o examples/vue compila, roda e é navegado em um navegador com o Vue Router 5 (vue-router/vite), incluindo um layout users/_parent.vue.
 
 ```ts
 // vite.config.ts
 import vue from "@vitejs/plugin-vue";
-import VueRouter from "unplugin-vue-router/vite";
+import VueRouter from "vue-router/vite"; // Vue Router 5 (Vue Router 4: "unplugin-vue-router/vite")
 import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({ plugins: [namedRoutes(), VueRouter(), vue()] });
 
@@ -177,13 +179,13 @@ import { route } from "../../routes.generated";
 
 ## React Router / Remix
 
-Para o React Router 7 em modo framework (e Remix v2) com flat routes, adicione namedRoutes() antes de reactRouter() no vite.config e mantenha o app/routes.ts como flatRoutes() de @react-router/fs-routes. Uma boa saída é app/routes.generated.ts, fora de app/routes.
+Para o React Router 7 e 8 em modo framework (e Remix v2) com flat routes, adicione namedRoutes() antes de reactRouter() no vite.config e mantenha o app/routes.ts como flatRoutes() de @react-router/fs-routes. Uma boa saída é app/routes.generated.ts, fora de app/routes.
 
 **Convenções.** Pontos aninham (concerts.$city.tsx é /concerts/[city]); _index é o index; $param; ($lang) é opcional ([[lang]]); um $ isolado é um splat chamado splat ([[...splat]]); prefixos _auth são layouts sem caminho; concerts_ sai do aninhamento; escapes [.] mantêm caracteres; uma pasta com route.tsx é uma rota e pastas mais profundas são ignoradas. Um layout e seu _index compartilham a URL e se mesclam.
 
 **Navegação.** Use <Link to={route(...)}>, useNavigate() ou redirect() em loaders e actions.
 
-**Limites e verificação.** Rotas declaradas em código no app/routes.ts (route(), index(), layout()) não são arquivos: use um manifesto manual ou extraRoutes. Segmentos estáticos opcionais como (beta) não podem ser nomeados; o gerador para com um erro claro para que você exclua o arquivo. Verificado por testes de convenção e pelo examples/react-router, que compila e roda com React Router 7.
+**Limites e verificação.** Rotas declaradas em código no app/routes.ts (route(), index(), layout()) não são arquivos: use um manifesto manual ou extraRoutes. Segmentos estáticos opcionais como (beta) não podem ser nomeados; o gerador para com um erro claro para que você exclua o arquivo. Verificado por testes de convenção e pelo examples/react-router, que compila e roda com React Router 8.
 
 ```tsx
 // vite.config.ts

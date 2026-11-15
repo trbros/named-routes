@@ -20,7 +20,7 @@ O Next.js (App Router, Pages Router, diretórios src e migrações mistas) é in
 
 Todos os frameworks convergem para uma sintaxe de padrão e uma regra de nomes: app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte e app/routes/users.$user.tsx viram users.$user. URLs com idioma (next-intl, i18n do Pages Router, @nuxtjs/i18n e similares) são suportadas desde a v1.
 
-O runtime de URLs funciona no navegador sem imports de framework ou Node.js. O gerador Node lê caminhos de arquivos; nunca executa suas páginas. As ferramentas exigem Node.js 20.19+ e os tipos exportados, TypeScript 5+. Next 16 e Vite 7 são cobertos por testes de integração reais.
+O runtime de URLs funciona no navegador sem imports de framework ou Node.js. O gerador Node lê caminhos de arquivos; nunca executa suas páginas. As ferramentas exigem Node.js 20.19+. Os tipos do runtime exigem TypeScript 5.0+ (schemas do Zod 4 e do Valibot 1 exigem 5.4+). Cada exemplo de examples/ é instalado a partir do tarball empacotado, compilado, servido e navegado em um navegador real no CI.
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user

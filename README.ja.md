@@ -25,7 +25,7 @@ Next.js（App Router、Pages Router、src 構成、混在した移行プロジ�
 
 どのフレームワークもひとつのパターン構文とひとつの命名規則に変換されるため、app/users/[user]/page.tsx、pages/users/[user].vue、src/routes/users/[user]/+page.svelte、app/routes/users.$user.tsx はすべて users.$user になります。言語付き URL（next-intl、Pages Router の i18n、@nuxtjs/i18n など）は v1 から対応しています。
 
-URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上、公開される型には TypeScript 5 以上が必要です。Next 16 と Vite 7 は実際の統合テストで確認しています。
+URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上が必要です。ランタイムの型には TypeScript 5.0 以上（Zod 4 と Valibot 1 のスキーマは 5.4 以上）が必要です。examples/ のすべての例を、パッケージ化した tarball からインストールし、ビルドして配信し、CI の実ブラウザーで操作して確認しています。
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user
@@ -138,14 +138,14 @@ app/shop/[[...path]]/page.tsx        pages/shop/[[...path]].tsx        shop.$pat
 
 **[フレームワーク](docs/ja/frameworks.md)** — [ほかのフレームワーク（Vite プラグイン）](docs/ja/frameworks.md#frameworks) · [Next.js](docs/ja/frameworks.md#nextjs) · [Nuxt](docs/ja/frameworks.md#nuxt) · [Vue Router](docs/ja/frameworks.md#vue) · [SvelteKit](docs/ja/frameworks.md#sveltekit) · [Astro](docs/ja/frameworks.md#astro) · [React Router / Remix](docs/ja/frameworks.md#react-router) · [TanStack Router](docs/ja/frameworks.md#tanstack-router) · [手動ルート（React、Vue、任意のルーター）](docs/ja/frameworks.md#manual-routes)
 
-**[ルートで構築する](docs/ja/build-with-routes.md)** — [App Router のレシピ](docs/ja/build-with-routes.md#app-router) · [Pages Router のレシピ](docs/ja/build-with-routes.md#pages-router) · [パラメーターとエンコード](docs/ja/build-with-routes.md#parameters) · [クエリ文字列とフラグメント](docs/ja/build-with-routes.md#query-hash) · [basePath、末尾スラッシュ、オリジン](docs/ja/build-with-routes.md#base-path) · [言語と i18n](docs/ja/build-with-routes.md#i18n) · [TypeScript と Next の typedRoutes](docs/ja/build-with-routes.md#typescript)
+**[ルートで構築する](docs/ja/build-with-routes.md)** — [App Router のレシピ](docs/ja/build-with-routes.md#app-router) · [Pages Router のレシピ](docs/ja/build-with-routes.md#pages-router) · [パラメーターとエンコード](docs/ja/build-with-routes.md#parameters) · [クエリ文字列とフラグメント](docs/ja/build-with-routes.md#query-hash) · [型付きのクエリパラメーター](docs/ja/build-with-routes.md#typed-query) · [逆引きルーティングとアクティブなルート](docs/ja/build-with-routes.md#reverse-routing) · [basePath、末尾スラッシュ、オリジン](docs/ja/build-with-routes.md#base-path) · [言語と i18n](docs/ja/build-with-routes.md#i18n) · [TypeScript と Next の typedRoutes](docs/ja/build-with-routes.md#typescript) · [Next.js の typedRoutes 向けの型付き href](docs/ja/build-with-routes.md#typed-hrefs)
 
 **[API リファレンス](docs/ja/api-reference.md)** — [ランタイム API リファレンス](docs/ja/api-reference.md#runtime-api) · [ジェネレーターの設定](docs/ja/api-reference.md#configuration) · [固定名（任意）](docs/ja/api-reference.md#stable-names) · [ジェネレーターのプログラム API](docs/ja/api-reference.md#generator-api)
 
-**[ガイド](docs/ja/guides.md)** — [検出のエッジケース](docs/ja/guides.md#discovery) · [開発中の自動更新](docs/ja/guides.md#development) · [CLI と CI](docs/ja/guides.md#cli) · [エラーとトラブルシューティング](docs/ja/guides.md#errors) · [リライトと境界](docs/ja/guides.md#boundaries)
+**[ガイド](docs/ja/guides.md)** — [検出のエッジケース](docs/ja/guides.md#discovery) · [開発中の自動更新](docs/ja/guides.md#development) · [CLI と CI](docs/ja/guides.md#cli) · [診断: named-routes doctor](docs/ja/guides.md#doctor) · [エラーとトラブルシューティング](docs/ja/guides.md#errors) · [リライトと境界](docs/ja/guides.md#boundaries)
 
 **[プロジェクト](docs/ja/project.md)** — [ドキュメントサイト](docs/ja/project.md#website) · [試してみる: フレームワーク別デモ](docs/ja/project.md#demos) · [ステップごとのコントリビュート](docs/ja/project.md#contributing) · [バージョンとアップグレード](docs/ja/project.md#versioning)
 
 ## 公式リファレンス
 
-[Next.js App Router](https://nextjs.org/docs/app) · [Pages Router](https://nextjs.org/docs/pages) · [Nuxt pages](https://nuxt.com/docs/guide/directory-structure/pages) · [Vue Router file-based routing](https://uvr.esm.is/guide/file-based-routing) · [SvelteKit routing](https://svelte.dev/docs/kit/routing) · [Astro routing](https://docs.astro.build/en/guides/routing/) · [React Router file route conventions](https://reactrouter.com/how-to/file-route-conventions) · [TanStack Router file-based routing](https://tanstack.com/router/latest/docs/framework/react/routing/file-based-routing) · [next-intl routing](https://next-intl.dev/docs/routing)
+[Next.js App Router](https://nextjs.org/docs/app) · [Pages Router](https://nextjs.org/docs/pages) · [Nuxt pages](https://nuxt.com/docs/guide/directory-structure/pages) · [Vue Router file-based routing](https://router.vuejs.org/file-based-routing/file-based-routing) · [SvelteKit routing](https://svelte.dev/docs/kit/routing) · [Astro routing](https://docs.astro.build/en/guides/routing/) · [React Router file route conventions](https://reactrouter.com/how-to/file-route-conventions) · [TanStack Router file-based routing](https://tanstack.com/router/latest/docs/framework/react/routing/file-based-routing) · [next-intl routing](https://next-intl.dev/docs/routing)
