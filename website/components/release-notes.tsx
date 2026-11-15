@@ -7,11 +7,19 @@ import { FlapText } from "./flap-text";
 import { Icon } from "./icon";
 import { useSiteLocale } from "./use-site-locale";
 
-/** Versions from CHANGELOG.md, oldest first. */
+/** Versions from CHANGELOG.md, oldest first. A version appears once package.json reaches it. */
+const published = release.version.split(".").map(Number);
+const reached = (version: string) => {
+  const target = version.split(".").map(Number);
+  for (let index = 0; index < 3; index++)
+    if ((published[index] ?? 0) !== target[index]) return (published[index] ?? 0) > target[index];
+  return true;
+};
 const timeline = [
   { version: "0.1.0", note: "release_v010_note_4e8a21" },
-  { version: release.version, note: "release_v100_note_7b2c94" },
-] as const;
+  { version: "1.0.0", note: "release_v100_note_7b2c94" },
+  { version: "1.1.0", note: "release_v110_note" },
+].filter((item) => reached(item.version));
 
 export function ReleaseNotes() {
   const { t } = useSiteLocale();

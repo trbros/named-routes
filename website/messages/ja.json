@@ -328,6 +328,12 @@
 		"released_under_apache_9c1e72": "Apache License 2.0 で公開",
 		"next_route_loop_3d9a71": "次のルート",
 		"site_tagline_5e1f02": "Next.js、Nuxt、SvelteKit などのための型付きナビゲーション",
-		"site_description_9a7c33": "Next.js、Nuxt、Vue、SvelteKit、Astro、React Router、TanStack Router のための、自動検出・型安全・多言語対応の名前付きルート。"
+		"site_description_9a7c33": "Next.js、Nuxt、Vue、SvelteKit、Astro、React Router、TanStack Router のための、自動検出・型安全・多言語対応の名前付きルート。",
+		"reverse_title": "URL から名前へ",
+		"reverse_lead": "route.match() は URL を読み取り、名前付きルート、デコード済みのパラメーター、クエリ、hash、言語を返します。route.breadcrumbs() はルートになっている祖先をすべて列挙します。どちらもこのサイトの実際のルートで動いています。",
+		"reverse_input_label": "URL のパス",
+		"reverse_result_label": "route.match() の結果",
+		"reverse_no_match": "この URL に一致するルートはありません（null）",
+		"release_v110_note": "Next.js の typedRoutes 向けの型付き href、ルートごとの型付きクエリ（Standard Schema）、route.match()/is()/breadcrumbs()、named-routes doctor、エラーの構造化された詳細、より速いファイルイベントの watcher。"
 	}
 }

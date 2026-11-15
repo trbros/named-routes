@@ -249,6 +249,7 @@ export function OpenPage() {
           </div>
         </div>
       </section>
+      <ReverseRouting />
       <section className="benefits" aria-label={t("why_use_it_8b5b9d")}>
         <article>
           <Icon name="folder" />
@@ -278,5 +279,60 @@ export function OpenPage() {
         </Link>
       </section>
     </article>
+  );
+}
+
+/** route.match() and route.breadcrumbs() from the package, on this site's own routes. */
+function ReverseRouting() {
+  const { t, locale } = useSiteLocale();
+  const [url, setUrl] = useState(`/${locale}/users/ana?tab=overview#activity`);
+  let found: ReturnType<typeof route.match> = null;
+  let trail: ReturnType<typeof route.breadcrumbs> = [];
+  try {
+    found = route.match(url);
+    trail = route.breadcrumbs(url);
+  } catch {
+    found = null;
+  }
+  const result = found
+    ? JSON.stringify(
+        { name: found.name, params: found.params, query: found.query, hash: found.hash, locale: found.locale },
+        null,
+        2,
+      )
+    : "null";
+  const code = `import { route } from './routes.generated';
+
+const found = route.match(${JSON.stringify(url)});
+// ${found ? found.name : t("reverse_no_match")}
+route.breadcrumbs(${JSON.stringify(url)}).map((item) => item.name);
+// ${JSON.stringify(trail.map((item) => item.name))}`;
+  return (
+    <section className="playground-story" aria-labelledby="reverse-routing">
+      <h2 id="reverse-routing">{t("reverse_title")}</h2>
+      <p>{t("reverse_lead")}</p>
+      <div className="route-panel">
+        <div className="route-controls">
+          <div className="fields">
+            <label>
+              {t("reverse_input_label")}
+              <input value={url} onChange={(event) => setUrl(event.target.value)} spellCheck={false} />
+            </label>
+          </div>
+        </div>
+        <div className="code-area">
+          <CodeBlock code={code} language="ts" lineNumbers label={t("integration_code_d516e0")} />
+        </div>
+        <div className="code-area">
+          <CodeBlock code={result} language="json" label={t("reverse_result_label")} />
+        </div>
+        <div className="playground-bottom">
+          <span>
+            <span className="status-dot" />
+            {found ? `${found.name} · ${trail.map((item) => item.name).join(" › ")}` : t("reverse_no_match")}
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }

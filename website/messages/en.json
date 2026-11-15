@@ -328,6 +328,12 @@
 		"released_under_apache_9c1e72": "Released under the Apache License 2.0",
 		"next_route_loop_3d9a71": "next route",
 		"site_tagline_5e1f02": "typed navigation for Next.js, Nuxt, SvelteKit and more",
-		"site_description_9a7c33": "Automatically discovered, type-safe and locale-aware named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router."
+		"site_description_9a7c33": "Automatically discovered, type-safe and locale-aware named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router.",
+		"reverse_title": "From URL back to name",
+		"reverse_lead": "route.match() reads a URL and returns the named route, decoded parameters, query, hash and locale; route.breadcrumbs() lists every ancestor that is a route. Both run on this site's real routes.",
+		"reverse_input_label": "URL path",
+		"reverse_result_label": "route.match() result",
+		"reverse_no_match": "No route matches this URL (null)",
+		"release_v110_note": "Typed hrefs for Next.js typedRoutes, per-route typed query (Standard Schema), route.match()/is()/breadcrumbs(), named-routes doctor, structured error details and a faster file-event watcher."
 	}
 }
