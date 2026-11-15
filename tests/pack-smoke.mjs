@@ -49,12 +49,23 @@ try {
 	assert.equal(manifest.publishConfig.access, "public");
 	assert.equal(manifest.publishConfig.registry, "https://registry.npmjs.org/");
 	assert.deepEqual(manifest.dependencies ?? {}, {});
-	run("npm", ["pack", "--json", "--pack-destination", temporary]);
-	const archive = join(
+	// npm's own report of the archive contents instead of the platform tar,
+	// whose listing did not match on Windows. Build output may precede it.
+	const packed = run("npm", [
+		"pack",
+		"--json",
+		"--pack-destination",
 		temporary,
+	]);
+	const report = JSON.parse(packed.slice(packed.search(/^\[\s*$/m)));
+	const archive = join(temporary, report[0].filename);
+	assert.equal(
+		report[0].filename,
 		`triooo-named-routes-${manifest.version}.tgz`,
 	);
-	const files = run("tar", ["-tzf", archive]).trim().split("\n");
+	const files = report[0].files.map(
+		(file) => `package/${file.path.replaceAll("\\", "/")}`,
+	);
 	assert.ok(files.some((file) => file === "package/dist/index.js"));
 	assert.ok(files.some((file) => file === "package/dist/cli.js"));
 	assert.ok(files.some((file) => file === "package/README.pt-BR.md"));
