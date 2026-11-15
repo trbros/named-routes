@@ -1,10 +1,10 @@
 // Cross-platform helpers for the real-framework E2E harness. No dependencies.
 import { spawn, spawnSync } from "node:child_process";
-import { createReadStream } from "node:fs";
+import { createReadStream, existsSync } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import { createServer as createNetServer } from "node:net";
-import { extname, join, normalize, resolve, sep } from "node:path";
+import { dirname, extname, join, normalize, resolve, sep } from "node:path";
 
 export const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const windows = process.platform === "win32";
@@ -18,18 +18,37 @@ export async function freePort() {
 }
 
 /** Runs npm (npm.cmd needs a shell on Windows since Node 20.12). */
+/**
+ * npm's own CLI script, run through this Node.js binary: no shell (npm.cmd
+ * needs one on Windows, where shell arguments are concatenated unescaped).
+ */
+export function npmCli() {
+	if (process.env.npm_execpath?.endsWith("npm-cli.js"))
+		return process.env.npm_execpath;
+	const node = dirname(process.execPath);
+	for (const candidate of [
+		join(node, "node_modules/npm/bin/npm-cli.js"),
+		join(node, "../lib/node_modules/npm/bin/npm-cli.js"),
+	])
+		if (existsSync(candidate)) return candidate;
+	return undefined;
+}
 export function npm(args, cwd, timeout = 600000) {
-	const result = spawnSync(windows ? "npm.cmd" : "npm", args, {
-		cwd,
-		encoding: "utf8",
-		timeout,
-		shell: windows,
-		env: humanEnv({
-			npm_config_update_notifier: "false",
-			npm_config_fund: "false",
-			npm_config_audit: "false",
-		}),
-	});
+	const cli = npmCli();
+	const result = spawnSync(
+		cli ? process.execPath : "npm",
+		cli ? [cli, ...args] : args,
+		{
+			cwd,
+			encoding: "utf8",
+			timeout,
+			env: humanEnv({
+				npm_config_update_notifier: "false",
+				npm_config_fund: "false",
+				npm_config_audit: "false",
+			}),
+		},
+	);
 	if (result.status !== 0)
 		throw new Error(
 			`npm ${args.join(" ")} failed in ${cwd}\n${result.stdout}\n${result.stderr}`.slice(
@@ -67,8 +86,9 @@ export function run(file, args, cwd, { env = {}, timeout = 600000 } = {}) {
  * behavior under AI coding agents (Astro 7.4 detaches into a background
  * daemon, Next.js writes AGENTS.md), so agent markers are removed.
  */
-export function humanEnv(extra = {}) {
+export function humanEnv(extra = {}, { ci = true } = {}) {
 	const env = { ...process.env, ...extra };
+	if (!ci) delete env.CI;
 	for (const key of Object.keys(env))
 		if (
 			/^(AI_AGENT|CLAUDECODE|CLAUDE_CODE_\w+|CLAUDE_AGENT_SDK_VERSION|CURSOR_AGENT|CODEX_\w+)$/.test(
@@ -79,11 +99,15 @@ export function humanEnv(extra = {}) {
 	return env;
 }
 
-/** A long-running child (dev or production server) whose whole tree can be stopped. */
+/**
+ * A long-running child (dev or production server) whose whole tree can be
+ * stopped. CI is removed: frameworks change dev behavior on it (Vue Router 5
+ * defaults to watch: !process.env.CI), and no developer runs a dev server so.
+ */
 export function start(file, args, cwd, env = {}) {
 	const child = spawn(process.execPath, [file, ...args], {
 		cwd,
-		env: humanEnv(env),
+		env: humanEnv(env, { ci: false }),
 		stdio: ["ignore", "pipe", "pipe"],
 		detached: !windows,
 	});

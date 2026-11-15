@@ -162,24 +162,50 @@ async function bodyIncludes(page, text, timeout = 30000) {
 async function navigate(browser, base, example) {
 	const page = await browser.newPage();
 	const errors = [];
+	const failed = [];
 	page.on("pageerror", (error) => errors.push(error.message));
+	page.on("console", (message) => {
+		if (message.type() === "error") errors.push(`console: ${message.text()}`);
+	});
+	page.on("requestfailed", (request) =>
+		failed.push(`${request.url()} (${request.failure()?.errorText})`),
+	);
+	page.on("response", (response) => {
+		if (response.status() >= 400 && !response.url().endsWith("/favicon.ico"))
+			failed.push(`${response.url()} → ${response.status()}`);
+	});
+	/** Which step failed, where the page is and what it shows. */
+	const step = async (label, action) => {
+		try {
+			await action();
+		} catch (caught) {
+			const visible = await page
+				// biome-ignore lint/performance/useDomNodeTextContent: report the visible text, as the assertions do
+				.evaluate(() => document.body?.innerText ?? "")
+				.catch(() => "(unavailable)");
+			caught.message = `${label}: ${caught.message.split("\n")[0]}\n  url: ${page.url()}\n  visible text: ${JSON.stringify(visible.slice(0, 400))}\n  browser errors: ${errors.join(" | ") || "none"}\n  failed requests: ${failed.join(" | ") || "none"}`;
+			throw caught;
+		}
+	};
 	try {
-		for (const link of example.links) {
-			await page.goto(`${base}${example.home}`, { waitUntil: "load" });
-			const anchor = page.locator(`a[href="${link.href}"]`).first();
-			await anchor.waitFor({ timeout: 30000 });
-			await anchor.click();
-			await page.waitForURL(
-				(url) => `${url.pathname}${url.search}` === link.href,
-				{ timeout: 30000 },
-			);
-			await bodyIncludes(page, link.text);
-		}
+		for (const link of example.links)
+			await step(`click ${link.href} → "${link.text}"`, async () => {
+				await page.goto(`${base}${example.home}`, { waitUntil: "load" });
+				const anchor = page.locator(`a[href="${link.href}"]`).first();
+				await anchor.waitFor({ timeout: 30000 });
+				await anchor.click();
+				await page.waitForURL(
+					(url) => `${url.pathname}${url.search}` === link.href,
+					{ timeout: 30000 },
+				);
+				await bodyIncludes(page, link.text);
+			});
 		// Direct loads of the same URLs (SSR / static output / SPA fallback).
-		for (const link of example.links) {
-			await page.goto(`${base}${link.href}`, { waitUntil: "load" });
-			await bodyIncludes(page, link.text);
-		}
+		for (const link of example.links)
+			await step(`load ${link.href} → "${link.text}"`, async () => {
+				await page.goto(`${base}${link.href}`, { waitUntil: "load" });
+				await bodyIncludes(page, link.text);
+			});
 		assert.deepEqual(
 			errors,
 			[],
