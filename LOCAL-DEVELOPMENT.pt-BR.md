@@ -13,7 +13,7 @@ pnpm build
 npm pack
 ```
 
-Na versão atual, isso gera `triooo-named-routes-1.0.0.tgz`. Use o nome informado pelo `npm pack` se a versão mudar. O arquivo contém o JavaScript compilado e as declarações TypeScript, sem depender de uma publicação no npm.
+Na versão atual, isso gera `triooo-named-routes-1.1.0.tgz`. Use o nome informado pelo `npm pack` se a versão mudar. O arquivo contém o JavaScript compilado e as declarações TypeScript, sem depender de uma publicação no npm.
 
 ## 2. Instalar no projeto Next.js
 
@@ -21,10 +21,10 @@ Troque `/caminho/meu-projeto-next` pelo diretório do seu projeto:
 
 ```sh
 cd /caminho/meu-projeto-next
-npm install /caminho/para/named-routes/triooo-named-routes-1.0.0.tgz
+npm install /caminho/para/named-routes/triooo-named-routes-1.1.0.tgz
 ```
 
-Alternativas: `pnpm add /caminho/arquivo.tgz`, `yarn add /caminho/arquivo.tgz` ou `bun add /caminho/arquivo.tgz`. Não misture gerenciadores no mesmo projeto. No Windows, use o caminho equivalente, por exemplo `npm install "C:/caminho/para/named-routes/triooo-named-routes-1.0.0.tgz"`.
+Alternativas: `pnpm add /caminho/arquivo.tgz`, `yarn add /caminho/arquivo.tgz` ou `bun add /caminho/arquivo.tgz`. Não misture gerenciadores no mesmo projeto. No Windows, use o caminho equivalente, por exemplo `npm install "C:/caminho/para/named-routes/triooo-named-routes-1.1.0.tgz"`.
 
 ## 3. Conectar ao Next.js
 
