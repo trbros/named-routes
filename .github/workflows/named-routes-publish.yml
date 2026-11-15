@@ -69,6 +69,9 @@ jobs:
       - name: Use an npm CLI supporting trusted publishing
         run: npm install --global 'npm@^11.5.1'
       - run: pnpm install --frozen-lockfile --ignore-scripts
+      # npm validates "bin" (dist/cli.js) when it reads package.json, before
+      # prepack runs; without dist/ it warns and may drop the bin entry.
+      - run: pnpm build
       - name: Link provenance to the actual publishing repository
         run: node scripts/prepare-publish.mjs
       - name: Publish through npm OIDC
