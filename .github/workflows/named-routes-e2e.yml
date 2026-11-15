@@ -54,8 +54,10 @@ jobs:
       - name: Install Chromium for Playwright
         run: pnpm exec playwright install --with-deps chromium-headless-shell
       - name: E2E · ${{ matrix.example }}
-        run: node tests/e2e/run.mjs ${{ matrix.example }}
+        # --keep leaves the installed example in place for the artifact below.
+        run: node tests/e2e/run.mjs ${{ matrix.example }} --keep
         env:
+          NAMED_ROUTES_E2E_DIR: ${{ runner.temp }}
           NAMED_ROUTES_E2E_REPORT: ${{ runner.temp }}/e2e-report.json
       - uses: actions/upload-artifact@v7
         if: always()
@@ -63,3 +65,20 @@ jobs:
           name: e2e-${{ matrix.example }}-${{ matrix.os }}
           path: ${{ runner.temp }}/e2e-report.json
           if-no-files-found: ignore
+      # On failure: the production build and generated files, to inspect
+      # bundles and route trees from the failing platform.
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-build-${{ matrix.example }}-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/named-routes-e2e-*/*/dist/**
+            ${{ runner.temp }}/named-routes-e2e-*/*/build/**
+            ${{ runner.temp }}/named-routes-e2e-*/*/.output/public/**
+            ${{ runner.temp }}/named-routes-e2e-*/*/**/*.generated.ts
+            ${{ runner.temp }}/named-routes-e2e-*/*/typed-router.d.ts
+            ${{ runner.temp }}/named-routes-e2e-*/*/src/routeTree.gen.ts
+            ${{ runner.temp }}/named-routes-e2e-*/*/package-lock.json
+            !${{ runner.temp }}/named-routes-e2e-*/*/node_modules/**
+          if-no-files-found: ignore
+          retention-days: 7
