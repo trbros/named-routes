@@ -100,7 +100,7 @@
 		"prepack": "npm run build",
 		"prepare": "npm run build",
 		"website": "npm run dev --prefix website",
-		"prepublishOnly": "npm run check && npm run test:package",
+		"prepublishOnly": "npm test && npm run test:types && npm run test:package",
 		"test:package": "node tests/pack-smoke.mjs",
 		"release:check": "npm run check && npm run test:next && npm run test:vite && npm run test:package && npm run test:e2e",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
