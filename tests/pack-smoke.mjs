@@ -20,6 +20,13 @@ const temporary = await mkdtemp(join(tmpdir(), "trbros-v1-package-"));
 // npm runs as `node npm-cli.js`: npm.cmd on Windows would need a shell, which
 // concatenates arguments unescaped (DEP0190).
 const npmCli = npmCliPath();
+// Run from `npm publish` (prepublishOnly), the parent npm exports its flags
+// as npm_config_*; npm_config_dry_run would stop `npm pack` from writing.
+const inherited = Object.fromEntries(
+	Object.entries(process.env).filter(
+		([key]) => !/^npm_config_(dry_run|tag|access|provenance|otp)$/i.test(key),
+	),
+);
 function run(command, args, cwd = root) {
 	const viaNode = command === "npm" && npmCli;
 	const result = spawnSync(
@@ -30,7 +37,7 @@ function run(command, args, cwd = root) {
 			encoding: "utf8",
 			timeout: 120000,
 			env: {
-				...process.env,
+				...inherited,
 				npm_config_update_notifier: "false",
 				npm_config_cache: join(temporary, "cache"),
 			},
@@ -59,6 +66,34 @@ try {
 	]);
 	const report = JSON.parse(packed.slice(packed.search(/^\[\s*$/m)));
 	const archive = join(temporary, report[0].filename);
+	// npm publish normalizes package.json more strictly than npm pack and
+	// silently drops what it "auto-corrects" (it removed a "./dist/cli.js"
+	// bin). A dry run without scripts or credentials shows those fixes.
+	const dryRun = spawnSync(
+		npmCli ? process.execPath : "npm",
+		[
+			...(npmCli ? [npmCli] : []),
+			"publish",
+			"--dry-run",
+			"--ignore-scripts",
+			"--access",
+			"public",
+			"--tag",
+			"smoke",
+		],
+		{
+			cwd: root,
+			encoding: "utf8",
+			timeout: 120000,
+			env: { ...inherited, npm_config_cache: join(temporary, "cache") },
+		},
+	);
+	assert.equal(dryRun.status, 0, `${dryRun.stdout}\n${dryRun.stderr}`);
+	assert.doesNotMatch(
+		`${dryRun.stdout}\n${dryRun.stderr}`,
+		/auto-corrected|was invalid and removed|No bin file found/,
+		`npm publish would change package.json:\n${dryRun.stderr}`,
+	);
 	assert.equal(
 		report[0].filename,
 		`triooo-named-routes-${manifest.version}.tgz`,
