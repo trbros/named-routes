@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import test from "node:test";
 import {
 	generationTargets,
+	isGeneratedOutput,
 	resolveWatchMode,
 	watchGeneration,
 } from "../dist/watch.js";
@@ -82,13 +83,23 @@ test("events for ignored files (the generated module) do not trigger runs", asyn
 		mode: "native",
 		reconcile: 60000,
 		targets: () => [{ path: join(root, "app"), recursive: true }],
-		ignore: (file) => file === output,
+		ignore: (file) => isGeneratedOutput(file, output),
 	});
 	t.after(stop);
-	await sleep(100);
+	// macOS FSEvents can deliver events from before the watcher started (the
+	// mkdir in directory()) a few hundred milliseconds late: measure from here.
+	await sleep(800);
+	const before = runs;
+	// The module and the temporary file of its atomic write.
+	await writeFile(
+		`${output}.0b4f0e9c-2d1f-4a59-9c0e-4f3f6a1d2b7e.tmp`,
+		"// generated",
+	);
 	await writeFile(output, "// generated");
-	await sleep(300);
-	assert.equal(runs, 0);
+	await sleep(400);
+	assert.equal(runs, before);
+	assert.equal(isGeneratedOutput(`${output}x`, output), false);
+	assert.equal(isGeneratedOutput(join(root, "app/page.tsx"), output), false);
 });
 
 test("when the OS refuses file events, polling takes over and reports it once", async (t) => {
@@ -167,7 +178,7 @@ test("polling switches and explicit modes select the watcher", () => {
 		[
 			{ path: "/p/app", recursive: true },
 			{ path: "/p", recursive: false },
-			{ path: join("/p", "conf"), recursive: false },
+			{ path: dirname(resolve("/p", "conf/nr.config.mjs")), recursive: false },
 		],
 	);
 });

@@ -227,3 +227,14 @@ export function generationTargets(
 		});
 	return targets;
 }
+
+/** The generated module or the temporary file of its atomic write (`<output>.<uuid>.tmp`). */
+export function isGeneratedOutput(file: string, output: string | undefined) {
+	if (!output) return false;
+	const absolute = resolve(file);
+	const target = resolve(output);
+	return (
+		absolute === target ||
+		(absolute.startsWith(`${target}.`) && absolute.endsWith(".tmp"))
+	);
+}

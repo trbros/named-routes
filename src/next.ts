@@ -3,7 +3,12 @@ import { resolveOptions } from "./config.js";
 import type { GeneratorOptions, I18nGeneratorOptions } from "./generator.js";
 import { generateRoutes } from "./generator.js";
 import type { LocaleDomain } from "./index.js";
-import { generationTargets, type WatchMode, watchGeneration } from "./watch.js";
+import {
+	generationTargets,
+	isGeneratedOutput,
+	type WatchMode,
+	watchGeneration,
+} from "./watch.js";
 
 export interface NextNamedRoutesOptions
 	extends Omit<GeneratorOptions, "framework"> {
@@ -122,7 +127,7 @@ export function withNamedRoutes<C extends object = NextConfigShape>(
 					mode: watchMode ?? "auto",
 					background: true,
 					targets: () => generationTargets(latest, generator.config),
-					ignore: (file) => resolve(file) === resolve(latest.output),
+					ignore: (file) => isGeneratedOutput(file, latest.output),
 					onError: (error) => console.error(`[named-routes] ${error.message}`),
 					onFallback: (reason) =>
 						console.warn(

@@ -10,6 +10,7 @@ import { discoverRoutes, generateRoutes } from "./generator.js";
 import { NamedRouteError } from "./index.js";
 import {
 	generationTargets,
+	isGeneratedOutput,
 	type WatchMode,
 	watchGeneration,
 	watchModes,
@@ -196,7 +197,7 @@ export default defineConfig({
 					latest
 						? generationTargets(latest, values.config)
 						: [{ path: root, recursive: false }],
-				ignore: (file) => file === latest?.output,
+				ignore: (file) => isGeneratedOutput(file, latest?.output),
 				onError: (error) => process.stderr.write(`${error.message}\n`),
 				onFallback: (reason) =>
 					process.stderr.write(
