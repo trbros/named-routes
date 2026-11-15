@@ -17,6 +17,7 @@ import {
 	mkdir,
 	mkdtemp,
 	readFile,
+	realpath,
 	rename,
 	rm,
 	writeFile,
@@ -51,8 +52,14 @@ const chosen = selected.length
 	? examples.filter((example) => selected.includes(example.name))
 	: examples;
 
-const work = await mkdtemp(
-	join(process.env.NAMED_ROUTES_E2E_DIR ?? tmpdir(), "named-routes-e2e-"),
+// The real path: on Windows %TEMP% is often an 8.3 short path
+// (C:\Users\RUNNER~1\...). With it the Vue demo's useRoute() returned
+// undefined (most likely vue-router loaded twice through two spellings of the
+// same directory); it passed from a long path. Projects live in long paths.
+const work = await realpath(
+	await mkdtemp(
+		join(process.env.NAMED_ROUTES_E2E_DIR ?? tmpdir(), "named-routes-e2e-"),
+	),
 );
 const report = process.env.NAMED_ROUTES_E2E_REPORT ?? join(work, "report.json");
 const manifest = JSON.parse(await readFile(join(pkg, "package.json"), "utf8"));
