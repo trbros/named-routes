@@ -4,3 +4,27 @@ updates:
     directory: /
     schedule:
       interval: monthly
+  # Development tooling of the package (it has no runtime dependencies).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      tooling:
+        patterns: ["*"]
+  # Real framework versions exercised by tests/e2e; grouped to keep PRs few.
+  - package-ecosystem: npm
+    directories:
+      - /examples/astro
+      - /examples/nuxt
+      - /examples/react
+      - /examples/react-router
+      - /examples/sveltekit
+      - /examples/tanstack-router
+      - /examples/vue
+      - /website
+    schedule:
+      interval: monthly
+    groups:
+      frameworks:
+        patterns: ["*"]

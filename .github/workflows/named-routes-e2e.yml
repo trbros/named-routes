@@ -1,0 +1,65 @@
+name: Named Routes E2E
+
+# Every example in examples/ with its real framework: installs the packed
+# tarball, type-checks, builds, serves the production build and drives
+# Chromium through the generated links, then creates/renames/removes a page
+# while each dev server runs (tests/e2e/run.mjs).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+  schedule:
+    # Weekly: catches framework releases that break the examples.
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: named-routes-e2e-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  example:
+    name: ${{ matrix.example }} · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        example: [app-router, pages-router, nuxt, vue, sveltekit, astro, react-router, tanstack-router, react]
+        include:
+          - os: windows-latest
+            example: app-router
+          - os: windows-latest
+            example: vue
+          - os: macos-latest
+            example: app-router
+          - os: macos-latest
+            example: vue
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm build
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium-headless-shell
+      - name: E2E · ${{ matrix.example }}
+        run: node tests/e2e/run.mjs ${{ matrix.example }}
+        env:
+          NAMED_ROUTES_E2E_REPORT: ${{ runner.temp }}/e2e-report.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: e2e-${{ matrix.example }}-${{ matrix.os }}
+          path: ${{ runner.temp }}/e2e-report.json
+          if-no-files-found: ignore

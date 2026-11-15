@@ -37,8 +37,13 @@ jobs:
     needs: release-info
     uses: ./.github/workflows/named-routes-ci.yml
 
+  # Every example with its real framework, installed from the packed tarball.
+  e2e:
+    needs: release-info
+    uses: ./.github/workflows/named-routes-e2e.yml
+
   publish:
-    needs: [release-info, validate]
+    needs: [release-info, validate, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

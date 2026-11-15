@@ -16,13 +16,19 @@ concurrency:
 
 jobs:
   package:
-    name: Package · Node ${{ matrix.node }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Package · ${{ matrix.os }} · Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         node: ["20.19.0", "22", "24", "26"]
+        include:
+          - os: windows-latest
+            node: "24"
+          - os: macos-latest
+            node: "24"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,8 +41,41 @@ jobs:
       - uses: pnpm/action-setup@v6
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm typecheck
+      # Biome lint/format, unit and integration tests, type contracts.
       - run: pnpm check
       - run: pnpm test:package
+
+  types:
+    name: Type contracts · TypeScript ${{ matrix.typescript }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # runtime: 5.0+ · Zod 4 / Valibot 1 schemas: 5.4+ (their minimum) ·
+        # everything with @types/node 26: 5.9+
+        typescript: ["5.0", "5.4", "5.9", "6", "7"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm build
+      - name: Install TypeScript ${{ matrix.typescript }} outside the project
+        run: npm install --prefix "$RUNNER_TEMP/ts" --no-audit --no-fund "typescript@${{ matrix.typescript }}"
+      - name: Runtime contracts (hrefs, match, typed query)
+        run: node "$RUNNER_TEMP/ts/node_modules/typescript/bin/tsc" -p tests/tsconfig.runtime.json
+      - name: Zod and Valibot contracts
+        if: matrix.typescript != '5.0'
+        run: node "$RUNNER_TEMP/ts/node_modules/typescript/bin/tsc" -p tests/tsconfig.schemas.json
+      - name: All contracts with Node.js types
+        if: matrix.typescript != '5.0' && matrix.typescript != '5.4'
+        run: node "$RUNNER_TEMP/ts/node_modules/typescript/bin/tsc" -p tests/tsconfig.json
 
   docs:
     name: Languages and documentation
@@ -61,7 +100,7 @@ jobs:
   frameworks:
     name: Real Next.js and Vite
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
@@ -75,6 +114,7 @@ jobs:
       - run: pnpm build
       - name: Install the Next.js example dependencies
         run: pnpm --dir examples/app-router install --frozen-lockfile --ignore-scripts
+      # next dev + next build/start (webpack) and the real typedRoutes contract.
       - run: pnpm test:next
       - run: pnpm test:vite
 
