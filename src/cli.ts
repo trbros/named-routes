@@ -3,12 +3,19 @@ import { readFile, writeFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { findConfiguration, loadConfiguration } from "./config.js";
+import { diagnose, formatDiagnosis } from "./doctor.js";
 import { frameworks } from "./frameworks.js";
 import type { GeneratorOptions } from "./generator.js";
 import { discoverRoutes, generateRoutes } from "./generator.js";
-import { watchGeneration } from "./watch.js";
+import { NamedRouteError } from "./index.js";
+import {
+	generationTargets,
+	type WatchMode,
+	watchGeneration,
+	watchModes,
+} from "./watch.js";
 
-const help = `Usage: named-routes [generate|check|list|watch|init] [options]
+const help = `Usage: named-routes [generate|check|list|watch|init|doctor] [options]
 
 Commands:
   generate            Write the typed route module (default)
@@ -16,6 +23,8 @@ Commands:
   list                Print discovered routes as JSON
   watch               Generate, then keep the module current until Ctrl+C
   init                Create named-routes.config.mjs for the detected framework
+  doctor              Diagnose configuration, discovery, output and integration
+                      (read-only; exit 1 on errors, or on warnings with --strict)
 
 Options:
   --root <directory>      Project directory (default: cwd)
@@ -26,11 +35,15 @@ Options:
   --router <router>       Next.js only: auto, app or pages
   --api                   Include API routes and endpoints
   --watch-interval <ms>   Polling interval for watch (default 750)
+  --watch-mode <mode>     auto (file events + rescan), native or poll (default auto)
+  --json                  doctor: machine-readable report
+  --strict                doctor: warnings also fail (exit code 1)
+  --no-color              doctor: plain output (also NO_COLOR or non-TTY)
   -v, --version           Print the package version
   -h, --help              Show this help
 
-named-routes is an alias of this command. In Next.js, withNamedRoutes()
-generates during dev/build; in Vite-based frameworks use the /vite plugin.
+In Next.js, withNamedRoutes() generates during dev/build; in Vite-based
+frameworks use the @triooo/named-routes/vite plugin.
 `;
 
 async function version() {
@@ -52,6 +65,10 @@ async function main() {
 			router: { type: "string" },
 			api: { type: "boolean" },
 			"watch-interval": { type: "string" },
+			"watch-mode": { type: "string" },
+			json: { type: "boolean" },
+			strict: { type: "boolean" },
+			"no-color": { type: "boolean" },
 			version: { type: "boolean", short: "v" },
 			help: { type: "boolean", short: "h" },
 		},
@@ -67,7 +84,7 @@ async function main() {
 	const [command = "generate", ...extra] = positionals;
 	if (
 		extra.length ||
-		!["generate", "check", "list", "watch", "init"].includes(command)
+		!["generate", "check", "list", "watch", "init", "doctor"].includes(command)
 	)
 		throw new Error("Invalid command. Run named-routes --help.");
 	const root = resolve(values.root ?? process.cwd());
@@ -83,6 +100,9 @@ async function main() {
 		values["watch-interval"] === undefined
 			? 750
 			: Number(values["watch-interval"]);
+	const watchMode = (values["watch-mode"] ?? "auto") as WatchMode;
+	if (!watchModes.includes(watchMode))
+		throw new Error(`Invalid watch mode; use ${watchModes.join(", ")}`);
 	const options = async (): Promise<GeneratorOptions> => ({
 		...(await loadConfiguration(root, values.config)),
 		...(values.framework
@@ -95,6 +115,40 @@ async function main() {
 			: {}),
 		...(values.api !== undefined ? { includeApi: values.api } : {}),
 	});
+	if (command === "doctor") {
+		const diagnosis = await diagnose({
+			root,
+			...(values.config ? { config: values.config } : {}),
+			...(values.framework
+				? { framework: values.framework as GeneratorOptions["framework"] }
+				: {}),
+			...(values.output ? { output: values.output } : {}),
+			...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
+			...(values.router
+				? { router: values.router as GeneratorOptions["router"] }
+				: {}),
+			...(values.api !== undefined ? { includeApi: values.api } : {}),
+		});
+		if (values.json)
+			process.stdout.write(
+				`${JSON.stringify({ version: await version(), ...diagnosis }, null, 2)}\n`,
+			);
+		else
+			process.stdout.write(
+				formatDiagnosis(diagnosis, {
+					color:
+						!values["no-color"] &&
+						!process.env.NO_COLOR &&
+						process.stdout.isTTY === true,
+				}),
+			);
+		if (
+			diagnosis.summary.errors ||
+			(values.strict && diagnosis.summary.warnings)
+		)
+			process.exitCode = 1;
+		return;
+	}
 	if (command === "init") {
 		if (await findConfiguration(root))
 			throw new Error("A named-routes config file already exists");
@@ -121,10 +175,12 @@ export default defineConfig({
 		);
 		return;
 	}
+	let latest: Awaited<ReturnType<typeof generateRoutes>> | undefined;
 	const run = async () => {
 		const result = await generateRoutes(await options(), {
 			check: command === "check",
 		});
+		latest = result;
 		if (command !== "watch" || result.changed)
 			process.stdout.write(
 				`${result.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework})\n`,
@@ -135,7 +191,17 @@ export default defineConfig({
 		await new Promise<void>((done) => {
 			const stopWatching = watchGeneration(run, {
 				interval,
+				mode: watchMode,
+				targets: () =>
+					latest
+						? generationTargets(latest, values.config)
+						: [{ path: root, recursive: false }],
+				ignore: (file) => file === latest?.output,
 				onError: (error) => process.stderr.write(`${error.message}\n`),
+				onFallback: (reason) =>
+					process.stderr.write(
+						`File events unavailable (${reason}); polling every ${interval} ms.\n`,
+					),
 			});
 			const stop = () => {
 				stopWatching();
@@ -151,5 +217,20 @@ export default defineConfig({
 main().catch((error: unknown) => {
 	const message = error instanceof Error ? error.message : String(error);
 	process.stderr.write(`named-routes: ${message}\n`);
+	if (error instanceof NamedRouteError) {
+		const { file, files, route, option, hint } = error.details;
+		const lines = [
+			`  code:   ${error.code}`,
+			...(files?.length
+				? [`  files:  ${files.join(", ")}`]
+				: file
+					? [`  file:   ${file}`]
+					: []),
+			...(route ? [`  route:  ${route}`] : []),
+			...(option ? [`  option: ${option}`] : []),
+			...(hint ? [`  hint:   ${hint}`] : []),
+		];
+		process.stderr.write(`${lines.join("\n")}\n`);
+	}
 	process.exitCode = 1;
 });

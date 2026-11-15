@@ -10,10 +10,13 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 const temporary = await mkdtemp(join(tmpdir(), "trbros-v1-package-"));
 function run(command, args, cwd = root) {
-	const result = spawnSync(command, args, {
+	// npm is npm.cmd on Windows, which Node only spawns through a shell.
+	const windowsNpm = process.platform === "win32" && command === "npm";
+	const result = spawnSync(windowsNpm ? "npm.cmd" : command, args, {
 		cwd,
 		encoding: "utf8",
 		timeout: 120000,
+		shell: windowsNpm,
 		env: {
 			...process.env,
 			npm_config_update_notifier: "false",
@@ -43,7 +46,16 @@ try {
 	assert.ok(files.some((file) => file === "package/dist/cli.js"));
 	assert.ok(files.some((file) => file === "package/README.pt-BR.md"));
 	assert.ok(files.some((file) => file === "package/assets/logo.svg"));
-	for (const entry of ["vite", "config", "frameworks", "generator", "next"])
+	for (const entry of [
+		"vite",
+		"config",
+		"frameworks",
+		"generator",
+		"next",
+		"doctor",
+		"suggest",
+		"watch",
+	])
 		assert.ok(
 			files.includes(`package/dist/${entry}.js`),
 			`missing dist/${entry}.js`,
@@ -82,7 +94,7 @@ try {
 	);
 	await writeFile(
 		join(consumer, "verify.mjs"),
-		`import assert from 'node:assert/strict';import {createRoutes} from '@triooo/named-routes';import {withNamedRoutes} from '@triooo/named-routes/next';import {discoverRoutes} from '@triooo/named-routes/generator';import {namedRoutes} from '@triooo/named-routes/vite';import {defineConfig} from '@triooo/named-routes/config';assert.equal(namedRoutes().name,'triooo-named-routes');assert.deepEqual(defineConfig({framework:'nuxt'}),{framework:'nuxt'});const route=createRoutes({'users.$user':'/users/[user]'});assert.equal(route('users.$user',{user:'Ana Silva'}),'/users/Ana%20Silva');assert.equal(typeof withNamedRoutes,'function');assert.equal(typeof discoverRoutes,'function');`,
+		`import assert from 'node:assert/strict';import {createRoutes} from '@triooo/named-routes';import {withNamedRoutes} from '@triooo/named-routes/next';import {discoverRoutes} from '@triooo/named-routes/generator';import {namedRoutes} from '@triooo/named-routes/vite';import {defineConfig} from '@triooo/named-routes/config';assert.equal(namedRoutes().name,'triooo-named-routes');assert.deepEqual(defineConfig({framework:'nuxt'}),{framework:'nuxt'});const route=createRoutes({'users.$user':'/users/[user]'});assert.equal(route('users.$user',{user:'Ana Silva'}),'/users/Ana%20Silva');assert.equal(typeof withNamedRoutes,'function');assert.equal(typeof discoverRoutes,'function');assert.deepEqual({...route.match('/users/Ana%20Silva').params},{user:'Ana Silva'});assert.equal(route.is('users.$user','/users/1'),true);const {defineQuery}=await import('@triooo/named-routes');assert.equal(typeof defineQuery.type,'function');`,
 	);
 	run(process.execPath, ["verify.mjs"], consumer);
 	await mkdir(join(consumer, "app/user/profile"), { recursive: true });
@@ -95,9 +107,36 @@ try {
 		[join(consumer, "node_modules/.bin/named-routes"), "generate"],
 		consumer,
 	);
+	const doctor = JSON.parse(
+		run(
+			process.execPath,
+			[join(consumer, "node_modules/.bin/named-routes"), "doctor", "--json"],
+			consumer,
+		),
+	);
+	assert.equal(doctor.framework, "next");
+	assert.deepEqual(
+		doctor.routes.map((entry) => entry.name),
+		["user.profile"],
+	);
+	await mkdir(join(consumer, "typed"), { recursive: true });
+	await writeFile(
+		join(consumer, "typed/query.ts"),
+		'import { defineQuery } from "@triooo/named-routes";\nexport default defineQuery({ "user.profile": defineQuery.type<{ tab?: "posts" | "likes" }>() });\n',
+	);
+	run(
+		process.execPath,
+		[
+			join(consumer, "node_modules/.bin/named-routes"),
+			"generate",
+			"--output",
+			"typed/routes.generated.ts",
+		],
+		consumer,
+	);
 	await writeFile(
 		join(consumer, "verify.ts"),
-		`import {route} from './src/routes.generated.js';route('user.profile');\n// @ts-expect-error Unknown name must be rejected\nroute('missing');\n// @ts-expect-error Static routes cannot accept dynamic parameters\nroute('user.profile',{id:1});\n`,
+		`import {route} from './src/routes.generated.js';route('user.profile');\n// @ts-expect-error Unknown name must be rejected\nroute('missing');\n// @ts-expect-error Static routes cannot accept dynamic parameters\nroute('user.profile',{id:1});\nimport {createRoutes} from '@triooo/named-routes';import type Q from './typed/query.js';const typed=createRoutes<{'user.profile':'/user/profile'},never,typeof Q>({'user.profile':'/user/profile'},{hrefs:'typed'});const href:'/user/profile'=typed('user.profile');void href;typed('user.profile',{},{query:{tab:'posts'}});\n// @ts-expect-error typed query rejects unknown values\ntyped('user.profile',{},{query:{tab:'other'}});\nconst found=typed.match('/user/profile');if(found){const name:'user.profile'=found.name;void name;}\n`,
 	);
 	await writeFile(
 		join(consumer, "tsconfig.json"),
@@ -109,7 +148,7 @@ try {
 				strict: true,
 				noEmit: true,
 			},
-			files: ["verify.ts"],
+			files: ["verify.ts", "typed/query.ts"],
 		}),
 	);
 	const require = createRequire(import.meta.url);

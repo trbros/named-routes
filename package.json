@@ -93,26 +93,34 @@
 	],
 	"scripts": {
 		"test": "npm run build && node --test tests/*.test.mjs",
-		"test:types": "tsc --project tests/tsconfig.json",
-		"check": "npm test && npm run test:types",
-		"test:next": "node tests/next-smoke.mjs",
+		"test:types": "tsc --project tests/tsconfig.json && tsc --project tests/tsconfig.runtime.json && tsc --project tests/tsconfig.schemas.json",
+		"check": "npm run lint && npm test && npm run test:types",
+		"test:next": "node tests/next-smoke.mjs && node tests/next-typed-routes.mjs",
 		"build": "node scripts/clean.mjs && tsc -p tsconfig.json",
 		"prepack": "npm run build",
 		"prepare": "npm run build",
 		"website": "npm run dev --prefix website",
 		"prepublishOnly": "npm run check && npm run test:package",
 		"test:package": "node tests/pack-smoke.mjs",
-		"release:check": "npm run check && npm run test:next && npm run test:vite && npm run test:package",
+		"release:check": "npm run check && npm run test:next && npm run test:vite && npm run test:package && npm run test:e2e",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test:vite": "node tests/vite-smoke.mjs",
 		"docs": "python3 scripts/sync-docs.py",
 		"docs:check": "python3 scripts/sync-docs.py --check",
 		"locales": "node scripts/sync-locales.mjs",
-		"locales:check": "node scripts/sync-locales.mjs --check"
+		"locales:check": "node scripts/sync-locales.mjs --check",
+		"lint": "biome check .",
+		"format": "biome check --write .",
+		"test:e2e": "node tests/e2e/run.mjs",
+		"bench:watch": "node scripts/bench-watch.mjs"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.6.7",
+		"@types/node": "^26.6.6",
+		"playwright": "1.65.1",
 		"typescript": "^7.0.2",
-		"@types/node": "^26.6.6"
+		"valibot": "^1.5.0",
+		"zod": "^4.6.7"
 	},
 	"publishConfig": {
 		"access": "public",
