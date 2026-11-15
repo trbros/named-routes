@@ -1,0 +1,9 @@
+# LF everywhere, including Windows checkouts: Biome checks line endings and
+# the generated-module header check reads files byte for byte.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
+*.tgz binary
