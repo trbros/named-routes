@@ -45,6 +45,12 @@ jobs:
   publish:
     needs: [release-info, validate, e2e]
     runs-on: ubuntu-latest
+    # Must match "Environment name" in the npm Trusted Publisher settings. The
+    # environment requires a reviewer's approval and only accepts
+    # named-routes-v* tags, so nothing else can obtain the publishing token.
+    environment:
+      name: npm-publish
+      url: https://www.npmjs.com/package/@triooo/named-routes
     timeout-minutes: 10
     permissions:
       contents: read
