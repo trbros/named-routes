@@ -1,28 +1,41 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+	mkdir,
+	mkdtemp,
+	readdir,
+	readFile,
+	rm,
+	writeFile,
+} from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { npmCli as npmCliPath } from "./e2e/lib.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 const temporary = await mkdtemp(join(tmpdir(), "trbros-v1-package-"));
+// npm runs as `node npm-cli.js`: npm.cmd on Windows would need a shell, which
+// concatenates arguments unescaped (DEP0190).
+const npmCli = npmCliPath();
 function run(command, args, cwd = root) {
-	// npm is npm.cmd on Windows, which Node only spawns through a shell.
-	const windowsNpm = process.platform === "win32" && command === "npm";
-	const result = spawnSync(windowsNpm ? "npm.cmd" : command, args, {
-		cwd,
-		encoding: "utf8",
-		timeout: 120000,
-		shell: windowsNpm,
-		env: {
-			...process.env,
-			npm_config_update_notifier: "false",
-			npm_config_cache: join(temporary, "cache"),
+	const viaNode = command === "npm" && npmCli;
+	const result = spawnSync(
+		viaNode ? process.execPath : command,
+		viaNode ? [npmCli, ...args] : args,
+		{
+			cwd,
+			encoding: "utf8",
+			timeout: 120000,
+			env: {
+				...process.env,
+				npm_config_update_notifier: "false",
+				npm_config_cache: join(temporary, "cache"),
+			},
 		},
-	});
+	);
 	assert.equal(
 		result.status,
 		0,
@@ -102,17 +115,23 @@ try {
 		join(consumer, "app/user/profile/page.tsx"),
 		"export default function Page(){return null}",
 	);
-	run(
-		process.execPath,
-		[join(consumer, "node_modules/.bin/named-routes"), "generate"],
-		consumer,
+	// The installed bin target (node_modules/.bin holds shell/cmd shims on
+	// Windows, which node cannot run directly); check the shim exists too.
+	const installed = join(consumer, "node_modules/@triooo/named-routes");
+	const installedManifest = JSON.parse(
+		await readFile(join(installed, "package.json"), "utf8"),
 	);
-	const doctor = JSON.parse(
-		run(
-			process.execPath,
-			[join(consumer, "node_modules/.bin/named-routes"), "doctor", "--json"],
-			consumer,
+	const installedCli = join(installed, installedManifest.bin["named-routes"]);
+	const shims = await readdir(join(consumer, "node_modules/.bin"));
+	assert.ok(
+		shims.some(
+			(name) => name === "named-routes" || name === "named-routes.cmd",
 		),
+		"named-routes bin shim missing",
+	);
+	run(process.execPath, [installedCli, "generate"], consumer);
+	const doctor = JSON.parse(
+		run(process.execPath, [installedCli, "doctor", "--json"], consumer),
 	);
 	assert.equal(doctor.framework, "next");
 	assert.deepEqual(
@@ -126,12 +145,7 @@ try {
 	);
 	run(
 		process.execPath,
-		[
-			join(consumer, "node_modules/.bin/named-routes"),
-			"generate",
-			"--output",
-			"typed/routes.generated.ts",
-		],
+		[installedCli, "generate", "--output", "typed/routes.generated.ts"],
 		consumer,
 	);
 	await writeFile(

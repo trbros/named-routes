@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -27,10 +27,10 @@ test("the runtime import graph contains only relative browser-safe modules", asy
 			queue.push(join(dirname(file), specifier));
 		}
 	}
-	assert.deepEqual([...seen].map((file) => file.slice(pkg.length + 1)).sort(), [
-		"dist/index.js",
-		"dist/suggest.js",
-	]);
+	assert.deepEqual(
+		[...seen].map((file) => relative(pkg, file).split(sep).join("/")).sort(),
+		["dist/index.js", "dist/suggest.js"],
+	);
 });
 
 test("the runtime source compiles without Node.js types", () => {

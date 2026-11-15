@@ -139,7 +139,10 @@ test("watch discovers added and removed pages and terminates cleanly", async (t)
 		async () => !(await readFile(file, "utf8")).includes('["new"]'),
 	);
 	child.kill("SIGTERM");
-	assert.deepEqual(await exit, { code: 0, signal: null });
+	// Windows has no catchable SIGTERM: kill() terminates the process, so a
+	// clean exit code can only be asserted on POSIX systems.
+	if (process.platform === "win32") await exit;
+	else assert.deepEqual(await exit, { code: 0, signal: null });
 });
 
 test("next dev discovers page creation and removal automatically without naming config or a second command", async (t) => {
