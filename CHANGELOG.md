@@ -1,9 +1,5 @@
 # Changelog
 
-## Unreleased
-
-Planned as 1.1.0. Everything below is backward compatible with 1.0: new behavior is opt-in or additive, and error codes and messages are unchanged.
-
 ### Added
 
 - `hrefs: "typed"` (config, `withNamedRoutes()`, Vite plugin or `createRoutes`): `route()` returns template literal types such as `` `/users/${string}` `` that Next.js `typedRoutes` accepts in `<Link>`, `router.push()`, `replace()` and `prefetch()` without casts. Type-only; URLs are identical. New `RouteHref`, `RouteHrefWithSuffix` and `TypedNamedRoutes` types. `withNamedRoutes()` prints a hint when `typedRoutes` is enabled without it.

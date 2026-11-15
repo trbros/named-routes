@@ -1,6 +1,6 @@
 {
 	"name": "@triooo/named-routes",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Typed, automatically discovered named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router",
 	"keywords": [
 		"named-routes",
