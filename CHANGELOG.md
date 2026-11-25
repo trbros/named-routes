@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 - 2026-11-25
 
-Planned as 2.0.0. Breaking changes only where they pay off, each with a migration: run `npx named-routes doctor --v2` to see what applies, and `npx named-routes migrate --to 2 --write` to pin the 1.x behavior where the generated module would change. It also contains the fixes planned for 1.1.1.
+Breaking changes only where they pay off, each with a migration: run `npx named-routes doctor --v2` to see what applies, and `npx named-routes migrate --to 2 --write` to pin the 1.x behavior where the generated module would change. It also contains the fixes planned for 1.1.1, which was not released separately.
 
 ### Breaking
 

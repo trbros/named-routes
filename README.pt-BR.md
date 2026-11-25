@@ -4,7 +4,7 @@
 
 <!-- Generated from docs/content.json, docs/groups.json and docs/locales.json; run pnpm docs. -->
 
-**v1.1.0** · [Guia de instalação local](LOCAL-DEVELOPMENT.pt-BR.md)
+**v2.0.0** · [Guia de instalação local](LOCAL-DEVELOPMENT.pt-BR.md)
 
 ## Conteúdo
 

@@ -4,7 +4,7 @@
 
 <!-- Generated from docs/content.json, docs/groups.json and docs/locales.json; run pnpm docs. -->
 
-**v1.1.0** · [ローカルインストールガイド（ポルトガル語）](LOCAL-DEVELOPMENT.pt-BR.md)
+**v2.0.0** · [ローカルインストールガイド（ポルトガル語）](LOCAL-DEVELOPMENT.pt-BR.md)
 
 ## 目次
 
