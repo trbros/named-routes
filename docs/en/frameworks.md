@@ -18,7 +18,7 @@
 
 ## Other frameworks (Vite plugin)
 
-Add namedRoutes() from @triooo/named-routes/vite to the Vite plugins of Nuxt (vite.plugins in nuxt.config), Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, using Vite's own watcher.
+Add namedRoutes() from @triooo/named-routes/vite to the Vite plugins of Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router; in Nuxt register the @triooo/named-routes/nuxt module instead. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, or when the framework rewrites its route table, using Vite's own watcher.
 
 The framework is detected from package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev or @remix-run/dev, TanStack router plugin/CLI/Start, unplugin-vue-router or vue-router). Set framework explicitly in monorepos or when detection is ambiguous. Run npx named-routes init to create a config for the detected framework.
 
@@ -28,7 +28,7 @@ SvelteKit: +page.* files, [id=matcher] (the matcher is dropped), [[lang]], [...r
 
 React Router / Remix flat routes (app/routes): dots nest, _index, $param, ($optional), $ splat (named splat), _pathless layouts, name_ opt-out, [.] escapes and folder/route.tsx modules. TanStack Router (src/routes): flat and directory files, index/route, $param, {-$optional}, prefix{$param}, $ splat (named _splat), _layouts, -ignored files, (groups) and .lazy files. Optional static segments such as (beta) cannot be named; exclude the file or use extraRoutes.
 
-Paths declared inside components (Nuxt definePageMeta({ path }), React Router routes.ts) are not visible to a file scanner: map those URLs with extraRoutes, or use the manual manifest described next.
+Framework discovery (default since 2.0): where the framework publishes its final route table through a documented channel, names come from it, so paths declared in code are included. Nuxt: the module reads pages:resolved (definePageMeta path and alias, pages added by modules). Vue Router 5: the typed-router.d.ts it generates (definePage path). React Router: react-router routes --json (route(), index(), layout() and prefix() in app/routes.ts). TanStack Router: routeTree.gen.ts. Nothing executes or parses your code. Until the framework has written its table, the file conventions above are used and the CLI says so; discovery: "files" keeps the 1.x scanner. Next.js, SvelteKit and Astro cannot declare routes in code, so their files are the source.
 
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
@@ -38,7 +38,8 @@ export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts
 export default defineNuxtConfig({
-  vite: { plugins: [namedRoutes({ output: "app/utils/routes.ts" })] },
+  modules: ["@triooo/named-routes/nuxt"],
+  namedRoutes: { output: "app/utils/routes.ts" },
 });
 
 // astro.config.mjs
@@ -61,7 +62,7 @@ Wrap next.config with withNamedRoutes from @triooo/named-routes/next. The module
 
 **Verified.** Real Next 16 dev servers (App Router and Pages Router, with basePath and live page discovery) run in CI. Demos: examples/app-router and examples/pages-router. See also the App Router and Pages Router recipes.
 
-With typedRoutes: true in the Next config, pass hrefs: "typed" so route() results are accepted by <Link>, router.push(), replace() and prefetch() without casts; the wrapper prints a hint when typedRoutes is on without it. Verified with the real next typegen and TypeScript on Next 16, in both routers, with webpack and Turbopack.
+With typedRoutes: true in the Next config, route() results are accepted by <Link>, router.push(), replace() and prefetch() without casts, because typed hrefs are the default since 2.0; the wrapper warns when typedRoutes meets hrefs: "string". Verified with the real next typegen and TypeScript on Next 16, in both routers, with webpack and Turbopack.
 
 ```tsx
 import { withNamedRoutes } from "@triooo/named-routes/next";
@@ -77,20 +78,22 @@ import { route } from "@/routes.generated";
 
 ## Nuxt
 
-Add namedRoutes() to vite.plugins in nuxt.config. Keep the output inside your source directory and import it with the ~ alias: with Nuxt 4 (srcDir app/) use output app/routes.generated.ts and import ~/routes.generated. The plugin regenerates as you add, move or delete pages during nuxt dev.
+Add "@triooo/named-routes/nuxt" to modules in nuxt.config. The module names the routes Nuxt itself resolves (the pages:resolved hook), so definePageMeta({ path, alias }) and pages added by other modules are included, and regenerates as you add, move or delete pages during nuxt dev. Keep the output inside your source directory and import it with the ~ alias: with Nuxt 4 (srcDir app/) use output app/routes.generated.ts and import ~/routes.generated. Options go in named-routes.config (shared with the CLI) or under namedRoutes in nuxt.config.
 
 **Conventions.** app/pages or pages: index.vue, [id], [[id]] optional, [...slug] (also matches an empty remainder, so it becomes [[...slug]]), (group) folders, mixed segments such as v[major]-[minor], and parent.vue + parent/ nesting merged into one route. Files starting with - are ignored. With includeApi, server/api (prefixed /api) and server/routes are scanned and .get/.post suffixes are removed.
 
 **Navigation and i18n.** Use the URL with NuxtLink :to, navigateTo or useRouter().push. With @nuxtjs/i18n, configure the same locales here: strategy prefix_except_default maps to localePrefix as-needed, prefix (or prefix_and_default) to always, and no_prefix to never. Then route(name, params, { locale }) returns the localized URL; without a locale you get the internal path for localePath(). Translated paths from defineI18nRoute must be repeated in i18n.pathnames.
 
-**Limits and verification.** Paths changed with definePageMeta({ path }) are not visible to the scanner; add them with extraRoutes. Names follow this package's dotted style (users.$id), not Nuxt's own route names (users-id). Verified by convention tests and by examples/nuxt, which builds and runs with Nuxt 4.
+**Limits and verification.** The module also writes .nuxt/named-routes/pages.json, so named-routes check and generate see the same routes after nuxt prepare. List it before @nuxtjs/i18n in modules, so it sees the routes before they are localized. The Vite plugin still works in Nuxt but only sees the files. Names follow this package's dotted style (users.$id), not Nuxt's own route names (users-id). Verified by convention tests and by examples/nuxt, which builds and runs with Nuxt 4, including a definePageMeta({ path }) page.
 
 ```vue
 // nuxt.config.ts
-import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineNuxtConfig({
-  vite: { plugins: [namedRoutes({ output: "app/routes.generated.ts" })] },
+  modules: ["@triooo/named-routes/nuxt"],
+  namedRoutes: { output: "app/routes.generated.ts" },
 });
+
+<!-- app/pages/about.vue: definePageMeta({ path: "/sobre" }) → sobre -->
 
 <!-- app/pages/users/[id].vue → users.$id -->
 <script setup lang="ts">
@@ -111,7 +114,7 @@ For Vue apps with file-based routing (Vue Router 5 vue-router/vite, or unplugin-
 
 **Navigation.** Pass the URL to RouterLink :to or router.push. Vue Router resolves the string like any path, so the package does not need access to the router instance.
 
-**Verified.** A real Vite 7 dev server with these conventions runs in CI, and examples/vue builds, runs and is driven in a browser with Vue Router 5 (vue-router/vite), including a users/_parent.vue layout.
+**Verified.** Names come from the typed-router.d.ts that Vue Router 5 writes (its dts option), so definePage({ path }) overrides are named by the URL they serve; before it exists, the files are scanned. A real Vite dev server with these conventions runs in CI, and examples/vue builds, runs and is driven in a browser with Vue Router 5 (vue-router/vite), including a users/_parent.vue layout and a definePage({ path }) page.
 
 ```ts
 // vite.config.ts
@@ -179,13 +182,13 @@ import { route } from "../../routes.generated";
 
 ## React Router / Remix
 
-For React Router 7 and 8 framework mode (and Remix v2) with flat routes, add namedRoutes() before reactRouter() in vite.config and keep app/routes.ts as flatRoutes() from @react-router/fs-routes. A good output is app/routes.generated.ts, outside app/routes.
+For React Router 7 and 8 framework mode (and Remix v2), add namedRoutes() before reactRouter() in vite.config. Names come from react-router routes --json, the framework's own resolution of app/routes.ts, so flatRoutes() files and routes declared with route(), index(), layout() and prefix() are all discovered. A good output is app/routes.generated.ts, outside app/routes.
 
 **Conventions.** Dots nest (concerts.$city.tsx is /concerts/[city]); _index is the index; $param; ($lang) is optional ([[lang]]); a lone $ is a splat named splat ([[...splat]]); _auth leading underscores are pathless layouts; concerts_ opts out of nesting; [.] escapes keep characters; a folder with route.tsx is one route and deeper folders are ignored. A layout and its _index share a URL and merge.
 
 **Navigation.** Use <Link to={route(...)}>, useNavigate() or redirect() in loaders and actions.
 
-**Limits and verification.** Routes declared in code inside app/routes.ts (route(), index(), layout()) are not files: use a manual manifest or extraRoutes. Optional static segments such as (beta) cannot be named; the generator stops with a clear error so you can exclude the file. Verified by convention tests and examples/react-router, which builds and runs with React Router 8.
+**Limits and verification.** Without @react-router/dev installed, or when the command fails, the flat-route files above are scanned and the CLI reports why. Optional static segments such as (beta) cannot be named; the generator stops with a clear error so you can exclude the file. Verified by convention tests and examples/react-router, which builds and runs with React Router 8, including a route declared with route() in app/routes.ts.
 
 ```tsx
 // vite.config.ts
@@ -199,6 +202,8 @@ export default defineConfig({
 import { Link } from "react-router";
 import { route } from "../routes.generated";
 <Link to={route("concerts.$city", { city: "lisbon" })}>Lisbon</Link>;
+
+// app/routes.ts: [...(await flatRoutes()), route("sobre", "about.tsx")] → sobre
 ```
 
 <a id="tanstack-router"></a>
@@ -211,7 +216,7 @@ Add namedRoutes() next to tanstackRouter() from @tanstack/router-plugin in vite.
 
 **When to use it.** TanStack Router already types its own <Link to> by route id. Use route() where a plain string is needed: <a href>, redirects to other apps, emails, sitemaps, analytics, locale-prefixed URLs and names shared with other frameworks in a monorepo.
 
-**Verified.** Convention tests plus examples/tanstack-router, which builds and runs with the TanStack router plugin.
+**Verified.** Names come from the routeTree.gen.ts the TanStack Router plugin or CLI generates (its navigable paths); before it exists, the files are scanned. Convention tests plus examples/tanstack-router, which builds and runs with the TanStack router plugin.
 
 ```tsx
 // vite.config.ts

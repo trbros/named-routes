@@ -107,10 +107,10 @@ export function withNamedRoutes<C extends object = NextConfigShape>(
 		const key = resolve(result.output);
 		const typedRoutes =
 			config.typedRoutes === true || config.experimental?.typedRoutes === true;
-		if (typedRoutes && initial.hrefs !== "typed" && !hinted.has(key)) {
+		if (typedRoutes && initial.hrefs === "string" && !hinted.has(key)) {
 			hinted.add(key);
 			console.warn(
-				'[named-routes] Next.js typedRoutes is enabled. Set hrefs: "typed" in withNamedRoutes() or named-routes.config so route() results are accepted by <Link> and router.push() without casts.',
+				'[named-routes] Next.js typedRoutes is enabled, but hrefs: "string" makes route() return string, which <Link> and router.push() reject without a cast. Remove hrefs (typed is the default) or set hrefs: "typed".',
 			);
 		}
 		// Re-evaluated config replaces the old watcher rather than accumulating timers.

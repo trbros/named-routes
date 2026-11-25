@@ -1,6 +1,6 @@
-// Real Next.js typedRoutes contract: with hrefs: "typed", route() results are
+// Real Next.js typedRoutes contract: with typed hrefs (the default), route() results are
 // accepted by <Link>, useRouter().push/replace/prefetch (App Router) and
-// next/router (Pages Router) without casts; with the default "string" mode
+// next/router (Pages Router) without casts; with hrefs: "string" (1.x)
 // Next rejects them. Uses the real `next typegen` and the real TypeScript.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -134,18 +134,19 @@ try {
 	const next = join(root, "node_modules/next/dist/bin/next");
 	const tsc = join(root, "node_modules/typescript/bin/tsc");
 
-	await generateRoutes({ root, hrefs: "typed" });
+	// 2.0: typed hrefs are the default.
+	await generateRoutes({ root });
 	const typegen = run([next, "typegen"], "next typegen");
 	assert.equal(typegen.status, 0, typegen.output);
 	const typed = run([tsc, "-p", "tsconfig.json"], "tsc (typed)");
 	assert.equal(
 		typed.status,
 		0,
-		`hrefs "typed" must satisfy Next typedRoutes:\n${typed.output}`,
+		`the default (typed) hrefs must satisfy Next typedRoutes:\n${typed.output}`,
 	);
 
-	// Control: the default string mode is rejected by Next typedRoutes.
-	await generateRoutes({ root });
+	// Control: hrefs: "string" (the 1.x mode) is rejected by Next typedRoutes.
+	await generateRoutes({ root, hrefs: "string" });
 	const plain = run([tsc, "-p", "tsconfig.json"], "tsc (string)");
 	assert.notEqual(
 		plain.status,

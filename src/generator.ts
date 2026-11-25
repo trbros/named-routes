@@ -27,9 +27,21 @@ import {
 	parsePattern,
 	type RouteDefaults,
 } from "./index.js";
+import {
+	type DiscoveryMode,
+	discoveryModes,
+	type FrameworkTable,
+	frameworkSources,
+	frameworkTable,
+} from "./sources.js";
 import { closest } from "./suggest.js";
 
 export type { FrameworkId } from "./frameworks.js";
+export type {
+	DiscoveryMode,
+	FrameworkRoute,
+	FrameworkTable,
+} from "./sources.js";
 export interface NamingContext {
 	/** Canonical URL pattern (without locale prefix). */
 	path: string;
@@ -101,10 +113,19 @@ export interface GeneratorOptions {
 	/** Public URL defaults serialized into the generated module. Never put secrets here. */
 	defaults?: Omit<RouteDefaults, "i18n" | "hrefs">;
 	/**
-	 * "typed" makes route() return template literal types (`/users/${string}`)
-	 * accepted by Next.js typedRoutes without casts. Default "string".
+	 * "typed" (default since 2.0) makes route() return template literal types
+	 * (`/users/${string}`) accepted by Next.js typedRoutes without casts;
+	 * "string" keeps the 1.x `string`.
 	 */
 	hrefs?: HrefMode;
+	/**
+	 * Where page routes come from. "framework" (default since 2.0): the route
+	 * table the framework resolves, where it publishes one (Nuxt through
+	 * @triooo/named-routes/nuxt, Vue Router 5, React Router, TanStack
+	 * Router), falling back to the files when it is not available yet.
+	 * "files": the file-convention scanner of 1.x.
+	 */
+	discovery?: DiscoveryMode;
 	/**
 	 * Module (relative to root) whose default export is `defineQuery({...})`:
 	 * per-route query schemas. Imported as types only unless validateQuery.
@@ -123,9 +144,23 @@ export interface DiscoveredRoute {
 	variant?: boolean;
 	localized?: boolean;
 }
+/** How the routes of a Discovery were found. */
+export interface DiscoverySource {
+	/** The discovery option in effect. */
+	requested: DiscoveryMode;
+	/** Where the page routes came from. */
+	used: DiscoveryMode;
+	/** The framework artifact or command the table came from. */
+	artifact?: string;
+	/** Why framework discovery fell back to the files. */
+	fallback?: string;
+	/** Absolute files whose content changes the routes (besides the routes directories). */
+	inputs: string[];
+}
 export interface Discovery {
 	root: string;
 	framework: FrameworkId;
+	discovery: DiscoverySource;
 	/** Scanned directories relative to root. */
 	directories: string[];
 	sources: { kind: string; directory: string }[];
@@ -203,6 +238,7 @@ const generatorKeys = new Set([
 	"hrefs",
 	"query",
 	"validateQuery",
+	"discovery",
 ]);
 const i18nKeys = new Set([
 	"locales",
@@ -252,13 +288,16 @@ export function validateOptions(options: unknown): GeneratorOptions {
 			`Invalid framework: ${String(o.framework)}; use auto, ${frameworks.join(", ")}`,
 		);
 	if (o.router !== undefined && !["auto", "app", "pages"].includes(o.router))
-		error(`Invalid router: ${String(o.router)}`);
+		invalid(`Invalid router: ${String(o.router)}`, {
+			option: "router",
+			hint: 'Use "auto", "app" or "pages".',
+		});
 	for (const key of ["appDir", "pagesDir"] as const)
 		if (o[key] !== undefined && o[key] !== false) optionalString(o[key], key);
 	optionalString(o.routesDir, "routesDir");
 	if (o.pageExtensions !== undefined) {
 		if (!Array.isArray(o.pageExtensions))
-			error("pageExtensions must be an array");
+			invalid("pageExtensions must be an array", { option: "pageExtensions" });
 		if (
 			!o.pageExtensions.length ||
 			o.pageExtensions.some(
@@ -266,7 +305,10 @@ export function validateOptions(options: unknown): GeneratorOptions {
 					typeof ext !== "string" || !/^[a-z0-9]+(?:\.[a-z0-9]+)*$/i.test(ext),
 			)
 		)
-			error("Invalid pageExtensions");
+			invalid("Invalid pageExtensions", {
+				option: "pageExtensions",
+				hint: 'Use extensions without a leading dot, such as ["tsx", "page.tsx"].',
+			});
 	}
 	if (o.includeApi !== undefined && typeof o.includeApi !== "boolean")
 		invalid("includeApi must be a boolean");
@@ -352,6 +394,10 @@ export function validateOptions(options: unknown): GeneratorOptions {
 	}
 	if (o.hrefs !== undefined && o.hrefs !== "string" && o.hrefs !== "typed")
 		invalid('hrefs must be "string" or "typed"');
+	if (o.discovery !== undefined && !discoveryModes.includes(o.discovery))
+		invalid('discovery must be "files" or "framework"', {
+			option: "discovery",
+		});
 	optionalString(o.query, "query");
 	if (o.query !== undefined && !/\.(?:[cm]?[jt]s|tsx|jsx)$/.test(o.query))
 		invalid("query must point to a .ts, .mts, .tsx, .js or .mjs module", {
@@ -541,20 +587,50 @@ interface Candidate {
 	api?: boolean;
 }
 
+/** Not configuration: lets an integration hand over the framework's table directly. */
+export interface DiscoveryContext {
+	/** The route table, e.g. from the Nuxt module's pages:resolved hook. */
+	frameworkTable?: FrameworkTable;
+}
+
 export async function discoverRoutes(
 	input: GeneratorOptions = {},
+	context: DiscoveryContext = {},
 ): Promise<Discovery> {
 	const options = validateOptions(input);
 	const root = resolve(options.root ?? process.cwd());
 	const framework = await resolveFramework(root, options);
 	const adapter = adapters[framework];
+	const requested = options.discovery ?? "framework";
+	const source: DiscoverySource = {
+		requested,
+		used: "files",
+		inputs: [],
+	};
+	let table: FrameworkTable | undefined;
+	if (requested === "framework" && frameworkSources[framework]) {
+		const lookup = context.frameworkTable
+			? { table: context.frameworkTable }
+			: await frameworkTable(root, framework);
+		if ("table" in lookup) {
+			table = lookup.table;
+			source.used = "framework";
+			source.artifact = table.artifact;
+			source.inputs = table.inputs;
+		} else {
+			source.fallback = lookup.unavailable;
+			source.inputs = lookup.inputs ?? [];
+		}
+	}
 	const extensions = pageExtensionsOf(adapter, options);
 	const includeApi = options.includeApi === true;
 	const exclude = (options.exclude ?? []).map(globToRegExp);
 	const excluded = (path: string) =>
 		exclude.some((pattern) => pattern.test(path));
 	const sources = await resolveSources(root, adapter, options);
-	if (!sources.length && framework !== "manual") {
+	// With the framework's table, page directories are only scanned for
+	// endpoints (includeApi), and none is required.
+	if (!sources.length && framework !== "manual" && !table) {
 		const expected =
 			framework === "next"
 				? options.router && options.router !== "auto"
@@ -573,7 +649,39 @@ export async function discoverRoutes(
 		);
 	}
 	const candidates: Candidate[] = [];
+	if (table) {
+		const pageKind = adapter.sources.find((item) => !item.api)?.kind ?? "pages";
+		for (const route of table.routes) {
+			if (route.file && excluded(route.file)) continue;
+			try {
+				parsePattern(route.path);
+			} catch (caught) {
+				if (caught instanceof NamedRouteError)
+					throw new NamedRouteError(
+						"GENERATION_ERROR",
+						`${caught.message} (${route.file ?? table.artifact})`,
+						{
+							...caught.details,
+							...(route.file ? { file: route.file } : {}),
+							hint: 'The framework reported a route this package cannot name; exclude its file, or use discovery: "files".',
+						},
+					);
+				throw caught;
+			}
+			candidates.push({
+				path: route.path,
+				file: route.file,
+				router: pageKind,
+				...(route.alias ? { variant: true } : {}),
+			});
+		}
+	}
 	for (const source of sources) {
+		if (
+			table &&
+			!adapter.sources.find((item) => item.kind === source.kind)?.api
+		)
+			continue;
 		const walk = async (parts: string[]): Promise<void> => {
 			const children = await readdir(resolve(source.directory, ...parts), {
 				withFileTypes: true,
@@ -796,6 +904,7 @@ export async function discoverRoutes(
 	return {
 		root,
 		framework,
+		discovery: source,
 		directories: sources.map(
 			(source) => posix(relative(root, source.directory)) || ".",
 		),
@@ -817,8 +926,8 @@ function runtimeDefaults(
 	if (input.trailingSlash !== undefined)
 		defaults.trailingSlash = input.trailingSlash;
 	if (input.origin !== undefined) defaults.origin = input.origin;
-	// Type-only: the literal selects the typed createRoutes overload.
-	if (options.hrefs === "typed") defaults.hrefs = "typed";
+	// Type-only: typed is the createRoutes default; "string" selects the 1.x overload.
+	if (options.hrefs === "string") defaults.hrefs = "string";
 	const i18n = options.i18n;
 	if (i18n) {
 		const unlocalized = [
@@ -866,16 +975,19 @@ function render(
 		format === "ts"
 			? `${literal} as const`
 			: `/** @type {const} */ (${literal})`;
-	const lines = [
-		generatedHeader,
-		`import { createRoutes } from ${JSON.stringify(options.importSource ?? PACKAGE)};`,
-	];
+	const source = JSON.stringify(options.importSource ?? PACKAGE);
+	const lines = [generatedHeader];
 	const locales = discovery.defaults.i18n?.locales ?? [];
 	const defaults = JSON.stringify(discovery.defaults, null, 2);
 	// TypeScript outputs import the schemas as types only (nothing is bundled)
 	// unless validateQuery; JavaScript outputs need the value for inference.
 	const typeOnly =
 		querySpecifier !== undefined && format === "ts" && !options.validateQuery;
+	lines.push(
+		typeOnly
+			? `import { createRoutes, type TypeOnlyQueries } from ${source};`
+			: `import { createRoutes } from ${source};`,
+	);
 	if (querySpecifier !== undefined)
 		lines.push(
 			`import ${typeOnly ? "type " : ""}${QUERIES} from ${JSON.stringify(querySpecifier)};`,
@@ -891,7 +1003,7 @@ function render(
 		);
 	else if (typeOnly)
 		lines.push(
-			`export const ${names.route} = createRoutes<typeof ${names.routes}, ${locales.length ? locales.map((locale) => JSON.stringify(locale)).join(" | ") : "never"}, typeof ${QUERIES}>(${names.routes}, ${defaults});`,
+			`export const ${names.route} = createRoutes<typeof ${names.routes}, ${locales.length ? locales.map((locale) => JSON.stringify(locale)).join(" | ") : "never"}, TypeOnlyQueries<typeof ${QUERIES}>>(${names.routes}, ${defaults});`,
 		);
 	else
 		lines.push(
@@ -919,9 +1031,9 @@ function render(
 
 export async function generateRoutes(
 	options: GeneratorOptions = {},
-	{ check = false }: { check?: boolean } = {},
+	{ check = false, ...context }: { check?: boolean } & DiscoveryContext = {},
 ) {
-	const result = await discoverRoutes(options);
+	const result = await discoverRoutes(options, context);
 	const output = resolve(
 		result.root,
 		options.output ?? "src/routes.generated.ts",
@@ -931,7 +1043,9 @@ export async function generateRoutes(
 			? "ts"
 			: /\.m?js$/.test(output)
 				? "js"
-				: error("output must end in .ts, .mts, .js or .mjs (not .d.ts)");
+				: invalid("output must end in .ts, .mts, .js or .mjs (not .d.ts)", {
+						option: "output",
+					});
 	// An output module inside a routes directory could itself become a page.
 	const adapter = adapters[result.framework];
 	const extensions = pageExtensionsOf(adapter, options);
@@ -950,7 +1064,13 @@ export async function generateRoutes(
 			routable = true;
 		}
 		if (routable)
-			error(`Place generated output outside routable ${kind} files: ${output}`);
+			invalid(
+				`Place generated output outside routable ${kind} files: ${output}`,
+				{
+					option: "output",
+					hint: "Write the module outside the routes directory, e.g. src/routes.generated.ts.",
+				},
+			);
 	}
 	let querySpecifier: string | undefined;
 	if (options.query !== undefined) {

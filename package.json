@@ -1,7 +1,7 @@
 {
 	"name": "@triooo/named-routes",
 	"version": "1.1.0",
-	"description": "Typed, automatically discovered named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router",
+	"description": "Typed named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router, discovered from the framework's own route table",
 	"keywords": [
 		"named-routes",
 		"typescript",
@@ -26,27 +26,11 @@
 	"author": "triooo",
 	"type": "module",
 	"engines": {
-		"node": ">=20.19"
+		"node": ">=22.12"
 	},
 	"sideEffects": false,
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"typesVersions": {
-		"*": {
-			"generator": [
-				"./dist/generator.d.ts"
-			],
-			"next": [
-				"./dist/next.d.ts"
-			],
-			"vite": [
-				"./dist/vite.d.ts"
-			],
-			"config": [
-				"./dist/config.d.ts"
-			]
-		}
-	},
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -73,6 +57,11 @@
 			"import": "./dist/vite.js",
 			"default": "./dist/vite.js"
 		},
+		"./nuxt": {
+			"types": "./dist/nuxt.d.ts",
+			"import": "./dist/nuxt.js",
+			"default": "./dist/nuxt.js"
+		},
 		"./package.json": "./package.json"
 	},
 	"bin": {
@@ -93,7 +82,7 @@
 	],
 	"scripts": {
 		"test": "npm run build && node --test tests/*.test.mjs",
-		"test:types": "tsc --project tests/tsconfig.json && tsc --project tests/tsconfig.runtime.json && tsc --project tests/tsconfig.schemas.json",
+		"test:types": "tsc --project tests/tsconfig.json && tsc --project tests/tsconfig.runtime.json && tsc --project tests/tsconfig.schemas.json && node tests/docs-samples.mjs",
 		"check": "npm run lint && npm test && npm run test:types",
 		"test:next": "node tests/next-smoke.mjs && node tests/next-typed-routes.mjs",
 		"build": "node scripts/clean.mjs && tsc -p tsconfig.json",
@@ -115,9 +104,11 @@
 		"bench:watch": "node scripts/bench-watch.mjs"
 	},
 	"devDependencies": {
+		"@arethetypeswrong/cli": "0.18.5",
 		"@biomejs/biome": "2.6.7",
 		"@types/node": "^26.6.6",
 		"playwright": "1.65.1",
+		"publint": "0.3.25",
 		"typescript": "^7.0.2",
 		"valibot": "^1.5.0",
 		"zod": "^4.6.7"

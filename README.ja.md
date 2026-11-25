@@ -25,7 +25,9 @@ Next.js（App Router、Pages Router、src 構成、混在した移行プロジ�
 
 どのフレームワークもひとつのパターン構文とひとつの命名規則に変換されるため、app/users/[user]/page.tsx、pages/users/[user].vue、src/routes/users/[user]/+page.svelte、app/routes/users.$user.tsx はすべて users.$user になります。言語付き URL（next-intl、Pages Router の i18n、@nuxtjs/i18n など）は v1 から対応しています。
 
-URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上が必要です。ランタイムの型には TypeScript 5.0 以上（Zod 4 と Valibot 1 のスキーマは 5.4 以上）が必要です。examples/ のすべての例を、パッケージ化した tarball からインストールし、ビルドして配信し、CI の実ブラウザーで操作して確認しています。
+URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 22.12 以上、型には TypeScript 5.4 以上が必要です。examples/ のすべての例を、パッケージ化した tarball からインストールし、ビルドして配信し、CI の実ブラウザーで操作して確認しています。
+
+2.0 からは、フレームワークがルート表を公開している場合（Nuxt、Vue Router 5、React Router、TanStack Router）はその表を使うため、definePageMeta({ path }) や app/routes.ts の route() のようにコードで宣言したパスにも名前が付きます。route() はデフォルトで型付き href を返します。
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user
@@ -40,9 +42,9 @@ route("users.$user", { user: 42 }, { locale: "pt" });  // /pt/users/42
 
 ## インストール
 
-お好みのパッケージマネージャーでインストールしてください。ランタイム依存はありません。ジェネレーターには Node.js 20.19 以上が必要です。
+お好みのパッケージマネージャーでインストールしてください。ランタイム依存はありません。ジェネレーターには Node.js 22.12 以上が必要です。
 
-あとは一度だけ接続します。Next.js なら next.config の withNamedRoutes、Vite ベースのフレームワークなら Vite プラグインの namedRoutes() です。どのプロジェクトでも named-routes CLI（generate、check、watch）を使えます。
+あとは一度だけ接続します。Next.js なら next.config の withNamedRoutes、Nuxt なら @triooo/named-routes/nuxt モジュール、その他の Vite ベースのフレームワークなら Vite プラグインの namedRoutes() です。どのプロジェクトでも named-routes CLI（generate、check、watch）を使えます。
 
 ```sh
 npm install @triooo/named-routes
@@ -79,7 +81,7 @@ route("users.$user", { user: "ana" });
 
 ## ほかのフレームワーク（Vite プラグイン）
 
-@triooo/named-routes/vite の namedRoutes() を、Nuxt（nuxt.config の vite.plugins）、Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router の Vite プラグインに追加します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更があると Vite 自身の watcher で再生成します。
+Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router では @triooo/named-routes/vite の namedRoutes() を Vite プラグインに追加します。Nuxt では代わりに @triooo/named-routes/nuxt モジュールを登録します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更や、フレームワークがルート表を書き直したときに、Vite 自身の watcher で再生成します。
 
 フレームワークは package.json から検出されます（nuxt、next、@sveltejs/kit、astro、@react-router/dev または @remix-run/dev、TanStack Router のプラグイン/CLI/Start、unplugin-vue-router または vue-router）。モノレポや検出があいまいな場合は framework を明示してください。npx named-routes init を実行すると、検出したフレームワーク用の設定ファイルを作れます。
 
@@ -89,7 +91,7 @@ SvelteKit: +page.* ファイル、[id=matcher]（matcher は捨てる）、[[lan
 
 React Router / Remix の flat routes（app/routes）: ドットでネスト、_index、$param、($optional)、splat の $（名前は splat）、_ で始まるパスなしレイアウト、name_ によるネスト解除、[.] エスケープ、フォルダー/route.tsx モジュール。TanStack Router（src/routes）: フラットなファイルとフォルダーの併用、index/route、$param、{-$optional}、prefix{$param}、splat の $（名前は _splat）、_layout、- で始まる無視ファイル、(group)、.lazy ファイル。(beta) のようなオプションの静的セグメントには名前を付けられないため、ファイルを除外するか extraRoutes を使ってください。
 
-コンポーネントの中で宣言されたパス（Nuxt の definePageMeta({ path })、React Router の routes.ts）はファイルスキャナーからは見えません。その URL は extraRoutes で対応付けるか、次に説明する手書きのマニフェストを使ってください。
+フレームワークによる検出（2.0 からのデフォルト）：フレームワークが最終的なルート表を公式に公開している場合は、その表から名前を付けるため、コードで宣言したパスも含まれます。Nuxt はモジュールが pages:resolved（definePageMeta の path と alias、モジュールが追加したページ）を読みます。Vue Router 5 は生成される typed-router.d.ts（definePage の path）、React Router は react-router routes --json（app/routes.ts の route()、index()、layout()、prefix()）、TanStack Router は routeTree.gen.ts です。あなたのコードを実行したり解析したりはしません。フレームワークが表を書き出すまでは上記のファイル規約を使い、CLI がその旨を表示します。discovery: "files" で 1.x のスキャナーを使い続けられます。Next.js、SvelteKit、Astro はコードでルートを宣言できないため、ファイルがソースです。
 
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
@@ -99,7 +101,8 @@ export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts
 export default defineNuxtConfig({
-  vite: { plugins: [namedRoutes({ output: "app/utils/routes.ts" })] },
+  modules: ["@triooo/named-routes/nuxt"],
+  namedRoutes: { output: "app/utils/routes.ts" },
 });
 
 // astro.config.mjs
@@ -144,7 +147,7 @@ app/shop/[[...path]]/page.tsx        pages/shop/[[...path]].tsx        shop.$pat
 
 **[ガイド](docs/ja/guides.md)** — [検出のエッジケース](docs/ja/guides.md#discovery) · [開発中の自動更新](docs/ja/guides.md#development) · [CLI と CI](docs/ja/guides.md#cli) · [診断: named-routes doctor](docs/ja/guides.md#doctor) · [エラーとトラブルシューティング](docs/ja/guides.md#errors) · [リライトと境界](docs/ja/guides.md#boundaries)
 
-**[プロジェクト](docs/ja/project.md)** — [ドキュメントサイト](docs/ja/project.md#website) · [試してみる: フレームワーク別デモ](docs/ja/project.md#demos) · [ステップごとのコントリビュート](docs/ja/project.md#contributing) · [バージョンとアップグレード](docs/ja/project.md#versioning)
+**[プロジェクト](docs/ja/project.md)** — [ドキュメントサイト](docs/ja/project.md#website) · [試してみる: フレームワーク別デモ](docs/ja/project.md#demos) · [ステップごとのコントリビュート](docs/ja/project.md#contributing) · [バージョンとアップグレード](docs/ja/project.md#versioning) · [1.x からのアップグレード](docs/ja/project.md#migration)
 
 ## 公式リファレンス
 

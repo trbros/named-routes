@@ -16,6 +16,7 @@ export interface NamedRoutesVitePlugin {
 	enforce: "pre";
 	configResolved(config: { root: string }): void;
 	buildStart(this: { error?(message: string): never }): Promise<void>;
+	load(id: string): Promise<null>;
 	configureServer(server: {
 		watcher: {
 			on(
@@ -56,12 +57,17 @@ export function namedRoutes(
 	const { watch, ...inline } = options;
 	let root = inline.root ? resolve(inline.root) : process.cwd();
 	let output = "";
+	/** Framework artifacts (typed-router.d.ts, routeTree.gen.ts, routes.ts) of the last run. */
+	let inputs = new Set<string>();
 	let running: Promise<unknown> = Promise.resolve();
 	let queued = false;
+	/** The module was regenerated after every plugin's buildStart in this build. */
+	let refreshed = false;
 	const generate = async () => {
 		const resolved = await resolveOptions({ ...inline, root });
 		const result = await generateRoutes(resolved);
 		output = result.output;
+		inputs = new Set(result.discovery.inputs.map((file) => resolve(file)));
 		return result;
 	};
 	// Serialize generations; collapse bursts of file events into one rerun.
@@ -84,6 +90,7 @@ export function namedRoutes(
 			if (!inline.root) root = projectRoot(config.root);
 		},
 		async buildStart() {
+			refreshed = false;
 			try {
 				running = generate();
 				await running;
@@ -92,6 +99,18 @@ export function namedRoutes(
 				if (this?.error) this.error(message);
 				throw caught;
 			}
+		},
+		// Frameworks write their route table (typed-router.d.ts,
+		// routeTree.gen.ts) in their own buildStart, which runs in parallel
+		// with ours: refresh once more before the module is first read.
+		async load(id) {
+			if (refreshed || !output || !inputs.size) return null;
+			if (resolve(id.split("?")[0]) !== output) return null;
+			refreshed = true;
+			await running.catch(() => {});
+			running = generate();
+			await running;
+			return null;
 		},
 		configureServer(server) {
 			if (watch === false) return;
@@ -116,8 +135,11 @@ export function namedRoutes(
 					event === "unlink" ||
 					event === "addDir" ||
 					event === "unlinkDir";
-				if (structural || (event === "change" && configs.has(absolute)))
-					schedule(log);
+				// The framework rewrote its route table, or the config changed.
+				const content =
+					(event === "change" || event === "add") &&
+					(configs.has(absolute) || inputs.has(absolute));
+				if (structural || content) schedule(log);
 			};
 			server.watcher.on("all", listener);
 			server.httpServer?.once("close", () =>

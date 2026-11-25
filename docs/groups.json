@@ -33,6 +33,6 @@
     "id": "project",
     "page": "project.md",
     "title": { "en": "Project", "pt": "Projeto", "es": "Proyecto", "ja": "プロジェクト" },
-    "items": ["website", "demos", "contributing", "versioning"]
+    "items": ["website", "demos", "contributing", "versioning", "migration"]
   }
 ]

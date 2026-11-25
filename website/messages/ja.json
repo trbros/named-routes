@@ -164,8 +164,8 @@
 		"no_the_package_generates_url_strings_next_js_continues__8056c6": "いいえ。このパッケージは URL 文字列を生成するだけです。ページの解決、レンダリング、キャッシュ、ナビゲーションは Next.js、Nuxt、SvelteKit などのルーターがこれまでどおり担当します。",
 		"do_i_need_to_name_my_pages_manually_c0bed1": "ページに手動で名前を付ける必要はありますか？",
 		"no_names_follow_url_segments_optional_overrides_let_you_962667": "いいえ。名前は URL のセグメントから決まります。URL が変わっても意味のある名前を保ちたいときは、任意のエイリアスを使えます。",
-		"what_is_the_v1_compatibility_baseline_e5d6a5": "v1 の互換性の基準は？",
-		"node_js_20_19_typescript_5_and_tested_next_16_examples__e894a7": "Node.js 20.19 以上と TypeScript 5 以上。Next 16（両ルーター）と Vite 7 は実際の統合テストで動作確認しており、各フレームワークのアダプターには規約テストがあります。",
+		"what_is_the_v1_compatibility_baseline_e5d6a5": "v2 の互換性の基準は？",
+		"node_js_20_19_typescript_5_and_tested_next_16_examples__e894a7": "Node.js 22.12 以上と TypeScript 5.4 以上。Next 16（両ルーター）と Vite は実際の統合テストで動作確認し、すべての例をビルドしてブラウザーで操作しています。各フレームワークのアダプターには規約テストがあります。",
 		"how_do_i_add_it_to_my_project_c05b23": "プロジェクトに追加するには？",
 		"install_triooo_next_named_routes_with_your_package_mana_ee766b": "@triooo/named-routes をインストールし、next.config を withNamedRoutes でラップするか Vite のプラグインに namedRoutes() を追加して、生成されたヘルパーをインポートします。各フレームワークの手順はガイドにあります。",
 		"give_your_next_route_a_name_462907": "次のルートに名前を。",
@@ -208,10 +208,10 @@
 		"install_the_package_add_the_wrapper_to_next_config_ts_a_476c39": "パッケージをインストールし、withNamedRoutes か Vite プラグインを追加すれば、生成されたルートヘルパーをすぐに使えます。",
 		"next_configuration_d277b8": "Next の設定",
 		"product_overview_b84139": "← 製品の概要",
-		"the_v1_contract_bbca32": "v1 の契約。",
+		"the_v1_contract_bbca32": "v2 の契約。",
 		"automatic_route_discovery_typed_navigation_and_a_stable_dc1609": "Next.js、Nuxt、Vue、SvelteKit、Astro、React Router、TanStack Router のための自動ルート検出、型付きナビゲーション、安定した API。",
-		"version_1_x_534eea": "バージョン 1.x",
-		"stable_in_1_x_52c983": "1.x で安定",
+		"version_1_x_534eea": "バージョン 2.x",
+		"stable_in_1_x_52c983": "2.x で安定",
 		"automatic_names_c2ab56": "自動の名前",
 		"typed_url_generation_55fd0d": "型付き URL 生成",
 		"explicit_url_options_f0dbd3": "明示的な URL オプション",
@@ -334,6 +334,7 @@
 		"reverse_input_label": "URL のパス",
 		"reverse_result_label": "route.match() の結果",
 		"reverse_no_match": "この URL に一致するルートはありません（null）",
-		"release_v110_note": "Next.js の typedRoutes 向けの型付き href、ルートごとの型付きクエリ（Standard Schema）、route.match()/is()/breadcrumbs()、named-routes doctor、エラーの構造化された詳細、より速いファイルイベントの watcher。"
+		"release_v110_note": "Next.js の typedRoutes 向けの型付き href、ルートごとの型付きクエリ（Standard Schema）、route.match()/is()/breadcrumbs()、named-routes doctor、エラーの構造化された詳細、より速いファイルイベントの watcher。",
+		"release_v200_note": "フレームワーク自身のルート表からのルート（Nuxt モジュール、Vue Router 5、React Router の routes.ts、TanStack Router）、デフォルトの型付き href、route.parseQuery()、doctor --v2 と migrate --to 2。Node.js 22.12 以上と TypeScript 5.4 以上。"
 	}
 }

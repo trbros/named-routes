@@ -135,3 +135,96 @@ test("forLocale helpers keep validating", () => {
 		{ code: "INVALID_QUERY" },
 	);
 });
+
+test("parseQuery parses a URL's query with the route's runtime schema", () => {
+	const schemas = defineQuery({
+		products: z.object({
+			page: z.number().int().min(1).optional(),
+			sort: z.enum(["newest", "price"]).optional(),
+			tags: z.array(z.string()).optional(),
+			ids: z.array(z.number()).optional(),
+			draft: z.boolean().optional(),
+			q: z.string().optional(),
+		}),
+		search: defineQuery.type(),
+	});
+	const route = createRoutes(manifest, {}, { query: schemas });
+	assert.deepEqual(
+		route.parseQuery("products", "/products?page=2&sort=newest#top"),
+		{ ok: true, value: { page: 2, sort: "newest" } },
+	);
+	// Keys the schema accepts as strings stay strings; others are coerced back
+	// the way route() serializes them, and single values become arrays.
+	assert.deepEqual(
+		route.parseQuery("products", "?q=123&tags=a&ids=1&ids=2&draft=false").value,
+		{ q: "123", tags: ["a"], ids: [1, 2], draft: false },
+	);
+	const href = route(
+		"products",
+		{},
+		{ query: { page: 3, ids: [4, 5], draft: true } },
+	);
+	assert.deepEqual(route.parseQuery("products", href).value, {
+		page: 3,
+		ids: [4, 5],
+		draft: true,
+	});
+	for (const input of [
+		new URL("https://example.com/products?page=2"),
+		new URLSearchParams("page=2"),
+		"page=2",
+		route.match("/products?page=2").query,
+	])
+		assert.deepEqual(route.parseQuery("products", input).value, { page: 2 });
+	const invalid = route.parseQuery("products", "?page=abc&sort=old");
+	assert.equal(invalid.ok, false);
+	assert.deepEqual(invalid.issues.map((issue) => issue.path?.[0]).sort(), [
+		"page",
+		"sort",
+	]);
+	// No runtime schema: the raw query, repeated keys as arrays.
+	assert.deepEqual(route.parseQuery("search", "?q=a&q=b"), {
+		ok: true,
+		value: { q: ["a", "b"] },
+	});
+	assert.deepEqual(route.parseQuery("home", "?x=1").value, { x: "1" });
+	assert.deepEqual(route.parseQuery("home", "/").value, {});
+	// validateQuery: false skips validation in route(), not parsing.
+	const unchecked = createRoutes(
+		manifest,
+		{},
+		{ query: schemas, validateQuery: false },
+	);
+	assert.deepEqual(unchecked.parseQuery("products", "?page=2").value, {
+		page: 2,
+	});
+	assert.throws(() => route.parseQuery("missing", "?a=1"), {
+		code: "UNKNOWN_ROUTE",
+	});
+	assert.throws(() => route.parseQuery("products", 42), {
+		code: "INVALID_QUERY",
+	});
+	assert.throws(() => route.parseQuery("products", { page: 2 }), {
+		code: "INVALID_QUERY",
+	});
+	const async = createRoutes(
+		manifest,
+		{},
+		{
+			query: {
+				products: {
+					"~standard": {
+						version: 1,
+						vendor: "test",
+						validate: async (value) => ({ value }),
+					},
+				},
+			},
+			validateQuery: false,
+		},
+	);
+	assert.throws(() => async.parseQuery("products", "?a=1"), {
+		code: "INVALID_QUERY",
+		message: /asynchronous/,
+	});
+});

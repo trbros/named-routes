@@ -25,7 +25,9 @@ Next.js (App Router, Pages Router, src layouts and mixed migrations) is integrat
 
 Every framework maps to one pattern syntax and one naming rule, so app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte and app/routes/users.$user.tsx all become users.$user. Locale-aware URLs (next-intl, Pages Router i18n, @nuxtjs/i18n and similar) are supported from v1.
 
-The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 20.19+ is required for tooling. The runtime types need TypeScript 5.0+ (Zod 4 and Valibot 1 schemas need 5.4+). Every example in examples/ is installed from the packed tarball, built, served and driven in a real browser in CI.
+The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 22.12+ is required for tooling and TypeScript 5.4+ for the types. Every example in examples/ is installed from the packed tarball, built, served and driven in a real browser in CI.
+
+Since 2.0 the route table comes from the framework itself wherever it publishes one (Nuxt, Vue Router 5, React Router, TanStack Router), so paths declared in code, such as definePageMeta({ path }) or route() in app/routes.ts, get names too; route() returns typed hrefs by default.
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user
@@ -40,9 +42,9 @@ route("users.$user", { user: 42 }, { locale: "pt" });  // /pt/users/42
 
 ## Installation
 
-Install the package with your preferred package manager. It has no runtime dependencies. Node.js 20.19 or newer is required for the generator.
+Install the package with your preferred package manager. It has no runtime dependencies. Node.js 22.12 or newer is required for the generator.
 
-Then connect it once: withNamedRoutes in next.config for Next.js, or the namedRoutes() Vite plugin for Vite-based frameworks. You can also run the named-routes CLI (generate, check, watch) in any project.
+Then connect it once: withNamedRoutes in next.config for Next.js, the @triooo/named-routes/nuxt module for Nuxt, or the namedRoutes() Vite plugin for other Vite-based frameworks. You can also run the named-routes CLI (generate, check, watch) in any project.
 
 ```sh
 npm install @triooo/named-routes
@@ -79,7 +81,7 @@ route("users.$user", { user: "ana" });
 
 ## Other frameworks (Vite plugin)
 
-Add namedRoutes() from @triooo/named-routes/vite to the Vite plugins of Nuxt (vite.plugins in nuxt.config), Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, using Vite's own watcher.
+Add namedRoutes() from @triooo/named-routes/vite to the Vite plugins of Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router; in Nuxt register the @triooo/named-routes/nuxt module instead. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, or when the framework rewrites its route table, using Vite's own watcher.
 
 The framework is detected from package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev or @remix-run/dev, TanStack router plugin/CLI/Start, unplugin-vue-router or vue-router). Set framework explicitly in monorepos or when detection is ambiguous. Run npx named-routes init to create a config for the detected framework.
 
@@ -89,7 +91,7 @@ SvelteKit: +page.* files, [id=matcher] (the matcher is dropped), [[lang]], [...r
 
 React Router / Remix flat routes (app/routes): dots nest, _index, $param, ($optional), $ splat (named splat), _pathless layouts, name_ opt-out, [.] escapes and folder/route.tsx modules. TanStack Router (src/routes): flat and directory files, index/route, $param, {-$optional}, prefix{$param}, $ splat (named _splat), _layouts, -ignored files, (groups) and .lazy files. Optional static segments such as (beta) cannot be named; exclude the file or use extraRoutes.
 
-Paths declared inside components (Nuxt definePageMeta({ path }), React Router routes.ts) are not visible to a file scanner: map those URLs with extraRoutes, or use the manual manifest described next.
+Framework discovery (default since 2.0): where the framework publishes its final route table through a documented channel, names come from it, so paths declared in code are included. Nuxt: the module reads pages:resolved (definePageMeta path and alias, pages added by modules). Vue Router 5: the typed-router.d.ts it generates (definePage path). React Router: react-router routes --json (route(), index(), layout() and prefix() in app/routes.ts). TanStack Router: routeTree.gen.ts. Nothing executes or parses your code. Until the framework has written its table, the file conventions above are used and the CLI says so; discovery: "files" keeps the 1.x scanner. Next.js, SvelteKit and Astro cannot declare routes in code, so their files are the source.
 
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
@@ -99,7 +101,8 @@ export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts
 export default defineNuxtConfig({
-  vite: { plugins: [namedRoutes({ output: "app/utils/routes.ts" })] },
+  modules: ["@triooo/named-routes/nuxt"],
+  namedRoutes: { output: "app/utils/routes.ts" },
 });
 
 // astro.config.mjs
@@ -144,7 +147,7 @@ app/shop/[[...path]]/page.tsx        pages/shop/[[...path]].tsx        shop.$pat
 
 **[Guides](docs/en/guides.md)** — [Discovery edge cases](docs/en/guides.md#discovery) · [Automatic development updates](docs/en/guides.md#development) · [CLI and CI](docs/en/guides.md#cli) · [Diagnostics: named-routes doctor](docs/en/guides.md#doctor) · [Errors and troubleshooting](docs/en/guides.md#errors) · [Rewrites and boundaries](docs/en/guides.md#boundaries)
 
-**[Project](docs/en/project.md)** — [Documentation website](docs/en/project.md#website) · [Try it: framework demos](docs/en/project.md#demos) · [Contribute step by step](docs/en/project.md#contributing) · [Versions and upgrades](docs/en/project.md#versioning)
+**[Project](docs/en/project.md)** — [Documentation website](docs/en/project.md#website) · [Try it: framework demos](docs/en/project.md#demos) · [Contribute step by step](docs/en/project.md#contributing) · [Versions and upgrades](docs/en/project.md#versioning) · [Upgrading from 1.x](docs/en/project.md#migration)
 
 ## Official references
 

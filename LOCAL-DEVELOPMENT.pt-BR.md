@@ -1,6 +1,6 @@
 # Usar o pacote em outro projeto local
 
-Requisitos: Node.js 20.19 ou superior, um projeto Next.js (ou Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router) e pnpm 12.16.1 para preparar o pacote. No projeto consumidor, use o gerenciador de pacotes que você já utiliza.
+Requisitos: Node.js 22.12 ou superior, um projeto Next.js (ou Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router) e pnpm 12.16.1 para preparar o pacote. No projeto consumidor, use o gerenciador de pacotes que você já utiliza.
 
 ## 1. Gerar um arquivo instalável
 

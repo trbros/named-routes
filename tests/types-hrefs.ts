@@ -4,6 +4,7 @@ import {
 	type NamedRoutes,
 	type RouteHref,
 	type RouteHrefWithSuffix,
+	type TypedNamedRoutes,
 } from "@triooo/named-routes";
 
 type Equal<A, B> =
@@ -81,15 +82,29 @@ route("about", {}, { querry: { a: 1 } });
 // @ts-expect-error Query values cannot be nested objects.
 route("about", {}, { query: { bad: { nested: true } } });
 
-// ------------------------------------------------- default mode is unchanged
+// ------------------------------------- 2.0: typed by default, "string" opts out
 const plain = createRoutes(manifest);
+expect<Equal<typeof plain, TypedNamedRoutes<typeof manifest>>>();
 const plainPost = plain("posts.$post", { post: 1 });
-expect<Equal<typeof plainPost, string>>();
+expect<Equal<typeof plainPost, `/posts/${string}`>>();
+const localizedDefault = createRoutes(manifest, {
+	i18n: { locales: ["en", "pt"], defaultLocale: "en" },
+});
+expect<Equal<ReturnType<typeof localizedDefault<"about">>, string>>();
 const explicitString = createRoutes(manifest, { hrefs: "string" });
 expect<Equal<typeof explicitString, NamedRoutes<typeof manifest>>>();
-// A widened variable is assignable to string and can be reassigned.
-let mutable = plain("about");
+const stringPost = explicitString("posts.$post", { post: 1 });
+expect<Equal<typeof stringPost, string>>();
+// The 1.x pattern this breaks: a typed result is a literal type...
+let typedHref = plain("about");
+// @ts-expect-error ...so another path cannot be assigned to its variable.
+typedHref = "/elsewhere";
+// Annotating the variable (or hrefs: "string") keeps it reassignable.
+let mutable: string = plain("about");
 mutable = "/elsewhere";
+let explicit = explicitString("about");
+explicit = "/elsewhere";
+void [typedHref, explicit];
 
 // ------------------------------------------------- i18n and bound helpers
 const localized = createRoutes(manifest, {

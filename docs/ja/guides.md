@@ -23,15 +23,17 @@ Pages Router: ルート直下の _app、_document、_error は対象外で、そ
 
 URL の形の衝突（たとえば同じ場所の [id] と [slug]）や、推論された名前の衝突は生成を失敗させます。Next.js では、正規 URL の重複やオプションの catch-all との優先度の衝突も、Next と同じように失敗します。レイアウトをネストするルーター（Nuxt、Vue、React Router、TanStack）では、同じ URL を共有するレイアウトとその index はひとつのルートにまとめられます。
 
+フレームワークによる検出では、ページの走査をフレームワークの表で置き換えます。エンドポイント（includeApi）は引き続きフォルダーから読み、exclude は報告されたファイルにも適用され、エイリアス（Nuxt の alias）には別の名前が付きます。named-routes doctor は 2 つのビューの片方にしかないルートをすべて一覧表示するので、definePageMeta、definePage、routes.ts で何が変わったかを確認できます。
+
 <a id="development"></a>
 
 ## 開発中の自動更新
 
 Next.js: ラッパーは Next の起動前に生成し、その後は開発プロセスの中でモジュールを最新に保ちます。デフォルト（watchMode: "auto"）では、ルートのディレクトリとプロジェクトのルートからのファイルイベントにデバウンスと直列化をかけて反応し、OS が取りこぼしたイベントに備えて 5 秒ごとに再スキャンします。ページの追加、削除、名前変更を検知し、モジュールは内容が変わったときだけ更新されます。webpack や Turbopack のフックには手を加えません。next start（本番サーバー）では一切書き込まないため、読み取り専用のデプロイでも安全です。
 
-Vite 系フレームワーク: プラグインは buildStart で生成し、Vite の watcher の add/unlink イベントと named-routes の設定ファイルの変更に反応します。Vite のルートから package.json までさかのぼってプロジェクトのルートを見つけるので、Nuxt の srcDir でも動作します。
+Vite 系フレームワーク：プラグインは buildStart で生成し、モジュールが最初に読み込まれる前（フレームワークがルート表を書き出した後）にもう一度生成します。Vite の watcher の add/unlink イベント、named-routes の設定ファイルの変更、typed-router.d.ts・routeTree.gen.ts・app/routes.ts の書き換えに反応します。プロジェクトルートは Vite のルートから package.json まで上にたどって見つけます。Nuxt モジュールは、ページが変わると Nuxt が呼ぶ pages:resolved のたびに再生成します。
 
-watcher は本番ビルド中には動かず、それ自体がプロセスを生かし続けることもありません。編集中に生成エラーが起きても最後の有効なモジュールは保たれ、エラーがログに出ます。設定ファイルがインポートしているモジュールを変更したときは再起動が必要です。watch: false で止まるのは継続的な更新だけで、最初の生成は行われます。
+watcher は本番ビルド中には動かず、それ自体がプロセスを生かし続けることもありません。編集中に生成エラーが起きても最後の有効なモジュールは保たれ、エラーがログに出ます。設定ファイルがインポートしているモジュールを変更したときは再起動が必要です。設定ファイル自体は内容が変わったときだけ再インポートされます。Node.js は ES モジュールをアンロードできないため、JavaScript / TypeScript の設定ファイルは内容の異なるバージョンごとに（設定モジュール本体のみで、そこからインポートしたものは含みません）プロセスを再起動するまでメモリに残ります。watch: false で止まるのは継続的な更新だけで、最初の生成は行われます。
 
 ファイルイベントが信頼できない環境ではポーリングに切り替わります。/mnt 配下の WSL のパス、WATCHPACK_POLLING または CHOKIDAR_USEPOLLING が設定されている場合、NAMED_ROUTES_WATCH=poll の場合、OS が watcher を拒否した場合（EMFILE や ENOSPC など。一度だけ報告します）です。watchMode: "poll" で 1.0 の動作（watchInterval ごとの完全な再スキャン）に戻せます。再現可能なベンチマーク（pnpm bench:watch、Linux、Node 26）では、200 ルートでアイドル時の CPU が毎秒 36 ms から 6 ms に下がり、新しいページがモジュールに反映されるまでの時間が 478 ms から 90 ms になりました。2000 ルートでは毎秒 153 ms から 29 ms、582 ms から 203 ms です。
 
@@ -41,9 +43,11 @@ watcher は本番ビルド中には動かず、それ自体がプロセスを生
 
 バイナリ名は named-routes です。generate（デフォルト）はマニフェストを書き出します。list は検出したエントリーを JSON で出力します。check は書き込まずに比較し、古くなっていれば終了コード 1 で終わります。watch は最初に生成し、SIGINT/SIGTERM までモジュールを最新に保ちます（再スキャン付きのファイルイベント、または --watch-mode poll でポーリング）。init は検出したフレームワーク用の named-routes.config.mjs を書き出し、既存の設定は決して上書きしません。doctor は何も書き込まずにプロジェクトを診断します（「診断」を参照）。
 
-フラグ: --root <directory>、--config <file>、--framework <name>、--output <file>、--routes-dir <dir>、--router <auto|app|pages>、--api、--watch-interval <ms>、--watch-mode <auto|native|poll>、--json・--strict・--no-color（doctor 用）、--version (-v)、--help (-h)。コマンドは、パッケージをローカルにインストールした利用側のプロジェクトで実行してください。エラーは code と、わかっている場合はファイル、ルート、オプション、修正方法を表示します。
+フラグ: --root <directory>、--config <file>、--framework <name>、--output <file>、--routes-dir <dir>、--router <auto|app|pages>、--api、--watch-interval <ms>、--watch-mode <auto|native|poll>、--json・--strict・--no-color・--v2（doctor 用）、--to・--write（migrate 用）、--version (-v)、--help (-h)。コマンドは、パッケージをローカルにインストールした利用側のプロジェクトで実行してください。エラーは code と、わかっている場合はファイル、ルート、オプション、修正方法を表示します。
 
 生成ファイルをコミットする場合は、ビルドの前に check を実行してください。統合はビルド時に再生成するため、ビルド後の check では、すでに古くなっていたコミット済みファイルを検出できません。生成は決定的かつアトミックで、タイムスタンプも含みません。ジェネレーターの署名がない既存のファイルは決して上書きしません。
+
+migrate --to 2 は 1.x のプロジェクトを 2.0 に備えます。named-routes の設定に hrefs: "string" を固定し、フレームワークのルートがファイル走査と異なる場合は discovery: "files" も固定するので（設定がなければ named-routes.config.mjs を作成）、その行を消すまで生成されるモジュールは変わりません。--write を付けない限りドライランで、フレームワークの設定やアプリケーションのコードは編集しません。残りの項目（Node.js、TypeScript、moduleResolution、エラーコード）は doctor --v2 が一覧表示します。
 
 ```sh
 npx named-routes init
@@ -55,6 +59,8 @@ npx named-routes watch
 npx named-routes --help
 npx named-routes watch --watch-mode poll   # containers, network drives
 npx named-routes doctor --json --strict    # CI
+npx named-routes doctor --v2                # what 2.0 changes here
+npx named-routes migrate --to 2 --write    # pin 1.x behavior
 ```
 
 <a id="doctor"></a>
@@ -67,13 +73,16 @@ npx named-routes doctor は、Node.js と TypeScript のバージョン、設定
 
 各診断は error、warning、info のいずれかで、安定した id と、わかっている場合はファイル、ルート、オプション、修正方法を含みます。--json は CI 向けの機械可読なレポートを出力し、--strict では warning でも失敗します。色は TTY のときだけ使われ、NO_COLOR や --no-color では使われません。終了コード 0 はエラーなし、1 はエラーあり（--strict では warning も含む）を意味します。
 
+ルートの出どころ（フレームワークの表かファイルか、ファイルに戻った理由）も表示し、2 つのビューの片方にしかないルートを一覧表示します。doctor --v2 は、1.x 向けに書かれたプロジェクトが 2.0 で変える必要があるもの（型付き href、フレームワークによる検出で変わるルート、パッケージの exports を読めない moduleResolution、エラーコードを GENERATION_ERROR と比較しているコード）を追加で表示します。
+
 ```sh
 npx named-routes doctor
 npx named-routes doctor --json --strict   # CI
+npx named-routes doctor --v2              # upgrading from 1.x
 
-# warning  Next.js typedRoutes is enabled but hrefs is not "typed"; <Link> will reject route() results.
-#          option: hrefs
-#          fix:   Set hrefs: "typed" in withNamedRoutes() options or named-routes.config.
+# info     Routes come from the framework: typed-router.d.ts.
+# info     /sobre (sobre) exists only in the framework's route table; the file conventions do not produce it.
+#          file:  src/pages/about.vue
 ```
 
 <a id="errors"></a>
@@ -82,13 +91,13 @@ npx named-routes doctor --json --strict   # CI
 
 NamedRouteError は Error を継承し、安定した code を公開しています。UNKNOWN_ROUTE は名前が存在しないこと、MISSING_PARAMETER は必須の値が省略されたこと、UNKNOWN_PARAMETER は余分なキーが query に属するか綴りが誤っていること、INVALID_PARAMETER は値の形が誤っているか禁止されたセグメントを含むこと、INVALID_LOCALE は i18n なしで言語を渡したか未設定の言語であることを意味します。
 
-INVALID_PATTERN、INVALID_NAME、INVALID_MANIFEST は不正なルート定義を示します。INVALID_OPTIONS、INVALID_QUERY、INVALID_HASH は不正なオプションを示します。INVALID_BASE_PATH、INVALID_ORIGIN、INVALID_I18N は URL の defaults を拒否します。MISSING_ORIGIN は、絶対 URL を求める前に origin が必要であることを示します。GENERATION_ERROR は検出の衝突、安全でない出力、check での古い結果を、INVALID_CONFIG は設定の欠落、不正、綴りの誤りを扱います。
+INVALID_PATTERN、INVALID_NAME、INVALID_MANIFEST は不正なルート定義を示します。INVALID_OPTIONS、INVALID_QUERY、INVALID_HASH は不正なオプションを示します。INVALID_BASE_PATH、INVALID_ORIGIN、INVALID_I18N は URL の defaults を拒否します。MISSING_ORIGIN は、絶対 URL を求める前に origin が必要であることを示します。GENERATION_ERROR は検出の衝突、名前を付けられないルート、check での古い結果を、INVALID_CONFIG は不正なオプションすべて（設定の欠落・不正・綴りの誤り、router、pageExtensions、discovery、output）を扱います。
 
 routes.generated が見つからない場合: 統合が実行されているか確認し、generate を実行し、output とインポートのエイリアスを確認してください。basePath や言語が重複する場合: フレームワークのリンクには相対 URL を使い、basePath/locale は通常の URL のときだけ渡してください。名前が古い場合: watcher が有効か確認し、ターミナルのエラーを見てください。ページを移動した後の型エラーは想定どおりです。推論された名前を更新するか、固定名を定義してください。
 
 生成処理は手書きの出力ファイルの上書きを拒否します。無関係なコードに生成の署名を付けるのではなく、別の output を選んでください。生成された出力はルーティング対象のファイルの外に置いてください。動的な補間はリクエストを認可するものではありません。権限とアプリケーションの入力は目的地で検証してください。
 
-1.1 以降、すべての NamedRouteError は details: { file, files, route, pattern, option, hint } も持ち、わかっている情報が入ります。たとえばルートの競合では両方のファイル、名前・オプション・names のキーの綴りが誤っている場合は "Did you mean users.show?" です。INVALID_QUERY はクエリがスキーマを満たさないか、スキーマのマップが不正であることを、INVALID_URL は match() がパスでも URL でもないものを受け取ったことを意味します。code とメッセージは変わりません。
+1.1 以降、すべての NamedRouteError は details: { file, files, route, pattern, option, hint } も持ち、わかっている情報が入ります。たとえばルートの競合では両方のファイル、名前・オプション・names のキーの綴りが誤っている場合は "Did you mean users.show?" です。INVALID_QUERY はクエリがスキーマを満たさないか、スキーマのマップが不正であることを、INVALID_URL は match() がパスでも URL でもないものを受け取ったことを意味します。2.0 からは、router、pageExtensions、output の不正な値は INVALID_CONFIG になります（1.x では GENERATION_ERROR）。メッセージは変わりません。
 
 ```ts
 import { NamedRouteError } from "@triooo/named-routes";
@@ -106,7 +115,7 @@ try {
 
 これは URL ビルダーであり、ルーター、ミドルウェア、認可システム、HTTP クライアントの代わりではありません。実行時にルートを作ったり、リソースの存在を確認したり、訪問者の言語を検出したり、バックエンドにリクエストしたりはしません。
 
-リダイレクト、リライト、ミドルウェアによる言語検出、コンポーネントのコードで宣言したパスは、引き続きアプリケーションの責任です。必要な外部パターンやリライト後のパターンは extraRoutes で明示的に対応付け、言語や basePath を二重に付けないようにしてください。スキャナーはフレームワークの設定ファイルを読まないので、設定は withNamedRoutes かオプションで渡してください。
+リダイレクト、リライト、ミドルウェアによる言語検出は、引き続きアプリケーションの責任です。コードで宣言したパスに名前が付くのは、フレームワークがルート表を公開している場合だけです（「その他のフレームワーク」を参照）。必要な外部パターンやリライト後のパターンは extraRoutes で明示的に対応付け、言語や basePath を二重に付けないようにしてください。スキャナーはフレームワークの設定ファイルを読まないので、設定は withNamedRoutes かオプションで渡してください。
 
 ```ts
 export default defineConfig({

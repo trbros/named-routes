@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { npmCli as npmCliPath } from "./e2e/lib.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const require = createRequire(import.meta.url);
 const manifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 const temporary = await mkdtemp(join(tmpdir(), "trbros-v1-package-"));
 // npm runs as `node npm-cli.js`: npm.cmd on Windows would need a shell, which
@@ -52,7 +53,12 @@ function run(command, args, cwd = root) {
 }
 try {
 	assert.equal(manifest.name, "@triooo/named-routes");
-	assert.match(manifest.version, /^1\.\d+\.\d+$/);
+	assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
+	assert.equal(
+		manifest.typesVersions,
+		undefined,
+		"2.0 publishes types through exports only",
+	);
 	assert.equal(manifest.publishConfig.access, "public");
 	assert.equal(manifest.publishConfig.registry, "https://registry.npmjs.org/");
 	assert.deepEqual(manifest.dependencies ?? {}, {});
@@ -88,7 +94,16 @@ try {
 			env: { ...inherited, npm_config_cache: join(temporary, "cache") },
 		},
 	);
-	assert.equal(dryRun.status, 0, `${dryRun.stdout}\n${dryRun.stderr}`);
+	// Between a release and the next version bump, npm refuses the version
+	// that is already on the registry; it has packed (and normalized) by then.
+	const republish =
+		/You cannot publish over the previously published versions/.test(
+			dryRun.stderr,
+		);
+	assert.ok(
+		dryRun.status === 0 || republish,
+		`${dryRun.stdout}\n${dryRun.stderr}`,
+	);
 	assert.doesNotMatch(
 		`${dryRun.stdout}\n${dryRun.stderr}`,
 		/auto-corrected|was invalid and removed|No bin file found/,
@@ -97,6 +112,45 @@ try {
 	assert.equal(
 		report[0].filename,
 		`triooo-named-routes-${manifest.version}.tgz`,
+	);
+	// Entry points and their types as consumers resolve them (node16 ESM and
+	// bundler; node10 resolution is not supported since 2.0), checked on the
+	// tarball itself. cjs-resolves-to-esm is expected: the package is
+	// ESM-only, and require() of it works on Node.js 22.12+ (require(esm)).
+	const attwManifest = require.resolve("@arethetypeswrong/cli/package.json");
+	const attw = spawnSync(
+		process.execPath,
+		[
+			join(dirname(attwManifest), require(attwManifest).bin.attw),
+			archive,
+			"--profile",
+			"node16",
+			"--ignore-rules",
+			"cjs-resolves-to-esm",
+			"--no-color",
+			"--no-emoji",
+		],
+		{ encoding: "utf8", timeout: 120000 },
+	);
+	assert.equal(attw.status, 0, `attw:\n${attw.stdout}\n${attw.stderr}`);
+	// package.json fields against the packed files (strict: warnings fail too).
+	const { publint } = await import("publint");
+	const { formatMessage } = await import("publint/utils");
+	const tarball = await readFile(archive);
+	const lint = await publint({
+		pack: {
+			tarball: tarball.buffer.slice(
+				tarball.byteOffset,
+				tarball.byteOffset + tarball.byteLength,
+			),
+		},
+		level: "suggestion",
+		strict: true,
+	});
+	assert.deepEqual(
+		lint.messages.map((message) => formatMessage(message, lint.pkg)),
+		[],
+		"publint",
 	);
 	const files = report[0].files.map(
 		(file) => `package/${file.path.replaceAll("\\", "/")}`,
@@ -114,6 +168,9 @@ try {
 		"doctor",
 		"suggest",
 		"watch",
+		"nuxt",
+		"sources",
+		"migrate",
 	])
 		assert.ok(
 			files.includes(`package/dist/${entry}.js`),
@@ -153,7 +210,7 @@ try {
 	);
 	await writeFile(
 		join(consumer, "verify.mjs"),
-		`import assert from 'node:assert/strict';import {createRoutes} from '@triooo/named-routes';import {withNamedRoutes} from '@triooo/named-routes/next';import {discoverRoutes} from '@triooo/named-routes/generator';import {namedRoutes} from '@triooo/named-routes/vite';import {defineConfig} from '@triooo/named-routes/config';assert.equal(namedRoutes().name,'triooo-named-routes');assert.deepEqual(defineConfig({framework:'nuxt'}),{framework:'nuxt'});const route=createRoutes({'users.$user':'/users/[user]'});assert.equal(route('users.$user',{user:'Ana Silva'}),'/users/Ana%20Silva');assert.equal(typeof withNamedRoutes,'function');assert.equal(typeof discoverRoutes,'function');assert.deepEqual({...route.match('/users/Ana%20Silva').params},{user:'Ana Silva'});assert.equal(route.is('users.$user','/users/1'),true);const {defineQuery}=await import('@triooo/named-routes');assert.equal(typeof defineQuery.type,'function');`,
+		`import assert from 'node:assert/strict';import {createRoutes} from '@triooo/named-routes';import {withNamedRoutes} from '@triooo/named-routes/next';import {discoverRoutes} from '@triooo/named-routes/generator';import {namedRoutes} from '@triooo/named-routes/vite';import {defineConfig} from '@triooo/named-routes/config';assert.equal(namedRoutes().name,'triooo-named-routes');assert.deepEqual(defineConfig({framework:'nuxt'}),{framework:'nuxt'});const route=createRoutes({'users.$user':'/users/[user]'});assert.equal(route('users.$user',{user:'Ana Silva'}),'/users/Ana%20Silva');assert.equal(typeof withNamedRoutes,'function');assert.equal(typeof discoverRoutes,'function');assert.deepEqual({...route.match('/users/Ana%20Silva').params},{user:'Ana Silva'});assert.equal(route.is('users.$user','/users/1'),true);const {defineQuery}=await import('@triooo/named-routes');assert.equal(typeof defineQuery.type,'function');assert.deepEqual(route.parseQuery('users.$user','?a=1').value,{a:'1'});const nuxt=(await import('@triooo/named-routes/nuxt')).default;assert.equal(typeof nuxt,'function');assert.equal((await nuxt.getMeta()).configKey,'namedRoutes');`,
 	);
 	run(process.execPath, ["verify.mjs"], consumer);
 	await mkdir(join(consumer, "app/user/profile"), { recursive: true });
@@ -211,7 +268,6 @@ try {
 			files: ["verify.ts", "typed/query.ts"],
 		}),
 	);
-	const require = createRequire(import.meta.url);
 	const tsManifestPath = require.resolve("typescript/package.json");
 	const tsManifest = JSON.parse(await readFile(tsManifestPath, "utf8"));
 	const tsBinary = join(

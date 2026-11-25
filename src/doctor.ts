@@ -15,6 +15,11 @@ import {
 	generateRoutes,
 } from "./generator.js";
 import { NamedRouteError, type NamedRouteErrorDetails } from "./index.js";
+import { frameworkSources } from "./sources.js";
+
+/** Minimum versions of 2.0. */
+export const minimumNode = "22.12.0";
+export const minimumTypeScript = "5.4.0";
 
 export type DiagnosticLevel = "error" | "warning" | "info";
 export interface Diagnostic {
@@ -132,9 +137,15 @@ const integrationFile = (root: string, framework: FrameworkId) =>
 		? Promise.resolve(undefined)
 		: firstExisting(root, integrationNames(framework));
 
+export interface DiagnoseOptions {
+	nodeVersion?: string;
+	/** Also list what a 1.x project must change for 2.0 (doctor --v2). */
+	v2?: boolean;
+}
+
 export async function diagnose(
 	inline: GeneratorOptions & { config?: string } = {},
-	{ nodeVersion = process.version }: { nodeVersion?: string } = {},
+	{ nodeVersion = process.version, v2 = false }: DiagnoseOptions = {},
 ): Promise<Diagnosis> {
 	const diagnostics: Diagnostic[] = [];
 	const add = (diagnostic: Diagnostic) => diagnostics.push(diagnostic);
@@ -142,11 +153,11 @@ export async function diagnose(
 	const { config, ...overrides } = inline;
 
 	// ---------------------------------------------------------------- Node
-	if (!atLeast(nodeVersion, "20.19.0"))
+	if (!atLeast(nodeVersion, minimumNode))
 		add({
 			id: "node.version",
 			level: "error",
-			message: `Node.js ${nodeVersion} is not supported; use 20.19 or newer.`,
+			message: `Node.js ${nodeVersion} is not supported; use 22.12 or newer.`,
 		});
 	else
 		add({
@@ -157,8 +168,10 @@ export async function diagnose(
 
 	// --------------------------------------------------------- configuration
 	let options: GeneratorOptions | undefined;
+	let configText: string | undefined;
 	try {
 		const found = await findConfiguration(root, config);
+		if (found) configText = await read(found.path);
 		add({
 			id: "config.file",
 			level: "info",
@@ -211,11 +224,11 @@ export async function diagnose(
 	);
 	if (typescript) {
 		const version = (JSON.parse(typescript) as { version: string }).version;
-		if (!atLeast(version, "5.0.0"))
+		if (!atLeast(version, minimumTypeScript))
 			add({
 				id: "typescript.version",
 				level: "error",
-				message: `TypeScript ${version} is too old for the exported types; use 5.0 or newer.`,
+				message: `TypeScript ${version} is too old for the exported types; use 5.4 or newer.`,
 			});
 		else
 			add({
@@ -226,6 +239,8 @@ export async function diagnose(
 	}
 
 	let framework: FrameworkId | undefined;
+	let discoveredPaths: Set<string> | undefined;
+	let usedFramework = false;
 	const routes: Diagnosis["routes"][number][] = [];
 	if (options) {
 		const explicit = options.framework && options.framework !== "auto";
@@ -257,6 +272,66 @@ export async function diagnose(
 				level: "info",
 				message: `Framework: ${adapters[framework].label}${explicit ? " (configured)" : ""}; scanned ${discovery.directories.join(", ") || "no directories"}.`,
 			});
+			const source = discovery.discovery;
+			usedFramework = source.used === "framework";
+			discoveredPaths = new Set(discovery.entries.map((entry) => entry.path));
+			if (usedFramework)
+				add({
+					id: "discovery.source",
+					level: "info",
+					message: `Routes come from the framework: ${source.artifact}.`,
+				});
+			else if (source.fallback && frameworkSources[framework])
+				add({
+					id: "discovery.fallback",
+					level: "warning",
+					message: `Framework discovery is unavailable, so routes come from the files: ${source.fallback}.`,
+					details: {
+						option: "discovery",
+						hint: 'Run the dev server or build once so the framework writes its route table, or set discovery: "files".',
+					},
+				});
+			else
+				add({
+					id: "discovery.source",
+					level: "info",
+					message: frameworkSources[framework]
+						? 'Routes come from the files (discovery: "files").'
+						: `Routes come from the files (${adapters[framework].label} has no framework route table).`,
+				});
+			// Where the framework and the file conventions disagree.
+			if (usedFramework)
+				try {
+					const files = await discoverRoutes({
+						...options,
+						discovery: "files",
+					});
+					const fromFiles = new Set(files.entries.map((entry) => entry.path));
+					for (const entry of discovery.entries)
+						if (entry.router !== "explicit" && !fromFiles.has(entry.path))
+							add({
+								id: "discovery.framework-only",
+								level: "info",
+								message: `${entry.path} (${entry.name}) exists only in the framework's route table; the file conventions do not produce it.`,
+								details: {
+									route: entry.name,
+									...(entry.file ? { file: entry.file } : {}),
+								},
+							});
+					for (const entry of files.entries)
+						if (entry.router !== "explicit" && !discoveredPaths.has(entry.path))
+							add({
+								id: "discovery.files-only",
+								level: "info",
+								message: `${entry.path} follows the file conventions but the framework does not serve it.`,
+								details: {
+									...(entry.file ? { file: entry.file } : {}),
+									hint: 'Check definePageMeta/definePage path overrides or routes.ts; discovery: "files" restores the file view.',
+								},
+							});
+				} catch {
+					// The file view can fail (e.g. a code-only route table); not a problem of the project.
+				}
 			for (const entry of discovery.entries)
 				routes.push({ name: entry.name, path: entry.path, file: entry.file });
 			add({
@@ -384,18 +459,47 @@ export async function diagnose(
 		if (
 			nextConfig &&
 			/typedRoutes\s*:\s*true/.test(nextConfig.content) &&
-			options?.hrefs !== "typed" &&
-			!/hrefs\s*:\s*["']typed["']/.test(nextConfig.content)
+			(options?.hrefs === "string" ||
+				/hrefs\s*:\s*["']string["']/.test(nextConfig.content))
 		)
 			add({
 				id: "typescript.typed-routes",
 				level: "warning",
 				message:
-					'Next.js typedRoutes is enabled but hrefs is not "typed"; <Link> will reject route() results.',
+					'Next.js typedRoutes is enabled but hrefs is "string"; <Link> will reject route() results.',
 				details: {
 					option: "hrefs",
-					hint: 'Set hrefs: "typed" in withNamedRoutes() options or named-routes.config.',
+					hint: 'Remove hrefs: "string" (typed is the default) or set hrefs: "typed".',
 				},
+			});
+	} else if (framework === "nuxt") {
+		const found = await integrationFile(root, framework);
+		const module = !!found?.content.includes("@triooo/named-routes/nuxt");
+		const plugin = !!found?.content.includes("namedRoutes(");
+		if (module)
+			add({
+				id: "integration.nuxt",
+				level: "info",
+				message: `${found?.name} registers the @triooo/named-routes/nuxt module.`,
+			});
+		else
+			add({
+				id: "integration.nuxt",
+				level: "warning",
+				message: plugin
+					? `${found?.name} uses the Vite plugin; the Nuxt module also names definePageMeta({ path, alias }) and module-added pages (text check).`
+					: `${found?.name ?? "nuxt.config.ts"} does not appear to register @triooo/named-routes/nuxt (text check).`,
+				details: {
+					file: found?.name,
+					hint: 'Add modules: ["@triooo/named-routes/nuxt"] (and remove the Vite plugin).',
+				},
+			});
+		if (module && plugin)
+			add({
+				id: "integration.nuxt-duplicate",
+				level: "warning",
+				message: `${found?.name} registers both the Nuxt module and the Vite plugin; both write the module.`,
+				details: { file: found?.name, hint: "Keep only the Nuxt module." },
 			});
 	} else if (framework && framework !== "manual") {
 		const names = integrationNames(framework);
@@ -419,7 +523,7 @@ export async function diagnose(
 	}
 
 	// -------------------------------- unsupported declarations (heuristic)
-	if (framework === "nuxt")
+	if (framework === "nuxt" && !usedFramework)
 		for (const candidate of ["app/pages", "pages", "src/pages"])
 			for await (const file of files(
 				join(root, candidate),
@@ -435,11 +539,11 @@ export async function diagnose(
 						details: {
 							file: posix(relative(root, file)),
 							option: "extraRoutes",
-							hint: "Add the real URL with extraRoutes, or remove the path override.",
+							hint: "Use the @triooo/named-routes/nuxt module (framework discovery), or add the real URL with extraRoutes.",
 						},
 					});
 			}
-	if (framework === "react-router") {
+	if (framework === "react-router" && !usedFramework) {
 		const routesFile = await firstExisting(root, [
 			"app/routes.ts",
 			"app/routes.js",
@@ -457,7 +561,7 @@ export async function diagnose(
 				details: {
 					file: routesFile.name,
 					option: "extraRoutes",
-					hint: "Map code-declared URLs with extraRoutes or use a manual manifest.",
+					hint: 'Use discovery: "framework" (default) with @react-router/dev installed, or map the URLs with extraRoutes.',
 				},
 			});
 	}
@@ -474,6 +578,16 @@ export async function diagnose(
 				details: { option: "query", file: options.query },
 			});
 	}
+
+	if (v2)
+		await migrationDiagnostics({
+			root,
+			options,
+			configText,
+			framework,
+			usedFramework,
+			add,
+		});
 
 	const count = (level: DiagnosticLevel) =>
 		diagnostics.filter((item) => item.level === level).length;
@@ -516,4 +630,92 @@ export function formatDiagnosis(
 	const { errors, warnings, info } = diagnosis.summary;
 	lines.push("", `${errors} error(s), ${warnings} warning(s), ${info} info.`);
 	return `${lines.join("\n")}\n`;
+}
+
+/** doctor --v2: what a project written for 1.x must change for 2.0. */
+async function migrationDiagnostics({
+	root,
+	options,
+	configText,
+	framework,
+	usedFramework,
+	add,
+}: {
+	root: string;
+	options: GeneratorOptions | undefined;
+	configText: string | undefined;
+	framework: FrameworkId | undefined;
+	usedFramework: boolean;
+	add: (diagnostic: Diagnostic) => void;
+}) {
+	if (options && options.hrefs === undefined)
+		add({
+			id: "v2.hrefs",
+			level: "warning",
+			message:
+				"2.0 generates typed hrefs by default: route() returns types such as `/users/${string}`. A variable that stores route() and is later reassigned to another string no longer compiles.",
+			details: {
+				option: "hrefs",
+				hint: 'Annotate such variables as string, or set hrefs: "string" (named-routes migrate --to 2 does it).',
+			},
+		});
+	if (options && options.discovery === undefined && usedFramework) {
+		try {
+			const files = await discoverRoutes({ ...options, discovery: "files" });
+			const current = await discoverRoutes(options);
+			const before = JSON.stringify(files.routes);
+			if (before !== JSON.stringify(current.routes))
+				add({
+					id: "v2.discovery",
+					level: "warning",
+					message: `2.0 reads routes from the framework (${current.discovery.artifact}); the generated routes differ from the 1.x file scan.`,
+					details: {
+						option: "discovery",
+						hint: 'Review the discovery.* entries above, or set discovery: "files" to keep the 1.x routes (named-routes migrate --to 2 does it).',
+					},
+				});
+		} catch {}
+	}
+	const tsconfig = await read(join(root, "tsconfig.json"));
+	const resolution = tsconfig
+		? /"moduleResolution"\s*:\s*"([^"]+)"/i.exec(tsconfig)?.[1]
+		: undefined;
+	if (resolution && /^(node|node10|classic)$/i.test(resolution))
+		add({
+			id: "v2.module-resolution",
+			level: "error",
+			message: `tsconfig.json uses moduleResolution "${resolution}"; 2.0 publishes its types through package exports only (typesVersions was removed).`,
+			details: {
+				file: "tsconfig.json",
+				hint: 'Use "bundler" (Vite, Next.js) or "nodenext".',
+			},
+		});
+	// Plain-text search for code that compares error codes.
+	const users: string[] = [];
+	for (const directory of ["src", "app", "pages", "lib", "server"])
+		for await (const file of files(
+			join(root, directory),
+			/\.(ts|tsx|js|jsx|mjs|cjs|mts|cts|vue|svelte|astro)$/,
+		)) {
+			if (/routes\.generated\./.test(file)) continue;
+			const content = await read(file);
+			if (content?.includes("GENERATION_ERROR"))
+				users.push(posix(relative(root, file)));
+		}
+	if (users.length)
+		add({
+			id: "v2.error-codes",
+			level: "info",
+			message:
+				"Code compares error codes with GENERATION_ERROR; in 2.0 invalid router, pageExtensions and output options raise INVALID_CONFIG (text check).",
+			details: { files: users, hint: "Check those comparisons." },
+		});
+	if (framework === "nuxt" && !configText?.includes("discovery"))
+		add({
+			id: "v2.nuxt-module",
+			level: "info",
+			message:
+				"Nuxt: register @triooo/named-routes/nuxt so the routes Nuxt resolves (definePageMeta path/alias) are named.",
+			details: { hint: 'modules: ["@triooo/named-routes/nuxt"]' },
+		});
 }

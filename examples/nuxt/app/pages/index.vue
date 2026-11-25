@@ -4,6 +4,7 @@ const links = [
   { label: "users.$id", href: route("users.$id", { id: 42 }) },
   { label: "docs.$slug", href: route("docs.$slug", { slug: ["guide", "install"] }) },
   { label: "docs.$slug (empty)", href: route("docs.$slug") },
+  { label: "sobre (definePageMeta path)", href: route("sobre") },
 ];
 </script>
 <template>

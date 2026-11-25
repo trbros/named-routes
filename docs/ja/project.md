@@ -8,6 +8,7 @@
 - [試してみる: フレームワーク別デモ](#demos)
 - [ステップごとのコントリビュート](#contributing)
 - [バージョンとアップグレード](#versioning)
+- [1.x からのアップグレード](#migration)
 
 <a id="website"></a>
 
@@ -52,7 +53,7 @@ npm run dev
 
 ## ステップごとのコントリビュート
 
-**1. 前提条件。** Node.js 20.19 以上（named-routes.config.ts を読み込むなら 22.18 以上）、Git、Python 3（README の生成にだけ使用）をインストールします。package.json で固定している pnpm 12.16.1 を有効にしてください: corepack enable、または npm install --global pnpm@12.16.1。
+**1. 前提条件。** Node.js 22.12 以上（named-routes.config.ts を読み込むなら 22.18 以上）、Git、Python 3（README の生成にだけ使用）をインストールします。package.json で固定している pnpm 12.16.1 を有効にしてください: corepack enable、または npm install --global pnpm@12.16.1。
 
 **2. クローンしてビルドする。** リポジトリをクローンし、ルートで pnpm install、続けて pnpm build を実行します。ビルドは dist/ を消してから src/*.ts を ESM の JavaScript、型宣言、ソースマップにコンパイルします。サイトとデモは TypeScript のソースではなく dist/ を使うので、src/ を変更するたびに pnpm build を実行し直してください。
 
@@ -121,16 +122,39 @@ cd examples/nuxt && npm install && npm run dev
 
 ## バージョンとアップグレード
 
-バージョン 1.x は、推論される名前、型付き URL 生成、フレームワークのアダプター、i18n、Next.js のラッパー、Vite プラグイン、CLI の公開契約を定めています。
+バージョン 2.x は、推論される名前、型付き URL 生成、フレームワークのアダプターとフレームワークによる検出、i18n、Next.js のラッパー、Nuxt モジュール、Vite プラグイン、CLI の公開契約を定めています。1.x には新機能は追加されません。
 
 パッチリリースは、ドキュメント化された API を保ったままバグを修正します。マイナーリリースは、新しいフレームワークのアダプターのような互換性のある機能を追加します。互換性を壊す変更には新しいメジャーバージョンが必要です。アップグレードの前に changelog を確認してください。
 
 アップグレードしたら、開発サーバーを再起動してマニフェストを生成し直し、アプリケーションの型チェックとナビゲーションのテストを実行してください。ページを移動しても公開ルート名を保ちたい場合は、明示的なエイリアスを使ってください。
 
 ```sh
-npm install @triooo/named-routes@^1
+npm install @triooo/named-routes@^2
 npx named-routes check
 npx tsc --noEmit
+```
+
+<a id="migration"></a>
+
+## 1.x からのアップグレード
+
+2.0 は、変更する価値がある箇所でだけデフォルトを変えており、どの変更も設定で元に戻せます。npx named-routes doctor --v2 でプロジェクトに当てはまる項目を確認し、npx named-routes migrate --to 2（ドライラン）と --write で、生成されるモジュールが変わる箇所に 1.x の動作を固定します。新しいデフォルトを採用する準備ができたら、固定した行を削除してください。
+
+Node.js 22.12 以上が必要です（20 は 2026 年 4 月にサポート終了）。ES モジュールの require() と、すべての環境でのネイティブな再帰的ファイル監視が使えます。エクスポートされる型には TypeScript 5.4 以上が必要で、これは Zod 4 と Valibot 1 の最低バージョンでもあります。
+
+route() はデフォルトで型付き href を返します。以前は string、現在は Next.js の typedRoutes がキャストなしで受け付ける `/users/${string}` です。ルートを変数に入れて後で別の string を代入するコードはコンパイルできなくなります。変数に string 型を付けるか、hrefs: "string" にしてください。
+
+フレームワークがルート表を公開している場合（Nuxt モジュール、Vue Router 5、React Router、TanStack Router）は、ルートをその表から取ります。以前は definePageMeta/definePage のパスや app/routes.ts のルートに extraRoutes が必要でしたが、今はほかのページと同じように名前が付くので、それを重複させていた extraRoutes は削除できます。ファイル走査を続けるには discovery: "files" にします。Nuxt では Vite プラグインを modules: ["@triooo/named-routes/nuxt"] に置き換えてください。
+
+router、pageExtensions、output の不正な値は GENERATION_ERROR ではなく INVALID_CONFIG になり、エラーの種類ごとにコードが 1 つになりました。error.code の比較を確認してください。typesVersions は削除しました。TypeScript は exports からパッケージを解決する必要があり、moduleResolution は bundler、node16、nodenext のいずれかにします（node10 では解決できません）。クエリのスキーマを型としてだけ import する生成モジュールは TypeOnlyQueries を使うようになったため、その場合の route.parseQuery() は生のクエリを返す型になります。
+
+```sh
+npx named-routes doctor --v2
+npx named-routes migrate --to 2           # dry run
+npx named-routes migrate --to 2 --write   # pins hrefs/discovery in named-routes.config
+
+# Keep a reassigned route as a string
+const [href, setHref] = useState<string>(route("home"));
 ```
 
 ---

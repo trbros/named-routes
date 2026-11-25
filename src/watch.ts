@@ -211,13 +211,20 @@ export function watchGeneration(
 
 /** What to watch for a generation result: route directories, the project root and an explicit config. */
 export function generationTargets(
-	result: { root: string; sources: readonly { directory: string }[] },
+	result: {
+		root: string;
+		sources: readonly { directory: string }[];
+		discovery?: { inputs: readonly string[] };
+	},
 	config?: string,
 ): WatchTarget[] {
 	const targets: WatchTarget[] = result.sources.map((source) => ({
 		path: source.directory,
 		recursive: true,
 	}));
+	// Framework artifacts such as src/routeTree.gen.ts or app/routes.ts.
+	for (const input of result.discovery?.inputs ?? [])
+		targets.push({ path: dirname(resolve(input)), recursive: false });
 	// Direct children only: config files and not-yet-created route directories.
 	targets.push({ path: result.root, recursive: false });
 	if (config)

@@ -164,8 +164,8 @@
 		"no_the_package_generates_url_strings_next_js_continues__8056c6": "Não. O pacote gera strings de URL. Next.js, Nuxt, SvelteKit ou o seu router continuam resolvendo páginas, renderizando, fazendo cache e navegando.",
 		"do_i_need_to_name_my_pages_manually_c0bed1": "Preciso nomear as páginas manualmente?",
 		"no_names_follow_url_segments_optional_overrides_let_you_962667": "Não. Os nomes acompanham os segmentos da URL. Sobrescritas opcionais preservam nomes semânticos quando uma URL muda.",
-		"what_is_the_v1_compatibility_baseline_e5d6a5": "Qual é a compatibilidade de referência da v1?",
-		"node_js_20_19_typescript_5_and_tested_next_16_examples__e894a7": "Node.js 20.19+ e TypeScript 5+. Next 16 (os dois routers) e Vite 7 rodam em testes de integração reais, e cada adaptador de framework tem testes de convenção.",
+		"what_is_the_v1_compatibility_baseline_e5d6a5": "Qual é a compatibilidade de referência da v2?",
+		"node_js_20_19_typescript_5_and_tested_next_16_examples__e894a7": "Node.js 22.12+ e TypeScript 5.4+. Next 16 (os dois routers) e Vite rodam em testes de integração reais, cada exemplo é compilado e navegado em um navegador, e cada adaptador de framework tem testes de convenção.",
 		"how_do_i_add_it_to_my_project_c05b23": "Como adiciono ao meu projeto?",
 		"install_triooo_next_named_routes_with_your_package_mana_ee766b": "Instale @triooo/named-routes, envolva o next.config com withNamedRoutes ou adicione namedRoutes() aos plugins do Vite e importe o helper gerado. O guia cobre cada framework.",
 		"give_your_next_route_a_name_462907": "Dê um nome à próxima rota.",
@@ -208,10 +208,10 @@
 		"install_the_package_add_the_wrapper_to_next_config_ts_a_476c39": "Instale o pacote, adicione o withNamedRoutes ou o plugin Vite e comece a usar o helper de rotas gerado.",
 		"next_configuration_d277b8": "Configuração do Next",
 		"product_overview_b84139": "← Visão geral do produto",
-		"the_v1_contract_bbca32": "O contrato da v1.",
+		"the_v1_contract_bbca32": "O contrato da v2.",
 		"automatic_route_discovery_typed_navigation_and_a_stable_dc1609": "Descoberta automática de rotas, navegação tipada e uma API estável para Next.js, Nuxt, Vue, SvelteKit, Astro, React Router e TanStack Router.",
-		"version_1_x_534eea": "Série 1.x",
-		"stable_in_1_x_52c983": "Estável na série 1.x",
+		"version_1_x_534eea": "Versão 2.x",
+		"stable_in_1_x_52c983": "Estável na 2.x",
 		"automatic_names_c2ab56": "Nomes automáticos",
 		"typed_url_generation_55fd0d": "Geração de URLs tipada",
 		"explicit_url_options_f0dbd3": "Opções explícitas de URL",
@@ -334,6 +334,7 @@
 		"reverse_input_label": "Caminho da URL",
 		"reverse_result_label": "Resultado de route.match()",
 		"reverse_no_match": "Nenhuma rota corresponde a esta URL (null)",
-		"release_v110_note": "Hrefs tipados para o typedRoutes do Next.js, query tipada por rota (Standard Schema), route.match()/is()/breadcrumbs(), named-routes doctor, detalhes estruturados nos erros e um watcher por eventos de arquivo mais rápido."
+		"release_v110_note": "Hrefs tipados para o typedRoutes do Next.js, query tipada por rota (Standard Schema), route.match()/is()/breadcrumbs(), named-routes doctor, detalhes estruturados nos erros e um watcher por eventos de arquivo mais rápido.",
+		"release_v200_note": "Rotas da tabela do próprio framework (módulo do Nuxt, Vue Router 5, routes.ts do React Router, TanStack Router), hrefs tipados por padrão, route.parseQuery(), doctor --v2 e migrate --to 2; Node.js 22.12+ e TypeScript 5.4+."
 	}
 }

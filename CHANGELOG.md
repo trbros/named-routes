@@ -1,5 +1,36 @@
 # Changelog
 
+## Unreleased
+
+Planned as 2.0.0. Breaking changes only where they pay off, each with a migration: run `npx named-routes doctor --v2` to see what applies, and `npx named-routes migrate --to 2 --write` to pin the 1.x behavior where the generated module would change. It also contains the fixes planned for 1.1.1.
+
+### Breaking
+
+- Node.js 22.12+ is required (Node.js 20 is end-of-life since April 2026): `require()` of ES modules and native recursive file watching everywhere. CI tests 22.12, 22, 24 and 26.
+- TypeScript 5.4+ is required for the exported types (also the minimum of Zod 4 and Valibot 1). CI tests 5.4, 5.9, 6 and 7.
+- `hrefs: "typed"` is the default, in generated modules and in `createRoutes()`: `route()` returns template literal types such as `` `/users/${string}` `` that Next.js `typedRoutes` accepts without casts. A variable that stores `route()` and is reassigned to another string no longer compiles; annotate it as `string`, or set `hrefs: "string"` (the generated module then serializes `"hrefs": "string"`). `withNamedRoutes()` and `doctor` now warn when `typedRoutes` meets `hrefs: "string"`.
+- Framework discovery is the default (`discovery: "framework"`): where the framework publishes its final route table, names come from it, so paths declared in code are included. Nuxt: the new `@triooo/named-routes/nuxt` module reads `pages:resolved` (`definePageMeta({ path, alias })`, pages added by modules; aliases get their own names) and stores the table in `.nuxt/named-routes/pages.json` for the CLI. Vue Router 5: the `typed-router.d.ts` it generates (`definePage({ path })`). React Router: `react-router routes --json` (`route()`, `index()`, `layout()`, `prefix()` in `app/routes.ts`). TanStack Router: `routeTree.gen.ts`. Until the table exists, the files are scanned and the CLI says why. `discovery: "files"` keeps the 1.x scanner; Next.js, SvelteKit and Astro are unchanged.
+- One error code per error class: invalid `router`, `pageExtensions` and `output` values (including an output inside a routes directory) raise `INVALID_CONFIG` instead of `GENERATION_ERROR`. Messages are unchanged.
+- `typesVersions` was removed; types are published through `exports` only, so `moduleResolution` must be `bundler`, `node16` or `nodenext`.
+- Generated modules that import query schemas as types only (no `validateQuery`) use `TypeOnlyQueries<typeof schemas>`, so `route.parseQuery()` is typed as returning the raw query there, which is what it returns.
+
+### Added
+
+- `route.parseQuery(name, input)`: reads a URL's query (a URL, query string, `URLSearchParams` or `route.match().query`) with the route's schema when it exists at runtime, returning `{ ok: true, value }` with the schema's output type or `{ ok: false, issues }`. For keys the schema rejects as strings, numbers and `true`/`false` written by `route()` are converted back and single values become arrays. Routes without a runtime schema return the raw query. New `QueryOutput`, `QueryParseResult`, `QueryParseInput`, `TypeOnlyQuery` and `TypeOnlyQueries` types.
+- `named-routes doctor` reports where the routes came from (the framework's table or the files, and why), every route that exists only in the framework's table or only in the file view, and whether Nuxt uses the module. `doctor --v2` lists what a 1.x project must change: typed hrefs, routes that framework discovery changes, a `moduleResolution` that cannot read `exports`, and code comparing error codes with `GENERATION_ERROR` (text check).
+- `named-routes migrate --to 2` (dry run; `--write` applies): pins `hrefs: "string"` and, where the routes differ, `discovery: "files"` in the named-routes config (creating `named-routes.config.mjs` when there is none). It never edits framework configs or application code.
+- The Vite plugin regenerates when the framework rewrites its route table, and once more before the module is first loaded in a build, after every plugin's `buildStart`. `named-routes watch` also watches the framework's artifact. The CLI summary names the source: `(5 routes, nuxt, from .nuxt/named-routes/pages.json)`.
+- Examples: Nuxt uses the module with a `definePageMeta({ path, alias })` page, Vue a `definePage({ path })` page and React Router a `route()` in `app/routes.ts`; the E2E harness navigates to each in a real browser.
+- `pnpm test:package` checks the packed tarball with [attw](https://github.com/arethetypeswrong/arethetypeswrong.github.io) (node16 and bundler resolution) and [publint](https://publint.dev) (strict).
+- `pnpm test:types` (and so `pnpm check` and CI) type-checks the TypeScript samples of the documentation against a module generated with every route name they use, with `hrefs: "string"` and `"typed"`; lines documented as a type error must fail.
+- Documentation: "Upgrading from 1.x" in the four languages, and every framework page describes its route source.
+
+### Fixed
+
+- Config files are re-imported only when their content changes (a hash of the file instead of its modification time). Saving or touching `named-routes.config.*` without changes during `watch`, `next dev` or Vite no longer leaves another module instance in memory. Node.js cannot unload ES modules, so each distinct version of a config still stays loaded until the process restarts; the documentation now says so.
+- Typed hrefs: calling a route whose query has required keys without `options.query` reports `Argument of type '"search"' is not assignable to parameter of type '"search" & QueryIsRequired<"search">'` instead of `Expected 3 arguments, but got 1`.
+- `pnpm test:package` no longer fails between a release and the next version bump: `npm publish --dry-run` refuses a version that is already on npm, after it has packed and normalized `package.json`, which is what the test checks.
+
 ## 1.1.0 - 2026-11-14
 
 Backward compatible with 1.0: new behavior is opt-in or additive, and error codes and messages are unchanged.

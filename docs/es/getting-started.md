@@ -20,7 +20,9 @@ Next.js (App Router, Pages Router, carpetas src y migraciones mixtas) se integra
 
 Todos los frameworks se traducen a una sola sintaxis de patrones y una sola regla de nombres, así que app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte y app/routes/users.$user.tsx se convierten en users.$user. Las URLs con idioma (next-intl, i18n del Pages Router, @nuxtjs/i18n y similares) son compatibles desde la v1.
 
-El runtime de URLs funciona en el navegador sin imports de framework ni de Node.js. El generador, solo para Node, lee rutas de archivos; nunca ejecuta tus páginas. Las herramientas requieren Node.js 20.19+. Los tipos del runtime requieren TypeScript 5.0+ (los schemas de Zod 4 y Valibot 1 requieren 5.4+). Cada ejemplo de examples/ se instala desde el tarball empaquetado, se compila, se sirve y se recorre en un navegador real en CI.
+El runtime de URLs funciona en el navegador sin imports de framework ni de Node.js. El generador, solo para Node, lee rutas de archivos; nunca ejecuta tus páginas. Las herramientas requieren Node.js 22.12+ y los tipos, TypeScript 5.4+. Cada ejemplo de examples/ se instala desde el tarball empaquetado, se compila, se sirve y se recorre en un navegador real en CI.
+
+Desde la 2.0 la tabla de rutas viene del propio framework siempre que la publica (Nuxt, Vue Router 5, React Router, TanStack Router), así que las rutas declaradas en código, como definePageMeta({ path }) o route() en app/routes.ts, también reciben nombre; route() devuelve hrefs tipados por defecto.
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user
@@ -72,9 +74,9 @@ Varios paquetes y funciones de los frameworks también generan URLs tipadas. Se 
 
 ## Instalación
 
-Instala el paquete con tu gestor de paquetes favorito. No tiene dependencias en runtime. El generador requiere Node.js 20.19 o superior.
+Instala el paquete con tu gestor de paquetes favorito. No tiene dependencias en runtime. El generador requiere Node.js 22.12 o superior.
 
-Después conéctalo una sola vez: withNamedRoutes en next.config para Next.js, o el plugin de Vite namedRoutes() para los frameworks basados en Vite. También puedes usar la CLI named-routes (generate, check, watch) en cualquier proyecto.
+Después conéctalo una sola vez: withNamedRoutes en next.config para Next.js, el módulo @triooo/named-routes/nuxt para Nuxt, o el plugin de Vite namedRoutes() para los demás frameworks basados en Vite. También puedes usar la CLI named-routes (generate, check, watch) en cualquier proyecto.
 
 ```sh
 npm install @triooo/named-routes

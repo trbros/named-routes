@@ -114,6 +114,8 @@ Con un schema, TypeScript rechaza claves desconocidas y valores incompatibles, y
 
 Define validateQuery: true para empaquetar los schemas y validar cada objeto de query al construir una URL; los fallos lanzan INVALID_QUERY con los problemas encontrados. La validación nunca cambia la URL: los valores se serializan tal como los pasas, sin los valores por defecto ni las transformaciones del schema. Los schemas asíncronos se rechazan porque route() es síncrono. Las salidas JavaScript importan el módulo como valor para inferir sus tipos. Zod 4 y Valibot 1 requieren TypeScript 5.4+.
 
+route.parseQuery(name, url) lee de vuelta la query de una URL con el schema de la ruta cuando está disponible en runtime (validateQuery: true, o schemas pasados a createRoutes) y devuelve { ok: true, value } con el tipo de salida del schema, o { ok: false, issues }. Los valores llegan como strings; en las claves que el schema rechaza, los strings que route() escribe para números y true/false se convierten de vuelta y un valor único pasa a array, así que el mismo schema construye y lee. Las rutas sin schema en runtime (sin schema, defineQuery.type() o schemas importados solo como tipos) devuelven la query sin procesar, y su tipo lo indica.
+
 ```ts
 // src/route-query.ts
 import { defineQuery } from "@triooo/named-routes";
@@ -131,6 +133,10 @@ export default defineQuery({
 route("products", {}, { query: { page: 2, sort: "newest" } }); // /products?page=2&sort=newest
 route("products", {}, { query: { pgae: 2 } }); // type error: unknown key
 route("search"); // type error: q is required
+
+// With validateQuery: true
+const parsed = route.parseQuery("products", "/products?page=2&sort=newest");
+if (parsed.ok) parsed.value.page; // 2 (number | undefined)
 ```
 
 <a id="reverse-routing"></a>
@@ -216,7 +222,7 @@ pt("users.$user", { user: 42 });      // /pt/users/42
 
 Los patrones literales infieren uniones de nombres y objetos de parámetros. Los parámetros obligatorios se comprueban en tiempo de compilación; las rutas catch-all opcionales pueden llamarse sin parámetros. El runtime sigue validando las llamadas desde JavaScript.
 
-Por defecto, route() devuelve string. Con typedRoutes de Next.js, define hrefs: "typed" (consulta Hrefs tipados) en lugar de hacer aserciones a Route: route() pasa a devolver tipos template literal que <Link> y router.push() aceptan. No hagas aserciones de entradas arbitrarias no confiables a un nombre de ruta para saltarte la validación.
+Desde la 2.0 route() devuelve hrefs tipados (ver Hrefs tipados): tipos template literal que typedRoutes de Next.js, <Link> y router.push() aceptan sin afirmar Route. hrefs: "string" devuelve string como en la 1.x. Los tipos exportados requieren TypeScript 5.4+. No afirmes entradas arbitrarias y no confiables como nombre de ruta para saltarte la validación.
 
 ```ts
 import type { RouteName } from "@/routes.generated";
@@ -226,7 +232,7 @@ route("users.$user", { user: 42 });
 // route("unknown");          // Type error
 // route("users.$user");     // Missing user
 // route("users.$user", { id: 42 }); // Wrong parameter
-// With Next typedRoutes and hrefs: "typed":
+// With Next typedRoutes (typed hrefs are the default):
 // <Link href={route(name)}>Profile</Link>   // no cast
 ```
 
@@ -234,15 +240,15 @@ route("users.$user", { user: 42 });
 
 ## Hrefs tipados para typedRoutes de Next.js
 
-Define hrefs: "typed" en named-routes.config, en withNamedRoutes() o en el plugin de Vite, y route() devolverá tipos template literal en lugar de string: route("users.$user", { user: 42 }) tiene el tipo `/users/${string}`. typedRoutes de Next.js acepta estos valores en <Link href>, router.push(), replace() y prefetch() en ambos routers, sin cast. La opción solo afecta a los tipos: las URLs son idénticas.
+route() devuelve tipos template literal en lugar de string (el valor por defecto desde la 2.0): route("users.$user", { user: 42 }) tiene el tipo `/users/${string}`. typedRoutes de Next.js acepta estos valores en <Link href>, router.push(), replace() y prefetch() en ambos routers sin cast, y otros routers tipados los aceptan como strings. Solo cambian los tipos: las URLs son idénticas.
 
 Las llamadas con query o hash devuelven la ruta más `?${string}` o `#${string}`. Las llamadas con absolute, basePath y locale devuelven string, porque Next añade basePath e idiomas por su cuenta y rechaza URLs absolutas en enlaces tipados. Los segmentos opcionales se convierten en uniones, así que /shop/[[...path]] sin parámetros tiene el tipo "/shop"; el propio typedRoutes de Next.js rechaza esa ruta base de un catch-all opcional, incluso como literal, así que pasa un segmento en ese caso.
 
-En la serie 1.x hay que activarla porque un tipo de retorno más estrecho puede romper código que guarda una ruta en una variable que luego se reasigna a otro string. Con typedRoutes activo y sin la opción, withNamedRoutes() muestra una sugerencia y named-routes doctor emite un warning. Verificado con next typegen y tsc reales en Next 16 (App Router y Pages Router, webpack y Turbopack).
+Un tipo de retorno más estrecho puede romper código que guarda una ruta en una variable reasignada después a otro string, como useState(route(...)) seguido de setState(window.location.href): anota la variable como string, o usa hrefs: "string" para mantener el tipo de la 1.x (named-routes migrate --to 2 lo hace). Con hrefs: "string" y typedRoutes, withNamedRoutes() imprime un aviso y named-routes doctor también lo señala. Verificado con next typegen y tsc reales en Next 16 (App Router y Pages Router, webpack y Turbopack).
 
 ```tsx
-// next.config.ts
-export default withNamedRoutes({ typedRoutes: true }, { hrefs: "typed" });
+// next.config.ts (typed hrefs are the default since 2.0)
+export default withNamedRoutes({ typedRoutes: true });
 
 // app/page.tsx
 <Link href={route("users.$user", { user: 42 })}>Profile</Link>; // no cast

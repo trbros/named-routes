@@ -14,7 +14,11 @@ export interface Line {
   file: string;
   name: string;
   url: string;
-  connect: "withNamedRoutes()" | "namedRoutes()" | "createRoutes()";
+  connect:
+    | "withNamedRoutes()"
+    | "namedRoutes()"
+    | "@triooo/named-routes/nuxt"
+    | "createRoutes()";
   connectWhere: string;
   scans: string;
   verified: "next" | "vite" | "demo" | "runtime";
@@ -28,12 +32,12 @@ export interface Line {
 }
 export const lines: readonly Line[] = [
   { id: "next", docId: "nextjs", board: "NEXT.JS", framework: "Next.js", convention: "app/**/page.tsx · pages/**", file: "app/users/[user]/page.tsx", name: "users.$user", url: "/users/ana", connect: "withNamedRoutes()", connectWhere: "next.config", scans: "app/, pages/ (or src/)", verified: "next", params: "{ user: \"ana\" }", localizedFile: "app/[locale]/users/[user]/page.tsx", localizedUrl: "/pt/users/ana", color: "#d5f43b" },
-  { id: "nuxt", docId: "nuxt", board: "NUXT", framework: "Nuxt", convention: "pages/**/*.vue", file: "app/pages/user/profile.vue", name: "user.profile", url: "/user/profile", connect: "namedRoutes()", connectWhere: "nuxt.config → vite.plugins", scans: "app/pages/ or pages/, server/api/", verified: "demo", params: "{}", localizedFile: "app/pages/[locale]/user/profile.vue", localizedUrl: "/pt/user/profile", color: "#5fd3c8" },
-  { id: "vue", docId: "vue", board: "VUE ROUTER", framework: "Vue Router", convention: "src/pages/**/*.vue", file: "src/pages/settings.vue", name: "settings", url: "/settings", connect: "namedRoutes()", connectWhere: "vite.config", scans: "src/pages/ (file-based routing)", verified: "vite", params: "{}", localizedFile: "src/pages/[locale]/settings.vue", localizedUrl: "/pt/settings", color: "#7fe08f" },
+  { id: "nuxt", docId: "nuxt", board: "NUXT", framework: "Nuxt", convention: "pages/**/*.vue", file: "app/pages/user/profile.vue", name: "user.profile", url: "/user/profile", connect: "@triooo/named-routes/nuxt", connectWhere: "nuxt.config → modules", scans: "pages:resolved (app/pages/), server/api/", verified: "demo", params: "{}", localizedFile: "app/pages/[locale]/user/profile.vue", localizedUrl: "/pt/user/profile", color: "#5fd3c8" },
+  { id: "vue", docId: "vue", board: "VUE ROUTER", framework: "Vue Router", convention: "src/pages/**/*.vue", file: "src/pages/settings.vue", name: "settings", url: "/settings", connect: "namedRoutes()", connectWhere: "vite.config", scans: "typed-router.d.ts (src/pages/)", verified: "vite", params: "{}", localizedFile: "src/pages/[locale]/settings.vue", localizedUrl: "/pt/settings", color: "#7fe08f" },
   { id: "sveltekit", docId: "sveltekit", board: "SVELTEKIT", framework: "SvelteKit", convention: "src/routes/**/+page.svelte", file: "src/routes/blog/[slug]/+page.svelte", name: "blog.$slug", url: "/blog/hello", connect: "namedRoutes()", connectWhere: "vite.config", scans: "src/routes/", verified: "demo", params: "{ slug: \"hello\" }", localizedFile: "src/routes/[[locale]]/blog/[slug]/+page.svelte", localizedUrl: "/pt/blog/hello", color: "#ff7a50" },
   { id: "astro", docId: "astro", board: "ASTRO", framework: "Astro", convention: "src/pages/**/*.astro", file: "src/pages/docs/[...slug].astro", name: "docs.$slug", url: "/docs/guide/install", connect: "namedRoutes()", connectWhere: "astro.config → vite.plugins", scans: "src/pages/", verified: "demo", params: "{ slug: [\"guide\",\"install\"] }", localizedFile: "src/pages/[locale]/docs/[...slug].astro", localizedUrl: "/pt/docs/guide/install", color: "#f5b83d" },
-  { id: "react-router", docId: "react-router", board: "REACT ROUTER", framework: "React Router", convention: "app/routes/*.tsx (flat routes)", file: "app/routes/concerts.$city.tsx", name: "concerts.$city", url: "/concerts/lisbon", connect: "namedRoutes()", connectWhere: "vite.config", scans: "app/routes/ (flat routes)", verified: "demo", params: "{ city: \"lisbon\" }", localizedFile: "app/routes/($locale).concerts.$city.tsx", localizedUrl: "/pt/concerts/lisbon", color: "#6aa8ff" },
-  { id: "tanstack", docId: "tanstack-router", board: "TANSTACK", framework: "TanStack Router", convention: "src/routes/**/*.tsx", file: "src/routes/posts/$postId.tsx", name: "posts.$postId", url: "/posts/42", connect: "namedRoutes()", connectWhere: "vite.config", scans: "src/routes/", verified: "demo", params: "{ postId: 42 }", localizedFile: "src/routes/{-$locale}/posts/$postId.tsx", localizedUrl: "/pt/posts/42", color: "#f28cc4" },
+  { id: "react-router", docId: "react-router", board: "REACT ROUTER", framework: "React Router", convention: "app/routes/*.tsx (flat routes)", file: "app/routes/concerts.$city.tsx", name: "concerts.$city", url: "/concerts/lisbon", connect: "namedRoutes()", connectWhere: "vite.config", scans: "react-router routes --json (app/routes.ts)", verified: "demo", params: "{ city: \"lisbon\" }", localizedFile: "app/routes/($locale).concerts.$city.tsx", localizedUrl: "/pt/concerts/lisbon", color: "#6aa8ff" },
+  { id: "tanstack", docId: "tanstack-router", board: "TANSTACK", framework: "TanStack Router", convention: "src/routes/**/*.tsx", file: "src/routes/posts/$postId.tsx", name: "posts.$postId", url: "/posts/42", connect: "namedRoutes()", connectWhere: "vite.config", scans: "routeTree.gen.ts (src/routes/)", verified: "demo", params: "{ postId: 42 }", localizedFile: "src/routes/{-$locale}/posts/$postId.tsx", localizedUrl: "/pt/posts/42", color: "#f28cc4" },
 ];
 /** Extra board rows: Pages Router and an i18n route (pathnames { "/about": { pt: "/sobre" } }). */
 export const departures = [

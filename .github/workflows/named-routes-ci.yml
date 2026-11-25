@@ -23,7 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: ["20.19.0", "22", "24", "26"]
+        # 22.12 is the minimum since 2.0 (require(esm), native recursive watch).
+        node: ["22.12.0", "22", "24", "26"]
         include:
           - os: windows-latest
             node: "24"
@@ -52,9 +53,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # runtime: 5.0+ · Zod 4 / Valibot 1 schemas: 5.4+ (their minimum) ·
-        # everything with @types/node 26: 5.9+
-        typescript: ["5.0", "5.4", "5.9", "6", "7"]
+        # The exported types need 5.4+ since 2.0 (also the Zod 4 / Valibot 1
+        # minimum) · everything with @types/node 26: 5.9+
+        typescript: ["5.4", "5.9", "6", "7"]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -71,10 +72,9 @@ jobs:
       - name: Runtime contracts (hrefs, match, typed query)
         run: node "$RUNNER_TEMP/ts/node_modules/typescript/bin/tsc" -p tests/tsconfig.runtime.json
       - name: Zod and Valibot contracts
-        if: matrix.typescript != '5.0'
         run: node "$RUNNER_TEMP/ts/node_modules/typescript/bin/tsc" -p tests/tsconfig.schemas.json
       - name: All contracts with Node.js types
-        if: matrix.typescript != '5.0' && matrix.typescript != '5.4'
+        if: matrix.typescript != '5.4'
         run: node "$RUNNER_TEMP/ts/node_modules/typescript/bin/tsc" -p tests/tsconfig.json
 
   docs:

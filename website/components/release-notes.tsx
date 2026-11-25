@@ -19,6 +19,7 @@ const timeline = [
   { version: "0.1.0", note: "release_v010_note_4e8a21" },
   { version: "1.0.0", note: "release_v100_note_7b2c94" },
   { version: "1.1.0", note: "release_v110_note" },
+  { version: "2.0.0", note: "release_v200_note" },
 ].filter((item) => reached(item.version));
 
 export function ReleaseNotes() {
@@ -60,9 +61,9 @@ export function ReleaseNotes() {
           [t("typed_url_generation_55fd0d"), "route(name, params, options)"],
           [t("explicit_url_options_f0dbd3"), "query · hash · basePath · absolute · locale"],
           [t("next_integration_840bc7"), "withNamedRoutes(nextConfig, options)"],
-          [t("vite_integration_4b7d0e"), "namedRoutes(options)"],
-          [t("tooling_4fc60e"), "generate · check · list · watch · init"],
-          [t("compatibility_baseline_f0f3e2"), "Node.js 20.19+ · TypeScript 5+ · Next 16 · Vite 7"],
+          [t("vite_integration_4b7d0e"), "namedRoutes(options) · @triooo/named-routes/nuxt"],
+          [t("tooling_4fc60e"), "generate · check · list · watch · init · doctor · migrate"],
+          [t("compatibility_baseline_f0f3e2"), "Node.js 22.12+ · TypeScript 5.4+ · Next 16 · Vite"],
         ].map(([label, value]) => (
           <div key={label}>
             <span>{label}</span>

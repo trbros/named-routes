@@ -17,7 +17,7 @@ export function Documentation({ selectedId }: { selectedId?: string }) {
   const selected = getDoc(selectedId);
   const side = useRef<HTMLElement>(null);
   const [active, setActive] = useState("introduction");
-  const [pageLink, setPageLink] = useState(docHref(selectedId));
+  const [pageLink, setPageLink] = useState<string>(docHref(selectedId));
   const [mobileNav, setMobileNav] = useState(false);
   const index = docSections.findIndex((section) => section.id === selectedId);
   const previous = index > 0 ? docSections[index - 1] : undefined;

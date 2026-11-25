@@ -46,29 +46,28 @@ test("Next wrapper preserves async config and inherits Next URL/extension settin
 	assert.match(content, /"basePath": "\/admin"/);
 	assert.match(content, /"trailingSlash": true/);
 });
-test("Next wrapper suggests hrefs typed once when typedRoutes is enabled", async (t) => {
+test('Next wrapper warns once when typedRoutes meets hrefs: "string"', async (t) => {
 	const root = await fixture(t);
 	const warnings = [];
 	const original = console.warn;
 	console.warn = (message) => warnings.push(String(message));
 	t.after(() => (console.warn = original));
 	const config = { pageExtensions: ["view.tsx"], typedRoutes: true };
+	// The default (typed) is what typedRoutes needs: no warning.
 	await withNamedRoutes(config, { root, output: "a.ts" })(
 		"phase-production-build",
 		{},
 	);
-	await withNamedRoutes(config, { root, output: "a.ts" })(
-		"phase-production-build",
-		{},
-	);
+	assert.equal(warnings.length, 0);
+	assert.doesNotMatch(await readFile(join(root, "a.ts"), "utf8"), /hrefs/);
+	for (let run = 0; run < 2; run++)
+		await withNamedRoutes(config, { root, output: "b.ts", hrefs: "string" })(
+			"phase-production-build",
+			{},
+		);
 	assert.equal(warnings.length, 1);
-	assert.match(warnings[0], /hrefs: "typed"/);
-	await withNamedRoutes(config, { root, output: "b.ts", hrefs: "typed" })(
-		"phase-production-build",
-		{},
-	);
-	assert.equal(warnings.length, 1);
-	assert.match(await readFile(join(root, "b.ts"), "utf8"), /"hrefs": "typed"/);
+	assert.match(warnings[0], /hrefs: "string"/);
+	assert.match(await readFile(join(root, "b.ts"), "utf8"), /"hrefs": "string"/);
 });
 
 test("CLI generate, check, list and stale exit code work against a consumer project", async (t) => {

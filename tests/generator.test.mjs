@@ -226,21 +226,21 @@ test("creating pages alone gives identical dotted names in both routers", async 
 	assert.deepEqual((await discoverRoutes({ root: pages })).routes, expected);
 });
 
-test('hrefs: "typed" is serialized as a type-only default; "string" leaves output unchanged', async (t) => {
+test('hrefs: "typed" is the default; "string" is serialized for the 1.x overload', async (t) => {
 	const root = await fixture(t, ["app/page.tsx", "app/posts/[post]/page.tsx"]);
 	const plain = await generateRoutes({ root });
 	const before = await readFile(plain.output, "utf8");
 	assert.doesNotMatch(before, /hrefs/);
-	const same = await generateRoutes({ root, hrefs: "string" });
+	const same = await generateRoutes({ root, hrefs: "typed" });
 	assert.equal(same.changed, false);
-	const typed = await generateRoutes({
+	const string = await generateRoutes({
 		root,
-		hrefs: "typed",
+		hrefs: "string",
 		defaults: { trailingSlash: true },
 	});
-	assert.equal(typed.changed, true);
-	const after = await readFile(typed.output, "utf8");
-	assert.match(after, /"trailingSlash": true,\n {2}"hrefs": "typed"/);
+	assert.equal(string.changed, true);
+	const after = await readFile(string.output, "utf8");
+	assert.match(after, /"trailingSlash": true,\n {2}"hrefs": "string"/);
 	await assert.rejects(generateRoutes({ root, hrefs: "literal" }), {
 		code: "INVALID_CONFIG",
 	});

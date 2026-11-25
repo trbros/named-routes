@@ -2,8 +2,10 @@
 import {
 	createRoutes,
 	defineQuery,
+	type MatchedQuery,
 	type QueryInput,
 	type RouteHrefWithSuffix,
+	type TypeOnlyQueries,
 } from "@triooo/named-routes";
 import * as v from "valibot";
 import { z } from "zod";
@@ -108,3 +110,44 @@ bound("products", {}, { query: { sort: "price" } });
 bound("products", {}, { query: { pgae: 1 } });
 
 void [productsHref, plainProducts, searchHref, validated];
+
+// ------------------------------------------------------------ parseQuery
+const parsing = createRoutes(manifest, {}, { query: queries });
+const parsedProducts = parsing.parseQuery("products", "?page=2");
+if (parsedProducts.ok) {
+	expect<
+		Equal<
+			typeof parsedProducts.value,
+			{ page?: number; sort?: "newest" | "price"; tags?: string[] }
+		>
+	>();
+} else {
+	const message: string = parsedProducts.issues[0]?.message ?? "";
+	void message;
+}
+const parsedPost = parsing.parseQuery("posts.$post", new URLSearchParams());
+if (parsedPost.ok)
+	expect<
+		Equal<typeof parsedPost.value, { tab?: "comments" | "history" | undefined }>
+	>();
+// defineQuery.type() and routes without a schema: the raw query.
+const parsedSearch = parsing.parseQuery("search", "?q=a");
+if (parsedSearch.ok) expect<Equal<typeof parsedSearch.value, MatchedQuery>>();
+const parsedHome = parsing.parseQuery("home", new URL("https://a.b/?x=1"));
+if (parsedHome.ok) expect<Equal<typeof parsedHome.value, MatchedQuery>>();
+// @ts-expect-error Unknown route names are rejected.
+parsing.parseQuery("missing", "");
+// Schemas imported as types only (a generated module without validateQuery).
+const typeOnly = createRoutes<
+	typeof manifest,
+	never,
+	TypeOnlyQueries<typeof queries>
+>(manifest);
+typeOnly("products", {}, { query: { page: 2 } });
+// @ts-expect-error route() keeps the schema's input type.
+typeOnly("products", {}, { query: { page: "2" } });
+// @ts-expect-error ...and its required keys.
+typeOnly("search");
+const rawProducts = typeOnly.parseQuery("products", "?page=2");
+if (rawProducts.ok) expect<Equal<typeof rawProducts.value, MatchedQuery>>();
+void [parsedProducts, parsedPost, parsedSearch, parsedHome, rawProducts];

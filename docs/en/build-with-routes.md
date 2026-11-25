@@ -114,6 +114,8 @@ With a schema, TypeScript rejects unknown keys and incompatible values, and requ
 
 Set validateQuery: true to bundle the schemas and validate every query object when a URL is built; failures throw INVALID_QUERY with the issues. Validation never changes the URL: values are serialized as you pass them, without the schema's defaults or transforms. Asynchronous schemas are rejected because route() is synchronous. JavaScript outputs import the module as a value to infer its types. Zod 4 and Valibot 1 require TypeScript 5.4+.
 
+route.parseQuery(name, url) reads a URL's query back with the route's schema when it is available at runtime (validateQuery: true, or schemas passed to createRoutes) and returns { ok: true, value } with the schema's output type, or { ok: false, issues }. Values arrive as strings; for keys the schema rejects, the strings route() writes for numbers and true/false are converted back and a single value becomes an array, so one schema both builds and parses. Routes without a runtime schema (no schema, defineQuery.type() or schemas imported as types only) return the raw query, and their type says so.
+
 ```ts
 // src/route-query.ts
 import { defineQuery } from "@triooo/named-routes";
@@ -131,6 +133,10 @@ export default defineQuery({
 route("products", {}, { query: { page: 2, sort: "newest" } }); // /products?page=2&sort=newest
 route("products", {}, { query: { pgae: 2 } }); // type error: unknown key
 route("search"); // type error: q is required
+
+// With validateQuery: true
+const parsed = route.parseQuery("products", "/products?page=2&sort=newest");
+if (parsed.ok) parsed.value.page; // 2 (number | undefined)
 ```
 
 <a id="reverse-routing"></a>
@@ -216,7 +222,7 @@ pt("users.$user", { user: 42 });      // /pt/users/42
 
 Literal patterns infer name unions and parameter objects. Required parameters are checked at compile time; optional catch-all routes can be called without parameters. The runtime still validates JavaScript callers.
 
-By default route() returns string. With Next.js typedRoutes, set hrefs: "typed" (see Typed hrefs) instead of asserting Route: route() then returns template literal types that <Link> and router.push() accept. Do not assert untrusted arbitrary input to a route name to bypass validation.
+Since 2.0 route() returns typed hrefs (see Typed hrefs): template literal types that Next.js typedRoutes, <Link> and router.push() accept without asserting Route. hrefs: "string" returns string as in 1.x. The exported types need TypeScript 5.4+. Do not assert untrusted arbitrary input to a route name to bypass validation.
 
 ```ts
 import type { RouteName } from "@/routes.generated";
@@ -226,7 +232,7 @@ route("users.$user", { user: 42 });
 // route("unknown");          // Type error
 // route("users.$user");     // Missing user
 // route("users.$user", { id: 42 }); // Wrong parameter
-// With Next typedRoutes and hrefs: "typed":
+// With Next typedRoutes (typed hrefs are the default):
 // <Link href={route(name)}>Profile</Link>   // no cast
 ```
 
@@ -234,15 +240,15 @@ route("users.$user", { user: 42 });
 
 ## Typed hrefs for Next.js typedRoutes
 
-Set hrefs: "typed" in named-routes.config, withNamedRoutes() or the Vite plugin, and route() returns template literal types instead of string: route("users.$user", { user: 42 }) is typed `/users/${string}`. Next.js typedRoutes accepts these values in <Link href>, router.push(), replace() and prefetch() in both routers without a cast. The option is type-only: the URLs are identical.
+route() returns template literal types instead of string (the default since 2.0): route("users.$user", { user: 42 }) is typed `/users/${string}`. Next.js typedRoutes accepts these values in <Link href>, router.push(), replace() and prefetch() in both routers without a cast, and other typed routers accept them as strings. The types are the only difference: the URLs are identical.
 
 Calls with query or hash return the path plus `?${string}` or `#${string}`. absolute, basePath and locale calls return string, because Next adds basePath and locales itself and rejects absolute URLs in typed links. Optional segments become unions, so /shop/[[...path]] without parameters is typed "/shop"; Next.js typedRoutes itself rejects that bare base path of an optional catch-all, even as a literal, so pass a segment there.
 
-It is opt-in in 1.x because a narrower return type can break code that stores a route in a variable later reassigned to another string. When typedRoutes is enabled without it, withNamedRoutes() prints a hint and named-routes doctor reports a warning. Verified with the real next typegen and tsc on Next 16 (App Router and Pages Router, webpack and Turbopack).
+A narrower return type can break code that stores a route in a variable later reassigned to another string, such as useState(route(...)) followed by setState(window.location.href): annotate the variable as string, or set hrefs: "string" to keep the 1.x type (named-routes migrate --to 2 does it). With hrefs: "string" and typedRoutes, withNamedRoutes() prints a warning and named-routes doctor reports one. Verified with the real next typegen and tsc on Next 16 (App Router and Pages Router, webpack and Turbopack).
 
 ```tsx
-// next.config.ts
-export default withNamedRoutes({ typedRoutes: true }, { hrefs: "typed" });
+// next.config.ts (typed hrefs are the default since 2.0)
+export default withNamedRoutes({ typedRoutes: true });
 
 // app/page.tsx
 <Link href={route("users.$user", { user: 42 })}>Profile</Link>; // no cast

@@ -50,9 +50,10 @@ export interface RouteDefaults<Locale extends string = string> {
 	origin?: string;
 	i18n?: I18nOptions<Locale>;
 	/**
-	 * Return type of `route()`. "string" (default) keeps `string`; "typed"
-	 * returns template literal types such as `/users/${string}` that Next.js
-	 * typedRoutes and other typed routers accept without a cast. Type-only.
+	 * Return type of `route()`. "typed" (default since 2.0) returns template
+	 * literal types such as `/users/${string}` that Next.js typedRoutes and
+	 * other typed routers accept without a cast; "string" keeps the 1.x
+	 * `string`. Type-only: URLs are identical.
 	 */
 	hrefs?: HrefMode;
 }
@@ -90,17 +91,31 @@ export interface StandardSchemaV1<Input = unknown, Output = Input> {
 			| undefined;
 	};
 }
-/** A query described by a TypeScript type only (no runtime validation). */
-export interface QueryType<Query extends QueryShape = QueryShape> {
+/**
+ * A query known to TypeScript only: route() is typed with it, nothing
+ * validates it at runtime, and route.parseQuery() returns the raw query.
+ */
+export interface TypeOnlyQuery<Query = unknown> {
 	readonly kind: "query-type";
 	/** Type carrier; never set at runtime. */
 	readonly "~query"?: Query;
 }
-export type QuerySchema = StandardSchemaV1<QueryShape, unknown> | QueryType;
+/** A query described by a TypeScript type only (no runtime validation). */
+export interface QueryType<Query extends QueryShape = QueryShape>
+	extends TypeOnlyQuery<Query> {}
+export type QuerySchema = StandardSchemaV1<QueryShape, unknown> | TypeOnlyQuery;
 export type QuerySchemas = { readonly [name: string]: QuerySchema };
+/**
+ * The schemas as types only: what a generated module uses when it imports
+ * them with `import type` (no `validateQuery`), so that route.parseQuery()
+ * is typed as returning raw strings, which is what it returns there.
+ */
+export type TypeOnlyQueries<Schemas> = {
+	readonly [Name in keyof Schemas]: TypeOnlyQuery<QueryInput<Schemas[Name]>>;
+};
 /** The query object a schema accepts. */
 export type QueryInput<Schema> =
-	Schema extends QueryType<infer Query>
+	Schema extends TypeOnlyQuery<infer Query>
 		? Query
 		: Schema extends {
 					readonly "~standard": {
@@ -109,6 +124,28 @@ export type QueryInput<Schema> =
 				}
 			? Input
 			: never;
+/**
+ * What route.parseQuery() returns for a schema: its output type, or the raw
+ * query for type-only schemas and routes without a schema.
+ */
+export type QueryOutput<Schema> = Schema extends TypeOnlyQuery
+	? MatchedQuery
+	: Schema extends {
+				readonly "~standard": {
+					readonly types?: { readonly output: infer Output } | undefined;
+				};
+			}
+		? Output
+		: MatchedQuery;
+/** Result of route.parseQuery(). */
+export type QueryParseResult<Value> =
+	| { readonly ok: true; readonly value: Value }
+	| { readonly ok: false; readonly issues: readonly StandardSchemaIssue[] };
+/** A URL, query string (`?a=1`, `a=1` or a path with a query), URLSearchParams or route.match().query. */
+export type QueryParseInput = string | URL | URLSearchParams | MatchedQuery;
+type ParsedQuery<Queries, Name> = Name extends keyof Queries
+	? QueryOutput<Queries[Name]>
+	: MatchedQuery;
 /**
  * Declares per-route query schemas (Standard Schema validators or
  * `defineQuery.type<T>()`), keyed by route name.
@@ -277,6 +314,18 @@ export interface RouteHelpers<
 		url: string | URL,
 		options?: MatchOptions,
 	): RouteMatch<Routes, Locale>[];
+	/**
+	 * Parses the query of a URL with the route's schema, when the schema is
+	 * available at runtime. Values are strings; "true"/"false" and numbers
+	 * are converted only for keys the schema rejects as strings, mirroring
+	 * how route() serializes them. Routes without a runtime schema (no
+	 * schema, defineQuery.type() or schemas imported as types only) return
+	 * the raw query.
+	 */
+	parseQuery<Name extends keyof Routes & string>(
+		name: Name,
+		input: QueryParseInput,
+	): QueryParseResult<ParsedQuery<Queries, Name>>;
 }
 export interface NamedRoutes<
 	Routes extends Readonly<Record<string, string>>,
@@ -354,6 +403,16 @@ interface SuffixOptions {
 	basePath?: false;
 	locale?: undefined;
 }
+/**
+ * Shown in the type error of a typed-href call that omits a required query:
+ * pass it as `route(name, params, { query })`.
+ */
+type QueryIsRequired<Name extends string> = {
+	readonly "~namedRoutesRequiredQuery": Name;
+};
+/** Rejects the name in plain calls (no options) when its query has required keys. */
+type PlainName<Queries, Name extends string> =
+	QueryRequired<Queries, Name> extends true ? QueryIsRequired<Name> : unknown;
 type SuffixOptionsFor<Queries, Name> = SuffixOptions &
 	(Name extends keyof Queries
 		? QueryRequired<Queries, Name> extends true
@@ -373,11 +432,10 @@ export interface TypedNamedRoutes<
 	Queries = Empty,
 > extends RouteHelpers<Routes, Locale, Queries> {
 	<Name extends keyof Routes & string>(
-		name: Name,
-		// A tuple no call can satisfy (a bare `never` rest accepts zero arguments in TS 5.0).
-		...args: QueryRequired<Queries, Name> extends true
-			? [params: never, options: never]
-			: ArgsWith<Routes[Name], PlainOptions>
+		// Failing on the name (not on the argument count) makes TypeScript
+		// report `QueryIsRequired<Name>` instead of "Expected 3 arguments".
+		name: Name & PlainName<Queries, Name>,
+		...args: ArgsWith<Routes[Name], PlainOptions>
 	): RouteHref<Routes[Name], TrailingSlash>;
 	<Name extends keyof Routes & string>(
 		name: Name,
@@ -743,13 +801,23 @@ export interface RouteExtensions<Queries> {
 	readonly validateQuery?: boolean;
 }
 type TP<Routes, Queries> = QuerySchemas & KnownQueries<Routes, Queries>;
+// hrefs: "typed" is the default since 2.0; "string" selects the 1.x helper.
 export function createRoutes<
 	const Routes extends Readonly<Record<string, string>>,
 	const Locale extends string = never,
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults: RouteDefaults<Locale> & { hrefs: "typed"; trailingSlash: true },
+	defaults: RouteDefaults<Locale> & { hrefs: "string" },
+	extensions?: RouteExtensions<Queries>,
+): NamedRoutes<Routes, Locale, Queries>;
+export function createRoutes<
+	const Routes extends Readonly<Record<string, string>>,
+	const Locale extends string = never,
+	const Queries extends TP<Routes, Queries> = Empty,
+>(
+	manifest: Routes,
+	defaults: RouteDefaults<Locale> & { hrefs?: "typed"; trailingSlash: true },
 	extensions?: RouteExtensions<Queries>,
 ): TypedNamedRoutes<Routes, Locale, true, Queries>;
 export function createRoutes<
@@ -758,7 +826,7 @@ export function createRoutes<
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults: RouteDefaults<Locale> & { hrefs: "typed"; trailingSlash?: false },
+	defaults?: RouteDefaults<Locale> & { hrefs?: "typed"; trailingSlash?: false },
 	extensions?: RouteExtensions<Queries>,
 ): TypedNamedRoutes<Routes, Locale, false, Queries>;
 export function createRoutes<
@@ -767,7 +835,7 @@ export function createRoutes<
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults: RouteDefaults<Locale> & { hrefs: "typed" },
+	defaults: RouteDefaults<Locale> & { hrefs?: "typed" },
 	extensions?: RouteExtensions<Queries>,
 ): TypedNamedRoutes<Routes, Locale, boolean, Queries>;
 export function createRoutes<
@@ -828,10 +896,10 @@ export function createRoutes(
 		typeof extensions.validateQuery !== "boolean"
 	)
 		fail("INVALID_OPTIONS", "validateQuery must be a boolean");
-	const schemas = new Map<
-		string,
-		StandardSchemaV1<QueryShape, unknown>["~standard"]
-	>();
+	type Standard = StandardSchemaV1<QueryShape, unknown>["~standard"];
+	const schemas = new Map<string, Standard>();
+	/** Every runtime schema, for parseQuery (even with validateQuery: false). */
+	const parsers = new Map<string, Standard>();
 	if (extensions.query !== undefined) {
 		if (!isObject(extensions.query))
 			fail("INVALID_QUERY", "query schemas must be an object");
@@ -855,11 +923,9 @@ export function createRoutes(
 						option: "query",
 					},
 				);
+			parsers.set(name, standard as Standard);
 			if (extensions.validateQuery !== false)
-				schemas.set(
-					name,
-					standard as StandardSchemaV1<QueryShape, unknown>["~standard"],
-				);
+				schemas.set(name, standard as Standard);
 		}
 	}
 	function validateQuery(name: string, query: unknown) {
@@ -1329,6 +1395,75 @@ export function createRoutes(
 		return trail;
 	}
 
+	function parseQuery(name: string, input: unknown) {
+		get(name);
+		const raw = readQuery(input);
+		const standard = parsers.get(name);
+		if (!standard) return Object.freeze({ ok: true, value: freezeParams(raw) });
+		const validate = (value: Record<string, unknown>) => {
+			const result = standard.validate(value);
+			if (isThenable(result))
+				fail(
+					"INVALID_QUERY",
+					`The query schema of ${name} is asynchronous; parseQuery() is synchronous`,
+					{ route: name, option: "query" },
+				);
+			return result;
+		};
+		// Values to try per key, in order, only while the schema rejects that
+		// key: the string, its coerced scalar, then a one-element array.
+		const variants = new Map<string, { values: unknown[]; scalar: number }>();
+		for (const [key, value] of Object.entries(raw)) {
+			const values: unknown[] = [value];
+			const add = (candidate: unknown) => {
+				if (!values.some((item) => sameValue(item, candidate)))
+					values.push(candidate);
+			};
+			if (Array.isArray(value)) add(value.map(coerceQueryValue));
+			else add(coerceQueryValue(value));
+			const scalar = values.length - 1;
+			if (!Array.isArray(value)) {
+				add([value]);
+				add([coerceQueryValue(value)]);
+			}
+			variants.set(key, { values, scalar });
+		}
+		const stage = new Map<string, number>();
+		const current = () => {
+			const value: Record<string, unknown> = {};
+			for (const [key, { values }] of variants)
+				value[key] = values[stage.get(key) ?? 0];
+			return value;
+		};
+		for (;;) {
+			const result = validate(current());
+			if (!result.issues?.length)
+				return Object.freeze({
+					ok: true,
+					value: "value" in result ? result.value : undefined,
+				});
+			let advanced = false;
+			for (const key of issueKeys(result.issues)) {
+				const entry = variants.get(key);
+				const index = stage.get(key) ?? 0;
+				if (entry && index + 1 < entry.values.length) {
+					stage.set(key, index + 1);
+					advanced = true;
+				}
+			}
+			if (!advanced) {
+				// Report issues for the scalar values, not for an array attempt.
+				for (const [key, { scalar }] of variants)
+					stage.set(key, Math.min(stage.get(key) ?? 0, scalar));
+				const final = validate(current());
+				return Object.freeze({
+					ok: false,
+					issues: Object.freeze([...(final.issues ?? result.issues)]),
+				});
+			}
+		}
+	}
+
 	function helper(bound: string | undefined): unknown {
 		const named = (
 			name: string,
@@ -1362,10 +1497,93 @@ export function createRoutes(
 					return matchUrl(url, options)?.name === name;
 				},
 				breadcrumbs,
+				parseQuery,
 			}),
 		);
 	}
 	return helper(undefined);
+}
+
+/** route() writes true/false and numbers with String(); parseQuery reads them back. */
+function coerceQueryValue(value: string): QueryValue {
+	if (value === "true") return true;
+	if (value === "false") return false;
+	if (/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value)) {
+		const number = Number(value);
+		if (String(number) === value) return number;
+	}
+	return value;
+}
+function sameValue(a: unknown, b: unknown): boolean {
+	if (Array.isArray(a) && Array.isArray(b))
+		return a.length === b.length && a.every((item, i) => item === b[i]);
+	return a === b;
+}
+/** Top-level query keys named by schema issues. */
+function issueKeys(issues: readonly StandardSchemaIssue[]) {
+	const keys = new Set<string>();
+	for (const issue of issues) {
+		const first = issue.path?.[0];
+		if (first !== undefined)
+			keys.add(
+				String(isObject(first) ? (first as { key: PropertyKey }).key : first),
+			);
+	}
+	return keys;
+}
+/** The query of parseQuery input; repeated keys become arrays. */
+function readQuery(input: unknown): Record<string, string | string[]> {
+	let params: URLSearchParams | undefined;
+	if (typeof URL !== "undefined" && input instanceof URL)
+		params = input.searchParams;
+	else if (
+		typeof URLSearchParams !== "undefined" &&
+		input instanceof URLSearchParams
+	)
+		params = input;
+	else if (typeof input === "string") {
+		const [hashless = ""] = input.split("#");
+		const question = hashless.indexOf("?");
+		const search =
+			question >= 0
+				? hashless.slice(question + 1)
+				: hashless.startsWith("/") || /^[a-z][a-z\d+.-]*:/i.test(hashless)
+					? ""
+					: hashless;
+		params = new URLSearchParams(search);
+	} else if (isObject(input)) {
+		const query: Record<string, string | string[]> = {};
+		for (const [key, value] of Object.entries(input)) {
+			if (typeof value === "string") query[key] = value;
+			else if (
+				Array.isArray(value) &&
+				value.every((item) => typeof item === "string")
+			)
+				query[key] = [...value];
+			else
+				fail(
+					"INVALID_QUERY",
+					`Query value for ${key} must be a string or an array of strings`,
+				);
+		}
+		return query;
+	}
+	if (!params)
+		return fail(
+			"INVALID_QUERY",
+			"parseQuery expects a URL, a query string, URLSearchParams or a matched query object",
+		);
+	const query: Record<string, string | string[]> = {};
+	for (const [key, value] of params) {
+		const previous = query[key];
+		query[key] =
+			previous === undefined
+				? value
+				: Array.isArray(previous)
+					? [...previous, value]
+					: [previous, value];
+	}
+	return query;
 }
 
 /** Inverse of parsePattern. */

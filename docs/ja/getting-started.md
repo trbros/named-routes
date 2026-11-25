@@ -20,7 +20,9 @@ Next.js（App Router、Pages Router、src 構成、混在した移行プロジ�
 
 どのフレームワークもひとつのパターン構文とひとつの命名規則に変換されるため、app/users/[user]/page.tsx、pages/users/[user].vue、src/routes/users/[user]/+page.svelte、app/routes/users.$user.tsx はすべて users.$user になります。言語付き URL（next-intl、Pages Router の i18n、@nuxtjs/i18n など）は v1 から対応しています。
 
-URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 20.19 以上が必要です。ランタイムの型には TypeScript 5.0 以上（Zod 4 と Valibot 1 のスキーマは 5.4 以上）が必要です。examples/ のすべての例を、パッケージ化した tarball からインストールし、ビルドして配信し、CI の実ブラウザーで操作して確認しています。
+URL のランタイムはブラウザーで動作し、フレームワークや Node.js を import しません。Node 専用のジェネレーターはファイルパスを読むだけで、ページを実行することはありません。ツールには Node.js 22.12 以上、型には TypeScript 5.4 以上が必要です。examples/ のすべての例を、パッケージ化した tarball からインストールし、ビルドして配信し、CI の実ブラウザーで操作して確認しています。
+
+2.0 からは、フレームワークがルート表を公開している場合（Nuxt、Vue Router 5、React Router、TanStack Router）はその表を使うため、definePageMeta({ path }) や app/routes.ts の route() のようにコードで宣言したパスにも名前が付きます。route() はデフォルトで型付き href を返します。
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user
@@ -72,9 +74,9 @@ route("users.$user", { user: 42 }, { locale: "pt" });  // /pt/users/42
 
 ## インストール
 
-お好みのパッケージマネージャーでインストールしてください。ランタイム依存はありません。ジェネレーターには Node.js 20.19 以上が必要です。
+お好みのパッケージマネージャーでインストールしてください。ランタイム依存はありません。ジェネレーターには Node.js 22.12 以上が必要です。
 
-あとは一度だけ接続します。Next.js なら next.config の withNamedRoutes、Vite ベースのフレームワークなら Vite プラグインの namedRoutes() です。どのプロジェクトでも named-routes CLI（generate、check、watch）を使えます。
+あとは一度だけ接続します。Next.js なら next.config の withNamedRoutes、Nuxt なら @triooo/named-routes/nuxt モジュール、その他の Vite ベースのフレームワークなら Vite プラグインの namedRoutes() です。どのプロジェクトでも named-routes CLI（generate、check、watch）を使えます。
 
 ```sh
 npm install @triooo/named-routes

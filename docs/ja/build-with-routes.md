@@ -114,6 +114,8 @@ route("users.$user", { user: 42 }, {
 
 validateQuery: true にすると、スキーマをバンドルし、URL を組み立てるたびにクエリのオブジェクトを検証します。失敗すると問題点を含む INVALID_QUERY が投げられます。検証で URL が変わることはありません。値は渡したとおりにシリアライズされ、スキーマのデフォルト値や変換は適用されません。route() は同期関数なので、非同期のスキーマは拒否されます。JavaScript の出力では、型を推論するためにモジュールを値としてインポートします。Zod 4 と Valibot 1 には TypeScript 5.4 以上が必要です。
 
+route.parseQuery(name, url) は、ルートのスキーマが実行時に使える場合（validateQuery: true、または createRoutes に渡したスキーマ）に、そのスキーマで URL のクエリを読み戻し、スキーマの出力型を持つ { ok: true, value } か { ok: false, issues } を返します。値は文字列で届きます。スキーマが拒否したキーについては、route() が数値や true/false 用に書き出した文字列を元に戻し、単一の値を配列にするので、同じスキーマで URL の生成と読み取りの両方ができます。実行時のスキーマがないルート（スキーマなし、defineQuery.type()、型としてだけ import したスキーマ）は生のクエリを返し、型もそれを示します。
+
 ```ts
 // src/route-query.ts
 import { defineQuery } from "@triooo/named-routes";
@@ -131,6 +133,10 @@ export default defineQuery({
 route("products", {}, { query: { page: 2, sort: "newest" } }); // /products?page=2&sort=newest
 route("products", {}, { query: { pgae: 2 } }); // type error: unknown key
 route("search"); // type error: q is required
+
+// With validateQuery: true
+const parsed = route.parseQuery("products", "/products?page=2&sort=newest");
+if (parsed.ok) parsed.value.page; // 2 (number | undefined)
 ```
 
 <a id="reverse-routing"></a>
@@ -216,7 +222,7 @@ pt("users.$user", { user: 42 });      // /pt/users/42
 
 リテラルのパターンから名前のユニオン型とパラメーターのオブジェクト型が推論されます。必須パラメーターはコンパイル時にチェックされ、オプションの catch-all ルートはパラメーターなしで呼び出せます。JavaScript からの呼び出しも、ランタイムが引き続き検証します。
 
-デフォルトでは route() は string を返します。Next.js の typedRoutes を使う場合は、Route へのアサーションではなく hrefs: "typed" を設定してください（「型付き href」を参照）。route() が <Link> と router.push() に受け入れられるテンプレートリテラル型を返すようになります。検証を回避するために、信頼できない任意の入力をルート名にアサーションしないでください。
+2.0 から route() は型付き href（「型付き href」を参照）を返します。Next.js の typedRoutes、<Link>、router.push() が Route へのアサーションなしで受け付けるテンプレートリテラル型です。hrefs: "string" にすると 1.x と同じく string を返します。エクスポートされる型には TypeScript 5.4 以上が必要です。検証を回避するために、信頼できない任意の入力をルート名としてアサートしないでください。
 
 ```ts
 import type { RouteName } from "@/routes.generated";
@@ -226,7 +232,7 @@ route("users.$user", { user: 42 });
 // route("unknown");          // Type error
 // route("users.$user");     // Missing user
 // route("users.$user", { id: 42 }); // Wrong parameter
-// With Next typedRoutes and hrefs: "typed":
+// With Next typedRoutes (typed hrefs are the default):
 // <Link href={route(name)}>Profile</Link>   // no cast
 ```
 
@@ -234,15 +240,15 @@ route("users.$user", { user: 42 });
 
 ## Next.js の typedRoutes 向けの型付き href
 
-named-routes.config、withNamedRoutes()、Vite プラグインのいずれかで hrefs: "typed" を設定すると、route() は string ではなくテンプレートリテラル型を返します。route("users.$user", { user: 42 }) の型は `/users/${string}` です。Next.js の typedRoutes は、両方のルーターで <Link href>、router.push()、replace()、prefetch() にこれらの値をキャストなしで受け入れます。このオプションは型だけに影響し、URL は変わりません。
+route() は string ではなくテンプレートリテラル型を返します（2.0 からのデフォルト）。route("users.$user", { user: 42 }) の型は `/users/${string}` です。Next.js の typedRoutes は、両方のルーターの <Link href>、router.push()、replace()、prefetch() でキャストなしにこの値を受け付け、他の型付きルーターも string として受け付けます。変わるのは型だけで、URL は同じです。
 
 query や hash を指定した呼び出しは、パスに `?${string}` または `#${string}` が付いた型を返します。absolute、basePath、locale を指定した呼び出しは string を返します。Next は basePath と言語を自分で付け、型付きリンクでは絶対 URL を受け付けないためです。オプションのセグメントはユニオン型になるので、パラメーターなしの /shop/[[...path]] の型は "/shop" になります。Next.js の typedRoutes 自体が、オプションの catch-all のこの基底パスをリテラルであっても拒否するため、その場合はセグメントを渡してください。
 
-1.x ではオプトインです。戻り値の型が狭くなると、ルートを変数に保存して後で別の文字列を代入するコードが壊れる可能性があるためです。このオプションなしで typedRoutes を有効にすると、withNamedRoutes() がヒントを表示し、named-routes doctor が warning を報告します。Next 16 の実際の next typegen と tsc で検証しています（App Router と Pages Router、webpack と Turbopack）。
+戻り値の型が狭くなるため、ルートを変数に入れて後で別の string を代入するコード（useState(route(...)) の後に setState(window.location.href) など）は壊れることがあります。変数に string 型を付けるか、hrefs: "string" で 1.x の型を保ってください（named-routes migrate --to 2 がこれを行います）。hrefs: "string" と typedRoutes を併用すると withNamedRoutes() が警告を出し、named-routes doctor も報告します。Next 16（App Router と Pages Router、webpack と Turbopack）で実際の next typegen と tsc を使って検証しています。
 
 ```tsx
-// next.config.ts
-export default withNamedRoutes({ typedRoutes: true }, { hrefs: "typed" });
+// next.config.ts (typed hrefs are the default since 2.0)
+export default withNamedRoutes({ typedRoutes: true });
 
 // app/page.tsx
 <Link href={route("users.$user", { user: 42 })}>Profile</Link>; // no cast

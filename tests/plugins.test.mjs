@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	rm,
+	utimes,
+	writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -117,6 +124,28 @@ test("config files: defineConfig, TypeScript configs and relative root", async (
 	});
 });
 
+test("config files are re-imported only when their content changes", async (t) => {
+	const root = await project(t, {}, ["src/pages/index.vue"]);
+	const file = join(root, "named-routes.config.mjs");
+	await writeFile(file, "export default { framework: 'vue', defaults: {} };");
+	const first = await loadConfiguration(root);
+	// Saved again without changes (a newer mtime): the cached module is reused.
+	const later = new Date(Date.now() + 5000);
+	await utimes(file, later, later);
+	const touched = await loadConfiguration(root);
+	assert.equal(touched.defaults, first.defaults);
+	await writeFile(
+		file,
+		"export default { framework: 'vue', defaults: { trailingSlash: true } };",
+	);
+	const changed = await loadConfiguration(root);
+	assert.notEqual(changed.defaults, first.defaults);
+	assert.deepEqual(changed.defaults, { trailingSlash: true });
+	// Back to earlier content: that module instance is reused, not imported again.
+	await writeFile(file, "export default { framework: 'vue', defaults: {} };");
+	assert.equal((await loadConfiguration(root)).defaults, first.defaults);
+});
+
 test("CLI version, framework flag, init and list for non-Next projects", async (t) => {
 	const root = await project(t, { "@tanstack/router-plugin": "^1.0.0" }, [
 		"src/routes/index.tsx",
@@ -174,5 +203,8 @@ test("CLI version, framework flag, init and list for non-Next projects", async (
 		"--output",
 		"out/routes.mjs",
 	]);
-	assert.match(generated, /Generated: .*routes\.mjs \(0 routes, vue\)/);
+	assert.match(
+		generated,
+		/Generated: .*routes\.mjs \(0 routes, vue, from files \(typed-router\.d\.ts not found\)\)/,
+	);
 });

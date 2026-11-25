@@ -20,7 +20,9 @@ Next.js (App Router, Pages Router, src layouts and mixed migrations) is integrat
 
 Every framework maps to one pattern syntax and one naming rule, so app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte and app/routes/users.$user.tsx all become users.$user. Locale-aware URLs (next-intl, Pages Router i18n, @nuxtjs/i18n and similar) are supported from v1.
 
-The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 20.19+ is required for tooling. The runtime types need TypeScript 5.0+ (Zod 4 and Valibot 1 schemas need 5.4+). Every example in examples/ is installed from the packed tarball, built, served and driven in a real browser in CI.
+The browser-safe URL runtime has no framework or Node.js imports. The Node-only generator reads file paths; it never executes your pages. Node.js 22.12+ is required for tooling and TypeScript 5.4+ for the types. Every example in examples/ is installed from the packed tarball, built, served and driven in a real browser in CI.
+
+Since 2.0 the route table comes from the framework itself wherever it publishes one (Nuxt, Vue Router 5, React Router, TanStack Router), so paths declared in code, such as definePageMeta({ path }) or route() in app/routes.ts, get names too; route() returns typed hrefs by default.
 
 ```ts
 // Next.js   app/users/[user]/page.tsx          → users.$user
@@ -72,9 +74,9 @@ Several packages and framework features also generate typed URLs. They differ in
 
 ## Installation
 
-Install the package with your preferred package manager. It has no runtime dependencies. Node.js 20.19 or newer is required for the generator.
+Install the package with your preferred package manager. It has no runtime dependencies. Node.js 22.12 or newer is required for the generator.
 
-Then connect it once: withNamedRoutes in next.config for Next.js, or the namedRoutes() Vite plugin for Vite-based frameworks. You can also run the named-routes CLI (generate, check, watch) in any project.
+Then connect it once: withNamedRoutes in next.config for Next.js, the @triooo/named-routes/nuxt module for Nuxt, or the namedRoutes() Vite plugin for other Vite-based frameworks. You can also run the named-routes CLI (generate, check, watch) in any project.
 
 ```sh
 npm install @triooo/named-routes

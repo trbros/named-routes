@@ -18,7 +18,7 @@
 
 ## ほかのフレームワーク（Vite プラグイン）
 
-@triooo/named-routes/vite の namedRoutes() を、Nuxt（nuxt.config の vite.plugins）、Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router の Vite プラグインに追加します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更があると Vite 自身の watcher で再生成します。
+Vue、SvelteKit、Astro（astro.config の vite.plugins）、React Router、TanStack Router では @triooo/named-routes/vite の namedRoutes() を Vite プラグインに追加します。Nuxt では代わりに @triooo/named-routes/nuxt モジュールを登録します。Vite の起動時やビルド時に生成し、ファイルの追加・削除・名前変更や、フレームワークがルート表を書き直したときに、Vite 自身の watcher で再生成します。
 
 フレームワークは package.json から検出されます（nuxt、next、@sveltejs/kit、astro、@react-router/dev または @remix-run/dev、TanStack Router のプラグイン/CLI/Start、unplugin-vue-router または vue-router）。モノレポや検出があいまいな場合は framework を明示してください。npx named-routes init を実行すると、検出したフレームワーク用の設定ファイルを作れます。
 
@@ -28,7 +28,7 @@ SvelteKit: +page.* ファイル、[id=matcher]（matcher は捨てる）、[[lan
 
 React Router / Remix の flat routes（app/routes）: ドットでネスト、_index、$param、($optional)、splat の $（名前は splat）、_ で始まるパスなしレイアウト、name_ によるネスト解除、[.] エスケープ、フォルダー/route.tsx モジュール。TanStack Router（src/routes）: フラットなファイルとフォルダーの併用、index/route、$param、{-$optional}、prefix{$param}、splat の $（名前は _splat）、_layout、- で始まる無視ファイル、(group)、.lazy ファイル。(beta) のようなオプションの静的セグメントには名前を付けられないため、ファイルを除外するか extraRoutes を使ってください。
 
-コンポーネントの中で宣言されたパス（Nuxt の definePageMeta({ path })、React Router の routes.ts）はファイルスキャナーからは見えません。その URL は extraRoutes で対応付けるか、次に説明する手書きのマニフェストを使ってください。
+フレームワークによる検出（2.0 からのデフォルト）：フレームワークが最終的なルート表を公式に公開している場合は、その表から名前を付けるため、コードで宣言したパスも含まれます。Nuxt はモジュールが pages:resolved（definePageMeta の path と alias、モジュールが追加したページ）を読みます。Vue Router 5 は生成される typed-router.d.ts（definePage の path）、React Router は react-router routes --json（app/routes.ts の route()、index()、layout()、prefix()）、TanStack Router は routeTree.gen.ts です。あなたのコードを実行したり解析したりはしません。フレームワークが表を書き出すまでは上記のファイル規約を使い、CLI がその旨を表示します。discovery: "files" で 1.x のスキャナーを使い続けられます。Next.js、SvelteKit、Astro はコードでルートを宣言できないため、ファイルがソースです。
 
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
@@ -38,7 +38,8 @@ export default defineConfig({ plugins: [namedRoutes()] });
 
 // nuxt.config.ts
 export default defineNuxtConfig({
-  vite: { plugins: [namedRoutes({ output: "app/utils/routes.ts" })] },
+  modules: ["@triooo/named-routes/nuxt"],
+  namedRoutes: { output: "app/utils/routes.ts" },
 });
 
 // astro.config.mjs
@@ -61,7 +62,7 @@ next.config を @triooo/named-routes/next の withNamedRoutes でラップしま
 
 **検証。** CI では実際の Next 16 開発サーバー（App Router と Pages Router、basePath とページのライブ検出を含む）を動かしています。デモ: examples/app-router と examples/pages-router。App Router と Pages Router のレシピもあわせて参照してください。
 
-Next の設定で typedRoutes: true にしている場合は hrefs: "typed" を渡してください。route() の結果がキャストなしで <Link>、router.push()、replace()、prefetch() に受け入れられます。このオプションなしで typedRoutes が有効だと、ラッパーがヒントを表示します。Next 16 の両方のルーターで、webpack と Turbopack の両方について、実際の next typegen と TypeScript で検証しています。
+Next の設定で typedRoutes: true にしている場合も、2.0 からは型付き href がデフォルトなので、route() の結果はキャストなしで <Link>、router.push()、replace()、prefetch() に受け入れられます。typedRoutes と hrefs: "string" を併用すると、ラッパーが警告を表示します。Next 16 の両方のルーターで、webpack と Turbopack の両方について、実際の next typegen と TypeScript で検証しています。
 
 ```tsx
 import { withNamedRoutes } from "@triooo/named-routes/next";
@@ -77,20 +78,22 @@ import { route } from "@/routes.generated";
 
 ## Nuxt
 
-nuxt.config の vite.plugins に namedRoutes() を追加します。出力はソースディレクトリの中に置き、~ エイリアスでインポートしてください。Nuxt 4（srcDir が app/）なら output を app/routes.generated.ts にして ~/routes.generated をインポートします。nuxt dev 中にページを追加・移動・削除すると、プラグインが再生成します。
+nuxt.config の modules に "@triooo/named-routes/nuxt" を追加します。このモジュールは Nuxt 自身が解決したルート（pages:resolved フック）に名前を付けるため、definePageMeta({ path, alias }) や他のモジュールが追加したページも含まれ、nuxt dev 中にページを追加・移動・削除すると再生成します。出力はソースディレクトリ内に置き、~ エイリアスで import してください。Nuxt 4（srcDir が app/）では output を app/routes.generated.ts にして ~/routes.generated を import します。オプションは named-routes.config（CLI と共有）か nuxt.config の namedRoutes に書きます。
 
 **規約。** app/pages または pages: index.vue、[id]、オプションの [[id]]、[...slug]（空の残りにも一致するため [[...slug]] になる）、(group) フォルダー、v[major]-[minor] のような混在セグメント、ひとつのルートにまとめられる parent.vue + parent/ のネスト。- で始まるファイルは無視されます。includeApi を有効にすると、server/api（/api 付き）と server/routes を読み取り、.get/.post の接尾辞を取り除きます。
 
 **ナビゲーションと i18n。** URL は NuxtLink の :to、navigateTo、useRouter().push で使います。@nuxtjs/i18n を使う場合は、ここでも同じ言語を設定してください。戦略 prefix_except_default は localePrefix の as-needed、prefix（または prefix_and_default）は always、no_prefix は never に対応します。すると route(name, params, { locale }) がローカライズされた URL を返し、locale を省くと localePath() に渡す内部パスが得られます。defineI18nRoute で翻訳したパスは i18n.pathnames にも書く必要があります。
 
-**制限と検証。** definePageMeta({ path }) で変更したパスはスキャナーからは見えないので、extraRoutes で追加してください。名前はこのパッケージのドット区切りの形式（users.$id）で、Nuxt 自身のルート名（users-id）とは異なります。規約テストと、Nuxt 4 でビルド・実行できる examples/nuxt で検証しています。
+**制限と検証。** モジュールは .nuxt/named-routes/pages.json も書き出すため、nuxt prepare の後は named-routes check や generate も同じルートを見ます。ルートがローカライズされる前に見えるよう、modules では @nuxtjs/i18n より前に置いてください。Nuxt でも Vite プラグインは動きますが、ファイルしか見えません。名前はこのパッケージのドット区切り（users.$id）で、Nuxt 自身のルート名（users-id）ではありません。規約テストと、Nuxt 4 でビルドして実行する examples/nuxt（definePageMeta({ path }) のページを含む）で検証しています。
 
 ```vue
 // nuxt.config.ts
-import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineNuxtConfig({
-  vite: { plugins: [namedRoutes({ output: "app/routes.generated.ts" })] },
+  modules: ["@triooo/named-routes/nuxt"],
+  namedRoutes: { output: "app/routes.generated.ts" },
 });
+
+<!-- app/pages/about.vue: definePageMeta({ path: "/sobre" }) → sobre -->
 
 <!-- app/pages/users/[id].vue → users.$id -->
 <script setup lang="ts">
@@ -111,7 +114,7 @@ import { route } from "~/routes.generated";
 
 **ナビゲーション。** URL を RouterLink の :to や router.push に渡します。Vue Router は文字列を普通のパスとして解決するので、パッケージがルーターのインスタンスにアクセスする必要はありません。
 
-**検証。** これらの規約を使った実際の Vite 7 開発サーバーを CI で動かしており、examples/vue は Vue Router 5（vue-router/vite）で、users/_parent.vue のレイアウトも含めてビルド・実行し、ブラウザーで操作して確認しています。
+**検証済み。** 名前は Vue Router 5 が書き出す typed-router.d.ts（dts オプション）から取るため、definePage({ path }) で上書きしたルートは実際に配信する URL で名前が付きます。このファイルができるまではファイルを走査します。これらの規約を使う実際の Vite 開発サーバーを CI で動かし、examples/vue を Vue Router 5（vue-router/vite）でビルド・実行してブラウザーで操作しています。users/_parent.vue のレイアウトと definePage({ path }) のページも含みます。
 
 ```ts
 // vite.config.ts
@@ -179,13 +182,13 @@ import { route } from "../../routes.generated";
 
 ## React Router / Remix
 
-flat routes を使う React Router 7 と 8 のフレームワークモード（と Remix v2）では、vite.config で reactRouter() の前に namedRoutes() を追加し、app/routes.ts は @react-router/fs-routes の flatRoutes() のままにします。出力先は app/routes の外の app/routes.generated.ts がおすすめです。
+React Router 7・8 のフレームワークモード（と Remix v2）では、vite.config で reactRouter() より前に namedRoutes() を追加します。名前はフレームワーク自身が app/routes.ts を解決した結果である react-router routes --json から取るため、flatRoutes() のファイルも、route()、index()、layout()、prefix() で宣言したルートもすべて検出されます。出力は app/routes の外の app/routes.generated.ts がおすすめです。
 
 **規約。** ドットでネスト（concerts.$city.tsx は /concerts/[city]）。_index はインデックス。$param。($lang) はオプション（[[lang]]）。単独の $ は splat という名前の splat（[[...splat]]）。_auth のように _ で始まるものはパスなしレイアウト。concerts_ はネストを解除。[.] エスケープは文字をそのまま残す。route.tsx を含むフォルダーはひとつのルートで、それより深いフォルダーは無視されます。レイアウトとその _index は同じ URL を共有し、まとめられます。
 
 **ナビゲーション。** <Link to={route(...)}>、useNavigate()、loader や action の redirect() を使います。
 
-**制限と検証。** app/routes.ts の中でコードとして宣言したルート（route()、index()、layout()）はファイルではないため、手書きのマニフェストか extraRoutes を使ってください。(beta) のようなオプションの静的セグメントには名前を付けられず、ジェネレーターはファイルを除外できるよう明確なエラーで停止します。規約テストと、React Router 8 でビルド・実行できる examples/react-router で検証しています。
+**制限と検証。** @react-router/dev が入っていない場合やコマンドが失敗した場合は、上記の flat routes のファイルを走査し、CLI が理由を表示します。(beta) のような省略可能な静的セグメントには名前を付けられません。ジェネレーターは明確なエラーで止まるので、そのファイルを除外してください。規約テストと、React Router 8 でビルドして実行する examples/react-router（app/routes.ts の route() で宣言したルートを含む）で検証しています。
 
 ```tsx
 // vite.config.ts
@@ -199,6 +202,8 @@ export default defineConfig({
 import { Link } from "react-router";
 import { route } from "../routes.generated";
 <Link to={route("concerts.$city", { city: "lisbon" })}>Lisbon</Link>;
+
+// app/routes.ts: [...(await flatRoutes()), route("sobre", "about.tsx")] → sobre
 ```
 
 <a id="tanstack-router"></a>
@@ -211,7 +216,7 @@ vite.config で @tanstack/router-plugin の tanstackRouter() と並べて namedR
 
 **使いどころ。** TanStack Router は自前の <Link to> をルート ID で型付けしています。route() は普通の文字列が必要な場面で使ってください。<a href>、ほかのアプリへのリダイレクト、メール、サイトマップ、アナリティクス、言語プレフィックス付きの URL、モノレポでほかのフレームワークと共有する名前などです。
 
-**検証。** 規約テストと、TanStack の router プラグインでビルド・実行できる examples/tanstack-router で検証しています。
+**検証済み。** 名前は TanStack Router のプラグインまたは CLI が生成する routeTree.gen.ts（遷移可能なパス）から取ります。このファイルができるまではファイルを走査します。規約テストと、TanStack Router プラグインでビルドして実行する examples/tanstack-router で検証しています。
 
 ```tsx
 // vite.config.ts

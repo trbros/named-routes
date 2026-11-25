@@ -8,6 +8,7 @@ import { frameworks } from "./frameworks.js";
 import type { GeneratorOptions } from "./generator.js";
 import { discoverRoutes, generateRoutes } from "./generator.js";
 import { NamedRouteError } from "./index.js";
+import { applyMigration, formatMigration, planMigration } from "./migrate.js";
 import {
 	generationTargets,
 	isGeneratedOutput,
@@ -16,7 +17,7 @@ import {
 	watchModes,
 } from "./watch.js";
 
-const help = `Usage: named-routes [generate|check|list|watch|init|doctor] [options]
+const help = `Usage: named-routes [generate|check|list|watch|init|doctor|migrate] [options]
 
 Commands:
   generate            Write the typed route module (default)
@@ -26,6 +27,8 @@ Commands:
   init                Create named-routes.config.mjs for the detected framework
   doctor              Diagnose configuration, discovery, output and integration
                       (read-only; exit 1 on errors, or on warnings with --strict)
+  migrate --to 2      Pin 1.x behavior in the named-routes config where 2.0
+                      changes the generated module (dry run; --write applies)
 
 Options:
   --root <directory>      Project directory (default: cwd)
@@ -40,11 +43,15 @@ Options:
   --json                  doctor: machine-readable report
   --strict                doctor: warnings also fail (exit code 1)
   --no-color              doctor: plain output (also NO_COLOR or non-TTY)
+  --v2                    doctor: also list what a 1.x project changes for 2.0
+  --to <major>            migrate: target major version (2)
+  --write                 migrate: apply the changes
   -v, --version           Print the package version
   -h, --help              Show this help
 
 In Next.js, withNamedRoutes() generates during dev/build; in Vite-based
-frameworks use the @triooo/named-routes/vite plugin.
+frameworks use the @triooo/named-routes/vite plugin, and in Nuxt the
+@triooo/named-routes/nuxt module.
 `;
 
 async function version() {
@@ -70,6 +77,9 @@ async function main() {
 			json: { type: "boolean" },
 			strict: { type: "boolean" },
 			"no-color": { type: "boolean" },
+			v2: { type: "boolean" },
+			to: { type: "string" },
+			write: { type: "boolean" },
 			version: { type: "boolean", short: "v" },
 			help: { type: "boolean", short: "h" },
 		},
@@ -85,7 +95,15 @@ async function main() {
 	const [command = "generate", ...extra] = positionals;
 	if (
 		extra.length ||
-		!["generate", "check", "list", "watch", "init", "doctor"].includes(command)
+		![
+			"generate",
+			"check",
+			"list",
+			"watch",
+			"init",
+			"doctor",
+			"migrate",
+		].includes(command)
 	)
 		throw new Error("Invalid command. Run named-routes --help.");
 	const root = resolve(values.root ?? process.cwd());
@@ -116,20 +134,31 @@ async function main() {
 			: {}),
 		...(values.api !== undefined ? { includeApi: values.api } : {}),
 	});
+	if (command === "migrate") {
+		if (values.to !== "2")
+			throw new Error("Pass --to 2 (the only migration available).");
+		const plan = await planMigration(root, values.config);
+		if (values.write) await applyMigration(plan);
+		process.stdout.write(formatMigration(plan, values.write === true));
+		return;
+	}
 	if (command === "doctor") {
-		const diagnosis = await diagnose({
-			root,
-			...(values.config ? { config: values.config } : {}),
-			...(values.framework
-				? { framework: values.framework as GeneratorOptions["framework"] }
-				: {}),
-			...(values.output ? { output: values.output } : {}),
-			...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
-			...(values.router
-				? { router: values.router as GeneratorOptions["router"] }
-				: {}),
-			...(values.api !== undefined ? { includeApi: values.api } : {}),
-		});
+		const diagnosis = await diagnose(
+			{
+				root,
+				...(values.config ? { config: values.config } : {}),
+				...(values.framework
+					? { framework: values.framework as GeneratorOptions["framework"] }
+					: {}),
+				...(values.output ? { output: values.output } : {}),
+				...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
+				...(values.router
+					? { router: values.router as GeneratorOptions["router"] }
+					: {}),
+				...(values.api !== undefined ? { includeApi: values.api } : {}),
+			},
+			{ v2: values.v2 === true },
+		);
 		if (values.json)
 			process.stdout.write(
 				`${JSON.stringify({ version: await version(), ...diagnosis }, null, 2)}\n`,
@@ -182,9 +211,16 @@ export default defineConfig({
 			check: command === "check",
 		});
 		latest = result;
+		const { used, artifact, fallback } = result.discovery;
+		const from =
+			used === "framework"
+				? `, from ${artifact}`
+				: fallback
+					? `, from files (${fallback.split(":")[0]})`
+					: "";
 		if (command !== "watch" || result.changed)
 			process.stdout.write(
-				`${result.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework})\n`,
+				`${result.changed ? "Generated" : "Up to date"}: ${result.output} (${result.entries.length} routes, ${result.framework}${from})\n`,
 			);
 	};
 	await run();

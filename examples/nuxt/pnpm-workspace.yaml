@@ -11,3 +11,7 @@ minimumReleaseAgeExclude:
   - '@vue/server-renderer@3.5.45'
   - '@vue/shared@3.5.45'
   - vue@3.5.45
+# GHSA-g3hv-75wg-m249: archiver 8 still asks for readdir-glob 3 (minimatch 10);
+# readdir-glob 4 is the same API on minimatch 11.
+overrides:
+  readdir-glob: ^4.0.0

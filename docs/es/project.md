@@ -8,6 +8,7 @@
 - [Pruébalo: demos por framework](#demos)
 - [Contribuye paso a paso](#contributing)
 - [Versiones y actualizaciones](#versioning)
+- [Actualizar desde la 1.x](#migration)
 
 <a id="website"></a>
 
@@ -52,7 +53,7 @@ npm run dev
 
 ## Contribuye paso a paso
 
-**1. Requisitos.** Instala Node.js 20.19 o superior (22.18+ si quieres cargar archivos named-routes.config.ts), Git y Python 3 (solo se usa para generar los README). Activa pnpm 12.16.1, la versión fijada en package.json: corepack enable o npm install --global pnpm@12.16.1.
+**1. Requisitos.** Instala Node.js 22.12 o superior (22.18+ si quieres cargar archivos named-routes.config.ts), Git y Python 3 (solo se usa para generar los README). Activa pnpm 12.16.1, la versión fijada en package.json: corepack enable o npm install --global pnpm@12.16.1.
 
 **2. Clona y compila.** Clona el repositorio, ejecuta pnpm install en la raíz y luego pnpm build. El build limpia dist/ y compila src/*.ts a JavaScript ESM, declaraciones y source maps. Vuelve a ejecutar pnpm build después de cada cambio en src/: el sitio y las demos usan dist/, no los fuentes TypeScript.
 
@@ -121,16 +122,39 @@ cd examples/nuxt && npm install && npm run dev
 
 ## Versiones y actualizaciones
 
-La versión 1.x define el contrato público de los nombres inferidos, la generación tipada de URLs, los adaptadores de framework, i18n, el wrapper de Next.js, el plugin de Vite y la CLI.
+La versión 2.x define el contrato público de los nombres inferidos, la generación tipada de URLs, los adaptadores y el descubrimiento por el framework, i18n, el wrapper de Next.js, el módulo de Nuxt, el plugin de Vite y la CLI. La 1.x no recibe funcionalidades nuevas.
 
 Las versiones de parche preservan la API documentada mientras corrigen errores. Las versiones menores añaden funcionalidad compatible, como nuevos adaptadores de framework. Los cambios incompatibles requieren una nueva versión mayor. Revisa el changelog antes de actualizar.
 
 Después de actualizar, reinicia el servidor de desarrollo para regenerar el manifiesto y ejecuta la comprobación de tipos y las pruebas de navegación de tu aplicación. Si mueves una página y necesitas conservar su nombre de ruta público, usa un alias explícito.
 
 ```sh
-npm install @triooo/named-routes@^1
+npm install @triooo/named-routes@^2
 npx named-routes check
 npx tsc --noEmit
+```
+
+<a id="migration"></a>
+
+## Actualizar desde la 1.x
+
+La 2.0 cambia valores por defecto solo donde el cambio compensa; todo cambio se puede deshacer en la configuración. Ejecuta npx named-routes doctor --v2 para ver qué se aplica a tu proyecto, después npx named-routes migrate --to 2 (simulación) y --write para fijar el comportamiento de la 1.x donde el módulo generado cambiaría. Quita las líneas fijadas cuando quieras adoptar los nuevos valores por defecto.
+
+Se requiere Node.js 22.12+ (el 20 está fuera de soporte desde abril de 2026); trae require() de módulos ES y observación recursiva nativa de archivos en todas las plataformas. Se requiere TypeScript 5.4+ para los tipos exportados, que también es el mínimo de Zod 4 y Valibot 1.
+
+route() devuelve hrefs tipados por defecto. Antes: string. Después: `/users/${string}`, aceptado por typedRoutes de Next.js sin cast. El código que guarda una ruta en una variable y después le asigna otro string deja de compilar: anótala como string, o usa hrefs: "string".
+
+Las rutas salen del framework cuando publica su tabla (módulo de Nuxt, Vue Router 5, React Router, TanStack Router). Antes: las rutas de definePageMeta/definePage y las de app/routes.ts necesitaban extraRoutes. Después: se nombran como cualquier página, y las entradas de extraRoutes que las duplicaban se pueden quitar. Usa discovery: "files" para mantener el recorrido de archivos. En Nuxt, sustituye el plugin de Vite por modules: ["@triooo/named-routes/nuxt"].
+
+Los valores no válidos de router, pageExtensions y output producen INVALID_CONFIG en lugar de GENERATION_ERROR, para que cada clase de error tenga un código; revisa las comparaciones con error.code. Se eliminó typesVersions: TypeScript debe resolver el paquete por sus exports, con moduleResolution bundler, node16 o nodenext (node10 no puede). Los módulos generados que importan schemas de query solo como tipos ahora usan TypeOnlyQueries, así que route.parseQuery() se tipa como si devolviera la query sin procesar en esos casos.
+
+```sh
+npx named-routes doctor --v2
+npx named-routes migrate --to 2           # dry run
+npx named-routes migrate --to 2 --write   # pins hrefs/discovery in named-routes.config
+
+# Keep a reassigned route as a string
+const [href, setHref] = useState<string>(route("home"));
 ```
 
 ---

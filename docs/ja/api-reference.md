@@ -38,11 +38,11 @@ if (route.has(input)) console.log(route.pattern(input));
 
 設定ファイルは必須ではありません。任意の設定ファイルは named-routes.config.ts、.mts、.mjs、.js、.cjs、.json の順に探されます。TypeScript の設定には Node.js 22.18 以上（組み込みの型除去）が必要で、それより古いバージョンでは .mjs を使ってください。補完を効かせるには @triooo/named-routes/config の defineConfig({...}) をエクスポートします。CLI の --config で別のファイルを指定でき、設定ファイル内の root はそのファイルからの相対パスです。未知のオプションや綴りの誤りは INVALID_CONFIG で失敗します。
 
-検出: framework（デフォルトは auto、または next、nuxt、vue、sveltekit、astro、react-router、tanstack-router、manual）、router（Next.js: auto、app、pages）、appDir/pagesDir（Next.js の独自フォルダー、または false）、routesDir（ほかのフレームワークのページ/ルートの独自フォルダー）、pageExtensions（各フレームワークのデフォルト。page.tsx のような複数ドットの拡張子も可）、includeApi（false）、exclude（ルートからの相対 glob。*、**、? を使用）。
+検出: discovery（2.0 からのデフォルトは "framework"。フレームワークが公開しているルート表、なければファイル。"files" で 1.x のスキャナー）、framework（デフォルトは auto、または next、nuxt、vue、sveltekit、astro、react-router、tanstack-router、manual）、router（Next.js: auto、app、pages）、appDir/pagesDir（Next.js の独自フォルダー、または false）、routesDir（ほかのフレームワークのページ/ルートの独自フォルダー）、pageExtensions（各フレームワークのデフォルト。page.tsx のような複数ドットの拡張子も可）、includeApi（false）、exclude（ルートからの相対 glob。*、**、? を使用）。
 
 名前: names（URL パターン → 独自の名前。各パスは実在する必要がある）、extraRoutes（明示的な名前 → パターン。リライト先など）、naming（separator、paramPrefix、home、transform）、i18n（locales、defaultLocale、localePrefix、pathnames、domains、localeParam、unlocalized）。
 
-出力: output（デフォルトは src/routes.generated.ts。.ts、.mts、.js、.mjs のいずれかで、ルーティング対象のファイルの中には置けない）、importSource（生成ファイルが createRoutes をインポートするモジュール。デフォルトはパッケージ名）、exportNames（routes、route、RouteName、RouteLocale の名前を変更）、defaults（公開される basePath、trailingSlash、origin。シリアライズされるのはこれらのキーだけ）、hrefs（"string" または "typed"。型だけに影響）、query（ルートごとのクエリスキーマのモジュール）、validateQuery（そのスキーマをバンドルして実行する。デフォルト false）。プラグインには watch（デフォルト true）があり、withNamedRoutes では watchInterval（750 ms、25〜60000）と watchMode（auto、native、poll）も使えます。プラグインに直接渡したオプションは設定ファイルより優先されます。
+出力: output（デフォルトは src/routes.generated.ts。.ts、.mts、.js、.mjs のいずれかで、ルーティング対象のファイルの中には置けない）、importSource（生成ファイルが createRoutes をインポートするモジュール。デフォルトはパッケージ名）、exportNames（routes、route、RouteName、RouteLocale の名前を変更）、defaults（公開される basePath、trailingSlash、origin。シリアライズされるのはこれらのキーだけ）、hrefs（2.0 からのデフォルトは "typed"、または "string"。型だけに影響）、query（ルートごとのクエリスキーマのモジュール）、validateQuery（そのスキーマをバンドルして実行する。デフォルト false）。プラグインには watch（デフォルト true）があり、withNamedRoutes では watchInterval（750 ms、25〜60000）と watchMode（auto、native、poll）も使えます。プラグインに直接渡したオプションは設定ファイルより優先されます。
 
 ```ts
 // named-routes.config.ts (or .mjs)
@@ -50,6 +50,7 @@ import { defineConfig } from "@triooo/named-routes/config";
 
 export default defineConfig({
   framework: "auto",                 // next, nuxt, vue, sveltekit, astro, ...
+  discovery: "framework",            // or "files" (1.x)
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs

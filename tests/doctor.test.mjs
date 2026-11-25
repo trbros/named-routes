@@ -123,7 +123,7 @@ test("conflicts are errors with files and a fix; stale modules are warnings", as
 	assert.ok(ids(report).includes("warning:output.stale"));
 });
 
-test("configuration errors, typedRoutes without typed hrefs and the framework fallback", async (t) => {
+test('configuration errors, typedRoutes with hrefs: "string" and the framework fallback', async (t) => {
 	const typo = await project(
 		t,
 		{ next: "16" },
@@ -142,7 +142,7 @@ test("configuration errors, typedRoutes without typed hrefs and the framework fa
 		{
 			"app/page.tsx": "",
 			"next.config.ts":
-				"export default withNamedRoutes({ typedRoutes: true });",
+				'export default withNamedRoutes({ typedRoutes: true }, { hrefs: "string" });',
 		},
 	);
 	assert.ok(
@@ -156,7 +156,7 @@ test("configuration errors, typedRoutes without typed hrefs and the framework fa
 		{
 			"app/page.tsx": "",
 			"next.config.ts":
-				'export default withNamedRoutes({ typedRoutes: true }, { hrefs: "typed" });',
+				"export default withNamedRoutes({ typedRoutes: true });",
 		},
 	);
 	assert.ok(

@@ -38,11 +38,11 @@ if (route.has(input)) console.log(route.pattern(input));
 
 Nenhum arquivo de configuração é obrigatório. Arquivos opcionais são procurados nesta ordem: named-routes.config.ts, .mts, .mjs, .js, .cjs, .json. Configurações TypeScript exigem Node.js 22.18+ (remoção nativa de tipos); use .mjs em versões anteriores. Exporte defineConfig({...}) de @triooo/named-routes/config para ter autocomplete. A flag --config da CLI seleciona outro arquivo; root dentro da configuração é relativo ao próprio arquivo. Opções desconhecidas ou com erro de digitação falham com INVALID_CONFIG.
 
-Descoberta: framework (auto por padrão, ou next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app ou pages), appDir/pagesDir (pastas personalizadas do Next.js ou false), routesDir (pasta de páginas/rotas personalizada nos outros frameworks), pageExtensions (padrões de cada framework; extensões compostas como page.tsx funcionam), includeApi (false), exclude (globs relativos à raiz com *, ** e ?).
+Descoberta: discovery ("framework" por padrão desde a 2.0: a tabela de rotas do próprio framework quando ele a publica, senão os arquivos; "files" para o scanner da 1.x), framework (auto por padrão, ou next, nuxt, vue, sveltekit, astro, react-router, tanstack-router, manual), router (Next.js: auto, app ou pages), appDir/pagesDir (pastas personalizadas do Next.js ou false), routesDir (pasta de páginas/rotas personalizada nos outros frameworks), pageExtensions (padrões de cada framework; extensões compostas como page.tsx funcionam), includeApi (false), exclude (globs relativos à raiz com *, ** e ?).
 
 Nomes: names (padrão de URL → nome personalizado; todo caminho deve existir), extraRoutes (nome → padrão explícito, por exemplo destinos de rewrites), naming (separator, paramPrefix, home, transform) e i18n (locales, defaultLocale, localePrefix, pathnames, domains, localeParam, unlocalized).
 
-Saída: output (padrão src/routes.generated.ts; .ts, .mts, .js ou .mjs, nunca dentro de um arquivo roteável), importSource (módulo de onde o arquivo gerado importa createRoutes; padrão, o nome do pacote), exportNames (renomeia routes, route, RouteName e RouteLocale), defaults (basePath, trailingSlash e origin públicos; apenas essas chaves são serializadas), hrefs ("string" ou "typed", só de tipos), query (módulo de schemas de query por rota) e validateQuery (empacota e executa esses schemas; padrão false). Os plugins aceitam watch (padrão true); o withNamedRoutes também aceita watchInterval (750 ms, 25–60000) e watchMode (auto, native ou poll). Opções passadas ao plugin sobrescrevem o arquivo de configuração.
+Saída: output (padrão src/routes.generated.ts; .ts, .mts, .js ou .mjs, nunca dentro de um arquivo roteável), importSource (módulo de onde o arquivo gerado importa createRoutes; padrão, o nome do pacote), exportNames (renomeia routes, route, RouteName e RouteLocale), defaults (basePath, trailingSlash e origin públicos; apenas essas chaves são serializadas), hrefs ("typed" por padrão desde a 2.0, ou "string"; só de tipos), query (módulo de schemas de query por rota) e validateQuery (empacota e executa esses schemas; padrão false). Os plugins aceitam watch (padrão true); o withNamedRoutes também aceita watchInterval (750 ms, 25–60000) e watchMode (auto, native ou poll). Opções passadas ao plugin sobrescrevem o arquivo de configuração.
 
 ```ts
 // named-routes.config.ts (or .mjs)
@@ -50,6 +50,7 @@ import { defineConfig } from "@triooo/named-routes/config";
 
 export default defineConfig({
   framework: "auto",                 // next, nuxt, vue, sveltekit, astro, ...
+  discovery: "framework",            // or "files" (1.x)
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs

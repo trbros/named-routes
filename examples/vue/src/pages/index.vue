@@ -3,6 +3,7 @@ import { route } from "../routes.generated";
 const links = [
   { label: "users.$id", href: route("users.$id", { id: 42 }) },
   { label: "docs.$path", href: route("docs.$path", { path: ["guide", "install"] }) },
+  { label: "sobre (definePage path)", href: route("sobre") },
 ];
 </script>
 <template>

@@ -116,6 +116,8 @@ export const examples = [
 			{ href: "/users/42", text: "User 42" },
 			{ href: "/docs/guide/install", text: "guide" },
 			{ href: "/docs", text: "Docs:" },
+			// definePageMeta({ path: "/sobre" }) in app/pages/about.vue (Nuxt module).
+			{ href: "/sobre", text: "Sobre" },
 		],
 		missing: "/missing-page",
 		live: {
@@ -153,6 +155,8 @@ export const examples = [
 		links: [
 			{ href: "/users/42", text: "User 42" },
 			{ href: "/docs/guide/install", text: "guide" },
+			// definePage({ path: "/sobre" }) in src/pages/about.vue (typed-router.d.ts).
+			{ href: "/sobre", text: "Sobre" },
 		],
 		live: {
 			create: {
@@ -270,6 +274,8 @@ export const examples = [
 		links: [
 			{ href: "/users/42", text: "User 42" },
 			{ href: "/docs/guide/install", text: "guide/install" },
+			// route("sobre", "about.tsx") in app/routes.ts (react-router routes --json).
+			{ href: "/sobre", text: "Sobre" },
 		],
 		live: {
 			create: {

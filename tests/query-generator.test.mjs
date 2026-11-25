@@ -88,14 +88,32 @@ const typecheck = (root) =>
 test("query schemas are imported as types only and checked by the real compiler", async (t) => {
 	const root = await project(t);
 	const result = await generateRoutes({ root, query: "src/route-query.ts" });
+	// Nothing validates at runtime, so parseQuery is typed as the raw query.
+	await writeFile(
+		join(root, "src/parse.ts"),
+		`import { route } from "./routes.generated.js";
+const parsed = route.parseQuery("products", "?page=2");
+if (parsed.ok) {
+  const raw: string | readonly string[] | undefined = parsed.value.page;
+  void raw;
+  // @ts-expect-error schemas imported as types only are not parsed
+  const page: number | undefined = parsed.value.page;
+  void page;
+}
+`,
+	);
 	const content = await readFile(result.output, "utf8");
+	assert.match(
+		content,
+		/^import \{ createRoutes, type TypeOnlyQueries \} from "@triooo\/named-routes";$/m,
+	);
 	assert.match(
 		content,
 		/^import type \$routeQueries from "\.\/route-query\.js";$/m,
 	);
 	assert.match(
 		content,
-		/createRoutes<typeof routes, never, typeof \$routeQueries>\(routes, \{\}\);/,
+		/createRoutes<typeof routes, never, TypeOnlyQueries<typeof \$routeQueries>>\(routes, \{\}\);/,
 	);
 	const checked = typecheck(root);
 	assert.equal(checked.status, 0, checked.stdout + checked.stderr);
@@ -111,6 +129,25 @@ test("validateQuery imports the schemas and validates at runtime", async (t) => 
 		validateQuery: true,
 		output: "src/routes.generated.ts",
 	});
+	await writeFile(
+		join(root, "src/parse.ts"),
+		`import { route } from "./routes.generated.js";
+const parsed = route.parseQuery("products", "?page=2&sort=newest");
+if (parsed.ok) {
+  const page: number | undefined = parsed.value.page;
+  const sort: "newest" | "price" | undefined = parsed.value.sort;
+  void [page, sort];
+} else {
+  const message: string = parsed.issues[0]?.message ?? "";
+  void message;
+}
+const search = route.parseQuery("search", "q=shoes");
+if (search.ok) {
+  const raw: string | readonly string[] | undefined = search.value.q;
+  void raw;
+}
+`,
+	);
 	const content = await readFile(result.output, "utf8");
 	assert.match(content, /^import \$routeQueries from "\.\/route-query\.js";$/m);
 	assert.match(

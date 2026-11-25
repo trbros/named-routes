@@ -1,4 +1,4 @@
-import type { Stats } from "node:fs";
+import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -26,10 +26,21 @@ const invalid = (message: string): never => {
 	throw new NamedRouteError("INVALID_CONFIG", message);
 };
 
-async function importConfig(path: string, info: Stats) {
+/**
+ * The import URL of a config file: a hash of its content, so that a file that
+ * is saved (or touched) without changes reuses the module already in Node's
+ * ESM cache. Node cannot unload ES modules, so each distinct content still
+ * stays in memory until the process restarts.
+ */
+function configImportUrl(path: string, content: Buffer | string) {
+	const hash = createHash("sha256").update(content).digest("hex").slice(0, 16);
+	return `${pathToFileURL(path).href}?v=${hash}`;
+}
+
+async function importConfig(path: string) {
 	try {
 		const module = (await import(
-			`${pathToFileURL(path).href}?v=${info.mtimeMs}`
+			configImportUrl(path, await readFile(path))
 		)) as {
 			default?: unknown;
 		};
@@ -70,7 +81,7 @@ export async function loadConfiguration(
 ): Promise<GeneratorOptions> {
 	const found = await findConfiguration(root, explicit);
 	if (!found) return { root: resolve(root) };
-	const { path, info } = found;
+	const { path } = found;
 	let value: unknown;
 	if (path.endsWith(".json")) {
 		try {
@@ -78,7 +89,7 @@ export async function loadConfiguration(
 		} catch (caught) {
 			invalid(`${path}: ${(caught as Error).message}`);
 		}
-	} else value = await importConfig(path, info);
+	} else value = await importConfig(path);
 	if (!value || typeof value !== "object" || Array.isArray(value))
 		invalid(
 			`${path} must export an options object (export default defineConfig({...}))`,

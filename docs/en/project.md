@@ -8,6 +8,7 @@
 - [Try it: framework demos](#demos)
 - [Contribute step by step](#contributing)
 - [Versions and upgrades](#versioning)
+- [Upgrading from 1.x](#migration)
 
 <a id="website"></a>
 
@@ -52,7 +53,7 @@ npm run dev
 
 ## Contribute step by step
 
-**1. Prerequisites.** Install Node.js 20.19 or newer (22.18+ if you want to load named-routes.config.ts files), Git and Python 3 (only used to render the README files). Enable pnpm 12.16.1, the version pinned in package.json: corepack enable, or npm install --global pnpm@12.16.1.
+**1. Prerequisites.** Install Node.js 22.12 or newer (22.18+ if you want to load named-routes.config.ts files), Git and Python 3 (only used to render the README files). Enable pnpm 12.16.1, the version pinned in package.json: corepack enable, or npm install --global pnpm@12.16.1.
 
 **2. Clone and build.** Clone the repository, run pnpm install at the root and then pnpm build. The build cleans dist/ and compiles src/*.ts to ESM JavaScript, declarations and source maps. Run pnpm build again after every change to src/: the website and the demos use dist/, not the TypeScript sources.
 
@@ -121,16 +122,39 @@ cd examples/nuxt && npm install && npm run dev
 
 ## Versions and upgrades
 
-Version 1.x defines the public contract for inferred names, typed URL generation, framework adapters, i18n, the Next.js wrapper, the Vite plugin and the CLI.
+Version 2.x defines the public contract for inferred names, typed URL generation, framework adapters and framework discovery, i18n, the Next.js wrapper, the Nuxt module, the Vite plugin and the CLI. 1.x receives no new features.
 
 Patch releases preserve the documented API while fixing bugs. Minor releases add compatible functionality, such as new framework adapters. Breaking changes require a new major version. Review the changelog before upgrading.
 
 After an upgrade, restart the dev server to regenerate the manifest and run your application’s type check and navigation tests. If you move a page and need to preserve its public route name, use an explicit alias.
 
 ```sh
-npm install @triooo/named-routes@^1
+npm install @triooo/named-routes@^2
 npx named-routes check
 npx tsc --noEmit
+```
+
+<a id="migration"></a>
+
+## Upgrading from 1.x
+
+2.0 changes defaults only where the change pays off; every change can be undone in the config. Run npx named-routes doctor --v2 to see what applies to your project, then npx named-routes migrate --to 2 (dry run) and --write to pin the 1.x behavior where the generated module would change. Remove the pinned lines when you are ready to adopt the new defaults.
+
+Node.js 22.12+ is required (20 is end-of-life since April 2026); it brings require() of ES modules and native recursive file watching everywhere. TypeScript 5.4+ is required for the exported types, the minimum of Zod 4 and Valibot 1 as well.
+
+route() returns typed hrefs by default. Before: string. After: `/users/${string}`, accepted by Next.js typedRoutes without casts. Code that stores a route in a variable and later assigns another string to it fails to compile: annotate it as string, or set hrefs: "string".
+
+Routes come from the framework where it publishes its table (Nuxt module, Vue Router 5, React Router, TanStack Router). Before: definePageMeta/definePage paths and app/routes.ts routes needed extraRoutes. After: they are named like any page, and extraRoutes duplicates of them can be removed. Set discovery: "files" to keep the file scan. In Nuxt, replace the Vite plugin with modules: ["@triooo/named-routes/nuxt"].
+
+Invalid router, pageExtensions and output values raise INVALID_CONFIG instead of GENERATION_ERROR, so each error class has one code; check error.code comparisons. typesVersions was removed: TypeScript must resolve the package through exports, with moduleResolution bundler, node16 or nodenext (node10 cannot). Generated modules that import query schemas as types now use TypeOnlyQueries, so route.parseQuery() is typed as returning the raw query there.
+
+```sh
+npx named-routes doctor --v2
+npx named-routes migrate --to 2           # dry run
+npx named-routes migrate --to 2 --write   # pins hrefs/discovery in named-routes.config
+
+# Keep a reassigned route as a string
+const [href, setHref] = useState<string>(route("home"));
 ```
 
 ---

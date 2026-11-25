@@ -8,6 +8,7 @@
 - [Teste: demos por framework](#demos)
 - [Contribua passo a passo](#contributing)
 - [Versões e atualizações](#versioning)
+- [Atualizando da 1.x](#migration)
 
 <a id="website"></a>
 
@@ -52,7 +53,7 @@ npm run dev
 
 ## Contribua passo a passo
 
-**1. Pré-requisitos.** Instale Node.js 20.19 ou superior (22.18+ se quiser carregar arquivos named-routes.config.ts), Git e Python 3 (usado apenas para gerar os READMEs). Ative o pnpm 12.16.1, a versão fixada no package.json: corepack enable ou npm install --global pnpm@12.16.1.
+**1. Pré-requisitos.** Instale Node.js 22.12 ou superior (22.18+ se quiser carregar arquivos named-routes.config.ts), Git e Python 3 (usado apenas para gerar os READMEs). Ative o pnpm 12.16.1, a versão fixada no package.json: corepack enable ou npm install --global pnpm@12.16.1.
 
 **2. Clone e compile.** Clone o repositório, rode pnpm install na raiz e depois pnpm build. O build limpa o dist/ e compila src/*.ts para JavaScript ESM, declarações e source maps. Rode pnpm build de novo a cada mudança em src/: o site e as demos usam o dist/, não os fontes TypeScript.
 
@@ -121,16 +122,39 @@ cd examples/nuxt && npm install && npm run dev
 
 ## Versões e atualizações
 
-A versão 1.x define o contrato público para nomes inferidos, geração tipada de URLs, adaptadores de framework, i18n, o wrapper do Next.js, o plugin Vite e a CLI.
+A versão 2.x define o contrato público para nomes inferidos, geração tipada de URLs, adaptadores e descoberta pelo framework, i18n, o wrapper do Next.js, o módulo do Nuxt, o plugin Vite e a CLI. A 1.x não recebe novas funcionalidades.
 
 Versões patch preservam a API documentada enquanto corrigem bugs. Versões minor adicionam funcionalidades compatíveis, como novos adaptadores de framework. Mudanças incompatíveis exigem uma nova versão major. Consulte o changelog antes de atualizar.
 
 Depois de atualizar, reinicie o servidor de desenvolvimento para regenerar o manifesto e execute o type check e os testes de navegação da aplicação. Se mover uma página e precisar preservar o nome público da rota, use um alias explícito.
 
 ```sh
-npm install @triooo/named-routes@^1
+npm install @triooo/named-routes@^2
 npx named-routes check
 npx tsc --noEmit
+```
+
+<a id="migration"></a>
+
+## Atualizando da 1.x
+
+A 2.0 muda padrões só onde a mudança compensa; toda mudança pode ser desfeita no config. Rode npx named-routes doctor --v2 para ver o que se aplica ao seu projeto, depois npx named-routes migrate --to 2 (simulação) e --write para fixar o comportamento da 1.x onde o módulo gerado mudaria. Remova as linhas fixadas quando quiser adotar os novos padrões.
+
+Node.js 22.12+ é obrigatório (o 20 está em fim de vida desde abril de 2026); ele traz require() de módulos ES e observação recursiva nativa de arquivos em todas as plataformas. TypeScript 5.4+ é obrigatório para os tipos exportados, que também é o mínimo do Zod 4 e do Valibot 1.
+
+route() retorna hrefs tipados por padrão. Antes: string. Depois: `/users/${string}`, aceito pelo typedRoutes do Next.js sem cast. Código que guarda uma rota numa variável e depois atribui outra string a ela deixa de compilar: anote-a como string, ou use hrefs: "string".
+
+As rotas vêm do framework quando ele publica sua tabela (módulo do Nuxt, Vue Router 5, React Router, TanStack Router). Antes: caminhos de definePageMeta/definePage e rotas de app/routes.ts precisavam de extraRoutes. Depois: são nomeados como qualquer página, e as entradas de extraRoutes que os duplicavam podem sair. Use discovery: "files" para manter a varredura de arquivos. No Nuxt, troque o plugin Vite por modules: ["@triooo/named-routes/nuxt"].
+
+Valores inválidos de router, pageExtensions e output geram INVALID_CONFIG em vez de GENERATION_ERROR, para que cada classe de erro tenha um código; revise comparações com error.code. typesVersions foi removido: o TypeScript precisa resolver o pacote pelos exports, com moduleResolution bundler, node16 ou nodenext (node10 não consegue). Módulos gerados que importam schemas de query só como tipos agora usam TypeOnlyQueries, então route.parseQuery() é tipado como retornando a query crua nesses casos.
+
+```sh
+npx named-routes doctor --v2
+npx named-routes migrate --to 2           # dry run
+npx named-routes migrate --to 2 --write   # pins hrefs/discovery in named-routes.config
+
+# Keep a reassigned route as a string
+const [href, setHref] = useState<string>(route("home"));
 ```
 
 ---
