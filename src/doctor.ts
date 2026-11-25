@@ -653,6 +653,7 @@ async function migrationDiagnostics({
 			id: "v2.hrefs",
 			level: "warning",
 			message:
+				// biome-ignore lint/suspicious/noTemplateCurlyInString: the message shows a TypeScript template literal type
 				"2.0 generates typed hrefs by default: route() returns types such as `/users/${string}`. A variable that stores route() and is later reassigned to another string no longer compiles.",
 			details: {
 				option: "hrefs",

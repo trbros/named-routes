@@ -421,8 +421,14 @@ const nuxtPages = [
 	},
 	{ name: "extra", path: "/added-by-module" },
 ];
+// The root is inserted JSON-escaped: Windows paths contain backslashes.
 const withRoot = (pages, root) =>
-	JSON.parse(JSON.stringify(pages).replaceAll("/ROOT", root));
+	JSON.parse(
+		JSON.stringify(pages).replaceAll(
+			"/ROOT",
+			JSON.stringify(root).slice(1, -1),
+		),
+	);
 
 test("Nuxt: flattened pages:resolved, aliases as variants, i18n copies skipped", () => {
 	const snapshot = flattenNuxtPages(
