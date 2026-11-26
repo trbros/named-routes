@@ -49,25 +49,34 @@ If you commit the generated file, run check before the build. The integrations r
 
 migrate --to 2 prepares a 1.x project for 2.0: it pins hrefs: "string" and, when the framework's routes differ from the file scan, discovery: "files" in the named-routes config (creating named-routes.config.mjs when there is none), so the generated module stays the same until you remove the pins. It is a dry run unless you pass --write, and it never edits framework configs or application code. doctor --v2 lists the rest (Node.js, TypeScript, moduleResolution, error codes).
 
+Use npx @triooo/named-routes generate for a standalone invocation or npm exec -- named-routes generate with the package installed. The unscoped named-routes package is unrelated. --base-path /docs overrides the router base for this invocation; --base-path / clears it.
+
+**Base override.** --base-path <path> is supported by generation/check/watch and doctor. It overrides cached framework base and the shared default for that invocation; / clears the base. Framework integration snapshots are generated metadata, not source files.
+
 ```sh
-npx named-routes init
-npx named-routes generate --root ./apps/web
-npx named-routes list --framework sveltekit
-npx named-routes generate --routes-dir app/pages --output app/utils/routes.ts
-npx named-routes check
-npx named-routes watch
-npx named-routes --help
-npx named-routes watch --watch-mode poll   # containers, network drives
-npx named-routes doctor --json --strict    # CI
-npx named-routes doctor --v2                # what 2.0 changes here
-npx named-routes migrate --to 2 --write    # pin 1.x behavior
+# Run with the scoped package name (standalone or installed)
+npx @triooo/named-routes init
+npx @triooo/named-routes generate --root ./apps/web
+npx @triooo/named-routes list --framework sveltekit
+npx @triooo/named-routes generate --routes-dir app/pages --output app/utils/routes.ts
+npx @triooo/named-routes generate --base-path /app
+npx @triooo/named-routes check --base-path /app
+npx @triooo/named-routes generate --base-path / # clear the prefix
+npx @triooo/named-routes watch
+npx @triooo/named-routes --help
+npx @triooo/named-routes watch --watch-mode poll
+npx @triooo/named-routes doctor --json --strict
+npx @triooo/named-routes doctor --v2
+npx @triooo/named-routes migrate --to 2 --write
+# With the package installed locally:
+npm exec -- named-routes generate
 ```
 
 <a id="doctor"></a>
 
 ## Diagnostics: named-routes doctor
 
-npx named-routes doctor checks the Node.js and TypeScript versions, the configuration file, the detected framework, discovered routes, conflicts and name collisions, whether the generated module exists and is current, the Next.js or Vite integration, typedRoutes without typed hrefs, i18n without localized routes, and route declarations the file scanner cannot see (Nuxt definePageMeta({ path }) and route() calls in a React Router app/routes.ts).
+npx @triooo/named-routes doctor checks the Node.js and TypeScript versions, the configuration file, the detected framework, discovered routes, conflicts and name collisions, whether the generated module exists and is current, the Next.js or Vite integration, typedRoutes without typed hrefs, i18n without localized routes, and route declarations the file scanner cannot see (Nuxt definePageMeta({ path }) and route() calls in a React Router app/routes.ts).
 
 It is read-only: it never writes files and never executes application code. Integration and declaration checks are plain-text heuristics and say so. Options passed inline to a plugin are code, so doctor reports them as not visible; move shared options to named-routes.config.* or pass flags such as --output.
 
@@ -76,9 +85,9 @@ Each diagnostic is error, warning or info, with a stable id and, when known, the
 It also says where the routes came from (the framework's table or the files, and why it fell back) and lists the routes that exist in only one of the two views. doctor --v2 adds what a project written for 1.x must change for 2.0: typed hrefs, routes that framework discovery changes, a moduleResolution that cannot read the package's exports, and code that compares error codes with GENERATION_ERROR.
 
 ```sh
-npx named-routes doctor
-npx named-routes doctor --json --strict   # CI
-npx named-routes doctor --v2              # upgrading from 1.x
+npx @triooo/named-routes doctor
+npx @triooo/named-routes doctor --json --strict   # CI
+npx @triooo/named-routes doctor --v2              # upgrading from 1.x
 
 # info     Routes come from the framework: typed-router.d.ts.
 # info     /sobre (sobre) exists only in the framework's route table; the file conventions do not produce it.

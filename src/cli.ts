@@ -2,11 +2,16 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { FRAMEWORK_BASE_DIR, normalizeBasePath } from "./base-path.js";
 import { findConfiguration, loadConfiguration } from "./config.js";
 import { diagnose, formatDiagnosis } from "./doctor.js";
 import { frameworks } from "./frameworks.js";
 import type { GeneratorOptions } from "./generator.js";
-import { discoverRoutes, generateRoutes } from "./generator.js";
+import {
+	discoverRoutes,
+	generateRoutes,
+	withCachedFrameworkBase,
+} from "./generator.js";
 import { NamedRouteError } from "./index.js";
 import { applyMigration, formatMigration, planMigration } from "./migrate.js";
 import {
@@ -36,6 +41,7 @@ Options:
   --framework <name>      auto, ${frameworks.join(", ")}
   --output <file>         Generated module (.ts, .mts, .js, .mjs) relative to root
   --routes-dir <dir>      Pages/routes directory (non-Next frameworks)
+  --base-path <path>      Override the router base (/ clears it); otherwise use config or last framework run
   --router <router>       Next.js only: auto, app or pages
   --api                   Include API routes and endpoints
   --watch-interval <ms>   Polling interval for watch (default 750)
@@ -70,6 +76,7 @@ async function main() {
 			framework: { type: "string" },
 			output: { type: "string" },
 			"routes-dir": { type: "string" },
+			"base-path": { type: "string" },
 			router: { type: "string" },
 			api: { type: "boolean" },
 			"watch-interval": { type: "string" },
@@ -122,18 +129,30 @@ async function main() {
 	const watchMode = (values["watch-mode"] ?? "auto") as WatchMode;
 	if (!watchModes.includes(watchMode))
 		throw new Error(`Invalid watch mode; use ${watchModes.join(", ")}`);
-	const options = async (): Promise<GeneratorOptions> => ({
-		...(await loadConfiguration(root, values.config)),
-		...(values.framework
-			? { framework: values.framework as GeneratorOptions["framework"] }
-			: {}),
-		...(values.output ? { output: values.output } : {}),
-		...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
-		...(values.router
-			? { router: values.router as GeneratorOptions["router"] }
-			: {}),
-		...(values.api !== undefined ? { includeApi: values.api } : {}),
-	});
+	const options = async (): Promise<GeneratorOptions> => {
+		const loaded = await loadConfiguration(root, values.config);
+		return withCachedFrameworkBase({
+			...loaded,
+			...(values.framework
+				? { framework: values.framework as GeneratorOptions["framework"] }
+				: {}),
+			...(values.output ? { output: values.output } : {}),
+			...(values["routes-dir"] ? { routesDir: values["routes-dir"] } : {}),
+			...(values.router
+				? { router: values.router as GeneratorOptions["router"] }
+				: {}),
+			...(values.api !== undefined ? { includeApi: values.api } : {}),
+			// CLI flag > named-routes config > cached framework base.
+			...(values["base-path"] !== undefined
+				? {
+						defaults: {
+							...loaded.defaults,
+							basePath: normalizeBasePath(values["base-path"]),
+						},
+					}
+				: {}),
+		});
+	};
 	if (command === "migrate") {
 		if (values.to !== "2")
 			throw new Error("Pass --to 2 (the only migration available).");
@@ -156,6 +175,9 @@ async function main() {
 					? { router: values.router as GeneratorOptions["router"] }
 					: {}),
 				...(values.api !== undefined ? { includeApi: values.api } : {}),
+				...(values["base-path"] !== undefined
+					? { defaults: { basePath: normalizeBasePath(values["base-path"]) } }
+					: {}),
 			},
 			{ v2: values.v2 === true },
 		);
@@ -189,7 +211,7 @@ async function main() {
 export default defineConfig({
   framework: ${JSON.stringify(discovery.framework)},
   output: ${JSON.stringify(values.output ?? "src/routes.generated.ts")},
-  // names: { "/users/[id]": "users.show" },
+${discovery.defaults.basePath === undefined ? "" : `  defaults: { basePath: ${JSON.stringify(discovery.defaults.basePath)} },\n`}  // names: { "/users/[id]": "users.show" },
   // i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
 });
 `;
@@ -231,7 +253,13 @@ export default defineConfig({
 				mode: watchMode,
 				targets: () =>
 					latest
-						? generationTargets(latest, values.config)
+						? [
+								...generationTargets(latest, values.config),
+								{
+									path: resolve(latest.root, FRAMEWORK_BASE_DIR),
+									recursive: false,
+								},
+							]
 						: [{ path: root, recursive: false }],
 				ignore: (file) => isGeneratedOutput(file, latest?.output),
 				onError: (error) => process.stderr.write(`${error.message}\n`),

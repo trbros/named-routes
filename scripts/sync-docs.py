@@ -14,10 +14,10 @@ import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-version = json.loads((root / "package.json").read_text())["version"]
-sections = json.loads((root / "docs/content.json").read_text())
-groups = json.loads((root / "docs/groups.json").read_text())
-config = json.loads((root / "docs/locales.json").read_text())
+version = json.loads((root / "package.json").read_text(encoding="utf-8"))["version"]
+sections = json.loads((root / "docs/content.json").read_text(encoding="utf-8"))
+groups = json.loads((root / "docs/groups.json").read_text(encoding="utf-8"))
+config = json.loads((root / "docs/locales.json").read_text(encoding="utf-8"))
 locales = config["locales"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--check", action="store_true")
@@ -136,13 +136,13 @@ failed = False
 for name, content in expected.items():
     path = root / name
     if args.check:
-        if not path.exists() or path.read_text() != content:
+        if not path.exists() or path.read_text(encoding="utf-8") != content:
             print(f"Outdated documentation: {name}")
             failed = True
             continue
     else:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
+        path.write_text(content, encoding="utf-8", newline="\n")
     print(f"{name}: {'up to date' if args.check else 'generated'}")
 for name in stale:
     if args.check:

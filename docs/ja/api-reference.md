@@ -19,6 +19,8 @@ createRoutes(manifest, defaults?) は独立した凍結済みのヘルパーを�
 
 単なる Record<string, string> として型付けされたマニフェスト（たとえば JSON から読み込んだもの）でも動作します。名前は string、パラメーターは緩いレコードになりますが、ランタイムはすべての呼び出しを引き続き検証します。
 
+route.localize(url, locale?, options?: LocalizeOptions): string | null — 設定済みの別名を使い既存 URL を翻訳します。オプションは sourceLocale、basePath（入力にベースを含む）、includeBasePath（出力にベースを含む）、absolute（設定済み origin/domain）です。クエリとハッシュは再検証せず保持します。
+
 ```ts
 import { createRoutes } from "@triooo/named-routes";
 const route = createRoutes({

@@ -13,6 +13,7 @@ import {
 	discoverRoutes,
 	type GeneratorOptions,
 	generateRoutes,
+	withCachedFrameworkBase,
 } from "./generator.js";
 import { NamedRouteError, type NamedRouteErrorDetails } from "./index.js";
 import { frameworkSources } from "./sources.js";
@@ -179,11 +180,16 @@ export async function diagnose(
 				? `Configuration: ${posix(relative(root, found.path))}`
 				: "No named-routes config file (defaults and plugin options apply).",
 		});
-		options = {
-			...(await loadConfiguration(root, config)),
+		const loaded = await loadConfiguration(root, config);
+		// Match CLI generation; merge defaults rather than replacing them.
+		options = await withCachedFrameworkBase({
+			...loaded,
 			...overrides,
-			root,
-		};
+			root: loaded.root ?? root,
+			...(loaded.defaults || overrides.defaults
+				? { defaults: { ...loaded.defaults, ...overrides.defaults } }
+				: {}),
+		});
 	} catch (caught) {
 		add(fromError("config.load", caught));
 	}

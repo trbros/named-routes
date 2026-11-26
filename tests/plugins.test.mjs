@@ -53,15 +53,29 @@ test("Vite plugin generates at build start and follows dev server file events", 
 	const output = join(root, "src/lib/routes.ts");
 	assert.match(await readFile(output, "utf8"), /\["home"\]: "\/"/);
 	const listeners = [];
+	const regenerationErrors = [];
+
 	plugin.configureServer({
-		watcher: { on: (_event, listener) => listeners.push(listener) },
+		watcher: {
+			on: (_event, listener) => listeners.push(listener),
+		},
+		config: {
+			logger: {
+				error: (message) => regenerationErrors.push(message),
+			},
+		},
 	});
 	await mkdir(join(root, "src/routes/about"), { recursive: true });
 	await writeFile(join(root, "src/routes/about/+page.svelte"), "");
-	for (const listener of listeners)
-		listener("add", join(root, "src/routes/about/+page.svelte"));
-	await until(
-		async () => (await readFile(output, "utf8")).includes('["about"]'),
+	for (const listener of listeners) {
+		await listener("add", join(root, "src/routes/about/+page.svelte"));
+	}
+
+	assert.deepEqual(regenerationErrors, []);
+
+	assert.match(
+		await readFile(output, "utf8"),
+		/\["about"\]: "\/about"/,
 		"Vite plugin did not regenerate",
 	);
 	await writeFile(join(root, "src/routes/+layout.svelte"), "");

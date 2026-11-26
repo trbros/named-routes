@@ -276,6 +276,17 @@ export interface MatchOptions {
 	basePath?: boolean;
 }
 
+/** Options for translating an already-existing URL (rather than building a new one). */
+export interface LocalizeOptions<Locale extends string = string>
+	extends MatchOptions {
+	/** Source language for disambiguating equal-specificity unprefixed aliases. */
+	sourceLocale?: Locale;
+	/** Include the base in the result; defaults to the input basePath flag. */
+	includeBasePath?: boolean;
+	/** Build a configured absolute locale-domain URL. */
+	absolute?: boolean;
+}
+
 /** Methods shared by every route helper. */
 export interface RouteHelpers<
 	Routes extends Readonly<Record<string, string>>,
@@ -303,6 +314,14 @@ export interface RouteHelpers<
 		url: string | URL,
 		options?: MatchOptions,
 	): RouteMatch<Routes, Locale> | null;
+	/** Translate an incoming URL, including aliases in other languages. Null for unknown, unlocalized or ambiguous routes.
+	 * The target locale defaults to the bound locale or configured default locale.
+	 */
+	localize(
+		url: string | URL,
+		locale?: Locale,
+		options?: LocalizeOptions<Locale>,
+	): string | null;
 	/** Whether url matches name (exact: false also accepts descendants such as /users/42 for users). */
 	is(
 		name: keyof Routes & string,
@@ -985,6 +1004,7 @@ export function createRoutes(
 		name: string,
 		params: Record<string, unknown> = {},
 		options: RouteOptions<string> = {},
+		validateSearch = true,
 	) {
 		if (!isObject(params))
 			fail("INVALID_PARAMETER", "Parameters must be an object");
@@ -995,7 +1015,8 @@ export function createRoutes(
 		if (options.hash !== undefined && typeof options.hash !== "string")
 			fail("INVALID_HASH", "hash must be a string");
 		const entry = get(name);
-		validateQuery(name, options.query);
+		// Incoming URL queries are preserved verbatim by localize(), not rebuilt or coerced.
+		if (validateSearch) validateQuery(name, options.query);
 		for (const key of Object.keys(params))
 			if (!entry.expected.has(key))
 				fail(
@@ -1373,6 +1394,109 @@ export function createRoutes(
 		}
 		return null;
 	}
+	/** Reuse the existing decoder, pattern matcher, precedence and URL builder. */
+	function localizeUrl(
+		input: string | URL,
+		locale: string | undefined,
+		options: LocalizeOptions = {},
+	) {
+		if (!isObject(options))
+			fail("INVALID_OPTIONS", "Localize options must be an object");
+		if (!i18n) return null;
+		const target = checkLocale(locale ?? i18n.defaultLocale);
+		const source =
+			options.sourceLocale === undefined
+				? undefined
+				: checkLocale(options.sourceLocale);
+		const located = locate(input, options);
+		if (!located) return null;
+		const canonical = located.attempts.at(-1);
+		if (!canonical) return null;
+		// locate() already strips basePath and understands custom/multi-segment locale prefixes.
+		const prefixed = located.attempts.find(
+			(attempt) => attempt.base !== canonical.base,
+		);
+		const raw = prefixed?.raw ?? canonical.raw;
+		const parts = decodeParts(raw);
+		if (!parts) return null;
+		const preferred =
+			prefixed?.locale ??
+			source ??
+			i18n.domains.find((domain) => domain.origin === located.url.origin)
+				?.defaultLocale;
+		const { internal, byLocale } = compiledPools();
+		const pools = [
+			{ candidates: internal, locale: undefined as string | undefined },
+			...Array.from(byLocale, ([language, candidates]) => ({
+				candidates,
+				locale: language,
+			})),
+		];
+		type Winner = {
+			candidate: Candidate;
+			params: Record<string, string | string[]>;
+			preferred: boolean;
+		};
+		let winner: Winner | undefined;
+		let ambiguous = false;
+		const sameParams = (a: Winner["params"], b: Winner["params"]) => {
+			const keys = Object.keys(a);
+			return (
+				keys.length === Object.keys(b).length &&
+				keys.every(
+					(key) =>
+						Object.hasOwn(b, key) &&
+						JSON.stringify(a[key]) === JSON.stringify(b[key]),
+				)
+			);
+		};
+		for (const pool of pools) {
+			for (const candidate of pool.candidates) {
+				const params: Winner["params"] = {};
+				if (!matchSegments(candidate.segments, parts, 0, 0, params)) continue;
+				const found: Winner = {
+					candidate,
+					params,
+					preferred: preferred !== undefined && pool.locale === preferred,
+				};
+				// Specificity wins over language preference; a catch-all must not hide a static translation.
+				// Ignore declaration order here: ambiguous translated aliases must not silently redirect.
+				const rank = winner
+					? compare(
+							{ ...candidate, order: 0 },
+							{ ...winner.candidate, order: 0 },
+						) || Number(winner.preferred) - Number(found.preferred)
+					: -1;
+				if (!winner || rank < 0) {
+					winner = found;
+					ambiguous = false;
+				} else if (
+					rank === 0 &&
+					(winner.candidate.name !== candidate.name ||
+						!sameParams(winner.params, params))
+				) {
+					ambiguous = true;
+				}
+			}
+		}
+		if (!winner || ambiguous || i18n.unlocalized.has(winner.candidate.name))
+			return null;
+		// Only the configured router may choose a destination domain. Never copy the input host.
+		const pathname = build(
+			undefined,
+			winner.candidate.name,
+			winner.params,
+			{
+				locale: target,
+				basePath: (options.includeBasePath ?? options.basePath) === true,
+				absolute: options.absolute === true,
+			},
+			false,
+		);
+		// Keep duplicate query keys, ordering and the encoded fragment intact.
+		return pathname + located.url.search + located.url.hash;
+	}
+
 	function breadcrumbs(input: string | URL, options?: MatchOptions) {
 		const located = locate(input, options);
 		if (!located) return [];
@@ -1484,6 +1608,11 @@ export function createRoutes(
 				locales: () => [...(i18n?.list ?? [])],
 				forLocale: (locale: string) => helper(checkLocale(locale)),
 				match: matchUrl,
+				localize: (
+					url: string | URL,
+					locale?: string,
+					options?: LocalizeOptions,
+				) => localizeUrl(url, locale ?? bound, options),
 				is: (
 					name: string,
 					url: string | URL,

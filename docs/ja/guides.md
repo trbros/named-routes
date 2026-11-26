@@ -49,25 +49,34 @@ watcher は本番ビルド中には動かず、それ自体がプロセスを生
 
 migrate --to 2 は 1.x のプロジェクトを 2.0 に備えます。named-routes の設定に hrefs: "string" を固定し、フレームワークのルートがファイル走査と異なる場合は discovery: "files" も固定するので（設定がなければ named-routes.config.mjs を作成）、その行を消すまで生成されるモジュールは変わりません。--write を付けない限りドライランで、フレームワークの設定やアプリケーションのコードは編集しません。残りの項目（Node.js、TypeScript、moduleResolution、エラーコード）は doctor --v2 が一覧表示します。
 
+単独実行には npx @triooo/named-routes generate を、インストール済みの場合は npm exec -- named-routes generate を使います。スコープなしの named-routes は別のパッケージです。--base-path /docs で今回のプレフィックスを上書きし、--base-path / で解除します。
+
+**プレフィックスの上書き。** --base-path <path> は generate/check/watch と doctor で利用できます。その実行のキャッシュと共有デフォルトを上書きし、/ で解除します。統合のスナップショットは生成メタデータでありソースファイルではありません。
+
 ```sh
-npx named-routes init
-npx named-routes generate --root ./apps/web
-npx named-routes list --framework sveltekit
-npx named-routes generate --routes-dir app/pages --output app/utils/routes.ts
-npx named-routes check
-npx named-routes watch
-npx named-routes --help
-npx named-routes watch --watch-mode poll   # containers, network drives
-npx named-routes doctor --json --strict    # CI
-npx named-routes doctor --v2                # what 2.0 changes here
-npx named-routes migrate --to 2 --write    # pin 1.x behavior
+# Run with the scoped package name (standalone or installed)
+npx @triooo/named-routes init
+npx @triooo/named-routes generate --root ./apps/web
+npx @triooo/named-routes list --framework sveltekit
+npx @triooo/named-routes generate --routes-dir app/pages --output app/utils/routes.ts
+npx @triooo/named-routes generate --base-path /app
+npx @triooo/named-routes check --base-path /app
+npx @triooo/named-routes generate --base-path / # clear the prefix
+npx @triooo/named-routes watch
+npx @triooo/named-routes --help
+npx @triooo/named-routes watch --watch-mode poll
+npx @triooo/named-routes doctor --json --strict
+npx @triooo/named-routes doctor --v2
+npx @triooo/named-routes migrate --to 2 --write
+# With the package installed locally:
+npm exec -- named-routes generate
 ```
 
 <a id="doctor"></a>
 
 ## 診断: named-routes doctor
 
-npx named-routes doctor は、Node.js と TypeScript のバージョン、設定ファイル、検出したフレームワーク、検出したルート、競合と名前の衝突、生成されたモジュールが存在して最新かどうか、Next.js や Vite との統合、型付き href なしの typedRoutes、翻訳されたルートのない i18n、ファイルのスキャンでは見えないルートの宣言（Nuxt の definePageMeta({ path }) や React Router の app/routes.ts での route() の呼び出し）を確認します。
+npx @triooo/named-routes doctor は、Node.js と TypeScript のバージョン、設定ファイル、検出したフレームワーク、検出したルート、競合と名前の衝突、生成されたモジュールが存在して最新かどうか、Next.js や Vite との統合、型付き href なしの typedRoutes、翻訳されたルートのない i18n、ファイルのスキャンでは見えないルートの宣言（Nuxt の definePageMeta({ path }) や React Router の app/routes.ts での route() の呼び出し）を確認します。
 
 読み取り専用で、ファイルを書き込むことも、アプリケーションのコードを実行することもありません。統合と宣言のチェックはテキストによるヒューリスティックで、出力にもそう表示されます。プラグインに直接渡したオプションはコードなので、doctor からは見えないと報告されます。共有するオプションは named-routes.config.* に移すか、--output などのフラグを渡してください。
 
@@ -76,9 +85,9 @@ npx named-routes doctor は、Node.js と TypeScript のバージョン、設定
 ルートの出どころ（フレームワークの表かファイルか、ファイルに戻った理由）も表示し、2 つのビューの片方にしかないルートを一覧表示します。doctor --v2 は、1.x 向けに書かれたプロジェクトが 2.0 で変える必要があるもの（型付き href、フレームワークによる検出で変わるルート、パッケージの exports を読めない moduleResolution、エラーコードを GENERATION_ERROR と比較しているコード）を追加で表示します。
 
 ```sh
-npx named-routes doctor
-npx named-routes doctor --json --strict   # CI
-npx named-routes doctor --v2              # upgrading from 1.x
+npx @triooo/named-routes doctor
+npx @triooo/named-routes doctor --json --strict   # CI
+npx @triooo/named-routes doctor --v2              # upgrading from 1.x
 
 # info     Routes come from the framework: typed-router.d.ts.
 # info     /sobre (sobre) exists only in the framework's route table; the file conventions do not produce it.

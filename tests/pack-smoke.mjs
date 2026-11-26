@@ -171,6 +171,8 @@ try {
 		"nuxt",
 		"sources",
 		"migrate",
+		"astro",
+		"base-path",
 	])
 		assert.ok(
 			files.includes(`package/dist/${entry}.js`),
@@ -233,6 +235,30 @@ try {
 		"named-routes bin shim missing",
 	);
 	run(process.execPath, [installedCli, "generate"], consumer);
+	// Exercise the npm shim (not just node dist/cli.js), including Windows.
+	assert.equal(
+		run("npm", ["exec", "--", "named-routes", "--version"], consumer).trim(),
+		manifest.version,
+	);
+	run("npm", ["exec", "--", "named-routes", "generate"], consumer);
+	// npx uses npm exec: install the packed tarball into npm's isolated cache.
+	const standalone = join(temporary, "standalone");
+	await mkdir(standalone);
+	assert.equal(
+		run(
+			"npm",
+			[
+				"exec",
+				"--yes",
+				`--package=${archive}`,
+				"--",
+				"named-routes",
+				"--version",
+			],
+			standalone,
+		).trim(),
+		manifest.version,
+	);
 	const doctor = JSON.parse(
 		run(process.execPath, [installedCli, "doctor", "--json"], consumer),
 	);

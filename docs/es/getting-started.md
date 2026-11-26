@@ -16,7 +16,7 @@
 
 Triooo Named Routes descubre las páginas que tu framework ya enruta y genera helpers de URL tipados. Crea una página, importa route y navega por su nombre inferido. El sistema de archivos sigue siendo la fuente de verdad.
 
-Next.js (App Router, Pages Router, carpetas src y migraciones mixtas) se integra mediante withNamedRoutes. Nuxt, el enrutamiento por archivos de Vue Router, SvelteKit, Astro, las flat routes de React Router/Remix y TanStack Router se descubren con adaptadores de convención y se mantienen al día con un plugin de Vite. Las apps que declaran rutas a mano usan el mismo runtime tipado con un manifiesto escrito a mano.
+Next.js usa withNamedRoutes, Nuxt su módulo nativo y Astro su integración nativa. Vue Router por archivos, SvelteKit, React Router/Remix y TanStack Router usan el plugin Vite. Los routers manuales usan el mismo runtime tipado con un manifiesto escrito a mano.
 
 Todos los frameworks se traducen a una sola sintaxis de patrones y una sola regla de nombres, así que app/users/[user]/page.tsx, pages/users/[user].vue, src/routes/users/[user]/+page.svelte y app/routes/users.$user.tsx se convierten en users.$user. Las URLs con idioma (next-intl, i18n del Pages Router, @nuxtjs/i18n y similares) son compatibles desde la v1.
 
@@ -76,7 +76,7 @@ Varios paquetes y funciones de los frameworks también generan URLs tipadas. Se 
 
 Instala el paquete con tu gestor de paquetes favorito. No tiene dependencias en runtime. El generador requiere Node.js 22.12 o superior.
 
-Después conéctalo una sola vez: withNamedRoutes en next.config para Next.js, el módulo @triooo/named-routes/nuxt para Nuxt, o el plugin de Vite namedRoutes() para los demás frameworks basados en Vite. También puedes usar la CLI named-routes (generate, check, watch) en cualquier proyecto.
+Conecta una sola vez: withNamedRoutes en next.config, @triooo/named-routes/nuxt en modules de Nuxt, @triooo/named-routes/astro en integrations de Astro, o namedRoutes() de @triooo/named-routes/vite en los demás frameworks Vite. Para la CLI independiente usa npx @triooo/named-routes generate.
 
 ```sh
 npm install @triooo/named-routes
@@ -98,15 +98,18 @@ El módulo generado está por defecto en src/routes.generated.ts y exporta route
 
 El alias de import @/routes.generated de abajo supone que @/* apunta a src/*. Si tu alias apunta a la raíz del proyecto, usa @/src/routes.generated o un import relativo. La configuración de Next puede seguir siendo next.config.mjs o usar next.config.ts.
 
+**Ruta base.** Next.js proporciona automáticamente su basePath; los nombres y las rutas internas no cambian. Usa basePath: true solo cuando se necesite la ruta pública completa.
+
 ```ts
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
-export default withNamedRoutes({ reactStrictMode: true });
+export default withNamedRoutes({ basePath: "/app" });
 
 // In your application:
 import { route } from "@/routes.generated";
-route("user.profile");
-route("users.$user", { user: "ana" });
+route("user.profile"); // /user/profile (Next Link)
+route("users.$user", { user: "ana" }); // /users/ana
+route("users.$user", { user: "ana" }, { basePath: true }); // /app/users/ana
 ```
 
 <a id="naming"></a>

@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+### Documentation
+
+- Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.
+
+### Added
+
+- `@triooo/named-routes/astro`: native integration inheriting the final Astro `base` independently of the Vite asset base.
+- `namedRoutes({ routerBase })` accepts a router prefix or getter for SvelteKit, Vue Router, React Router/Remix and TanStack Router; `inheritViteBase` opts in when Vite's base is also the navigation base.
+- `route.localize(url, locale?, options?)` resolves translated aliases across configured languages, even without a locale prefix, preserves decoded route parameters and the original query/fragment, supports custom locale prefixes, base paths and configured domains, and returns `null` for ambiguous or unlocalized routes. Existing `route.match()` semantics remain unchanged.
+- `--base-path` for standalone generation, watch, check, list and doctor; framework integrations cache their last successful effective public base under `.named-routes/` so CLI regeneration does not discard it.
+
+### Fixed
+
+- Nuxt now inherits `app.baseURL`; Next.js keeps the existing automatic `basePath` behavior and synchronizes the CLI snapshot when the base changes or is removed.
+- Vite ignores atomic generated-module and base snapshot writes, avoiding redundant watcher runs. Canonical route names remain independent of deployment prefixes; framework links do not get a double prefix.
+- Builds validate the CLI shebang and executable mode; package smoke tests now exercise npm executable resolution with and without a local installation. Standalone CLI documentation uses `npx @triooo/named-routes` to avoid the unrelated unscoped package.
+- Regression tests cover framework integration hooks, base overrides and translated path resolution, including ambiguity, query/fragment preservation and dynamic segments.
+- Prevent concurrent route tree reads during TanStack Router generation by waiting for framework artifact updates.
+- Ignore TanStack temporary generator files in the Vite watcher, reducing unnecessary regenerations and filesystem contention on Windows.
+
 ## 2.0.0 - 2026-11-25
 
 Breaking changes only where they pay off, each with a migration: run `npx named-routes doctor --v2` to see what applies, and `npx named-routes migrate --to 2 --write` to pin the 1.x behavior where the generated module would change. It also contains the fixes planned for 1.1.1, which was not released separately.

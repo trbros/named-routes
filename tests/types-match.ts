@@ -65,4 +65,14 @@ route.is("missing", "/");
 // @ts-expect-error match() takes a path string or URL.
 route.match(42);
 route.match(new URL("https://example.com/users/1"));
-void [trail, active];
+// Localize keeps the generated locale union, including the bound helper.
+const localized: string | null = route.localize("/users/42", "pt", {
+	sourceLocale: "en",
+	includeBasePath: true,
+});
+const bound: string | null = route.forLocale("pt").localize("/en/users/42");
+// @ts-expect-error Unknown target locale.
+route.localize("/users/42", "xx");
+// @ts-expect-error Unknown source locale.
+route.localize("/users/42", "en", { sourceLocale: "xx" });
+void [trail, active, localized, bound];

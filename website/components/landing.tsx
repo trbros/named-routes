@@ -129,9 +129,17 @@ const integrations = {
     file: "next.config.ts",
     code: `import { withNamedRoutes } from '@triooo/named-routes/next';\n\nexport default withNamedRoutes({\n  reactStrictMode: true,\n}, {\n  i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" }\n});`,
   },
+  astro: {
+    file: "astro.config.mjs",
+    code: `import { defineConfig } from "astro/config";\nimport namedRoutes from "@triooo/named-routes/astro";\n\nexport default defineConfig({\n  base: "/app",\n  integrations: [namedRoutes()],\n});`,
+  },
+  nuxt: {
+    file: "nuxt.config.ts",
+    code: `export default defineNuxtConfig({\n  app: { baseURL: "/app/" },\n  modules: ["@triooo/named-routes/nuxt"],\n});`,
+  },
   vite: {
     file: "vite.config.ts",
-    code: `import { defineConfig } from 'vite';\nimport { namedRoutes } from '@triooo/named-routes/vite';\n\n// Nuxt, Vue, SvelteKit, Astro, React Router, TanStack Router\nexport default defineConfig({\n  plugins: [namedRoutes({\n    i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" }\n  })],\n});`,
+    code: `import { defineConfig } from 'vite';\nimport { namedRoutes } from '@triooo/named-routes/vite';\n\n// Vue, SvelteKit, React Router, TanStack Router\nexport default defineConfig({\n  plugins: [namedRoutes({\n    i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" }\n  })],\n});`,
   },
 } as const;
 const frameworkList = [
@@ -709,14 +717,14 @@ export function Landing() {
               role="group"
               aria-label={t("integration_target_9a3c51")}
             >
-              {(["next", "vite"] as const).map((item) => (
+              {(["next", "astro", "nuxt", "vite"] as const).map((item) => (
                 <button
                   key={item}
                   type="button"
                   aria-pressed={target === item}
                   onClick={() => setTarget(item)}
                 >
-                  {item === "next" ? "Next.js" : "Vite"}
+                  {item === "next" ? "Next.js" : item === "astro" ? "Astro" : item === "nuxt" ? "Nuxt" : "Vite"}
                 </button>
               ))}
             </div>
@@ -735,7 +743,11 @@ export function Landing() {
                 label={
                   target === "next"
                     ? t("next_integration_840bc7")
-                    : t("vite_integration_4b7d0e")
+                    : target === "astro"
+                      ? "Astro"
+                      : target === "nuxt"
+                        ? "Nuxt"
+                        : t("vite_integration_4b7d0e")
                 }
               />
             </div>

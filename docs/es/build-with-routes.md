@@ -23,12 +23,17 @@ El helper devuelve un string de URL normal. Úsalo con next/link, redirect o el 
 
 Cada nombre de estos fragmentos supone que existe la página correspondiente: posts/page.tsx, posts/[post]/page.tsx y posts/[post]/edit/page.tsx.
 
+**Base y URLs traducidas.** El wrapper hereda basePath. Mantén Next Link y navegación del router internos; añade basePath: true para enlaces normales. Para redirigir alias traducidos entrantes, usa route.localize() con el idioma ya seleccionado en el proxy o middleware; consulta i18n.
+
 ```tsx
-// Server Component
+// Server Component (next.config.ts has basePath: "/app")
 import Link from "next/link";
 import { route } from "@/routes.generated";
 export default function PostLink() {
-  return <Link href={route("posts.$post", { post: 42 })}>Post</Link>;
+  return <>
+    <Link href={route("posts.$post", { post: 42 })}>Post</Link>
+    <a href={route("posts.$post", { post: 42 }, { basePath: true })}>Public URL</a>
+  </>;
 }
 
 // A separate Client Component file:
@@ -37,6 +42,7 @@ import { useRouter } from "next/navigation";
 import { route } from "@/routes.generated";
 export function EditPost({ post }: { post: number }) {
   const router = useRouter();
+  // Next's router applies the base itself.
   return <button onClick={() => router.push(
     route("posts.$post.edit", { post })
   )}>Edit</button>;
@@ -53,17 +59,23 @@ export function EditPost({ post }: { post: number }) {
 
 Usa el mismo helper generado. En las aplicaciones con Pages Router, el hook del router viene de next/router. Link no necesita un adaptador propio. El descubrimiento puede escanear ambos directorios de router durante una migración, pero las URLs canónicas en conflicto hacen fallar la generación.
 
+**Base e i18n.** Next Link y next/router usan basePath y locale configurados. Mantén route() interno para estos consumidores. Usa basePath: true y, cuando corresponda, locale en URLs públicas normales; route.localize() requiere i18n y no instala redirects automáticamente.
+
 ```tsx
+// With basePath: "/app" in next.config.ts
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { route } from "@/routes.generated";
 export default function Page() {
   const router = useRouter();
   return <>
+    {/* Next Link adds the base and the configured locale. */}
     <Link href={route("users.$user", { user: 42 })}>User</Link>
     <button onClick={() => router.replace(route("user.profile"))}>
       Profile
     </button>
+    {/* Plain HTML URL needs the base explicitly. */}
+    <a href={route("users.$user", { user: 42 }, { basePath: true })}>Public URL</a>
   </>;
 }
 ```
@@ -170,16 +182,22 @@ withNamedRoutes hereda basePath y trailingSlash de la configuración de Next. Un
 
 Todos los defaults se serializan en el módulo generado, que es público. Nunca pongas secretos en ellos. trailingSlash da formato a las rutas generadas; Next sigue siendo responsable de los redirects y de la normalización final.
 
+**Prefijos de los frameworks.** Next.js hereda basePath y Nuxt hereda app.baseURL. En Astro registra la integración nativa de @triooo/named-routes/astro en integrations: usa el base final de Astro, no la URL de assets de Vite. En Vue Router, React Router/Remix, TanStack Router y SvelteKit, comparte el mismo prefijo de navegación entre el framework y namedRoutes({ routerBase: base }); no lo deduzcas de un CDN. Usa inheritViteBase: true solo cuando el base de Vite sea también el prefijo del router. defaults.basePath explícito tiene prioridad.
+
+**CLI independiente.** Tras una generación correcta, .named-routes/ guarda el prefijo público efectivo por framework. La CLI y doctor lo reutilizan salvo que se indique defaults.basePath o --base-path. Ejecuta de nuevo el framework tras modificar su configuración; la CLI no ejecuta configuraciones de frameworks. En un checkout limpio o CI antes de la primera ejecución, usa defaults.basePath en la configuración compartida o --base-path. Usa --base-path / para eliminarlo. Ignora .named-routes/ en Git. route() sigue omitiendo el prefijo; usa { basePath: true } para URLs públicas y enlaces HTML.
+
 ```ts
 // next.config.ts
 export default withNamedRoutes({ basePath: "/admin" }, {
   defaults: { origin: "https://triooo.com.br" },
 });
 route("users.$user", { user: 42 }); // /users/42 (Next Link/router)
-route("users.$user", { user: 42 }, { basePath: true });
-// /admin/users/42 (plain anchor/fetch)
+route("users.$user", { user: 42 }, { basePath: true }); // /admin/users/42
 route("users.$user", { user: 42 }, { absolute: true });
 // https://triooo.com.br/admin/users/42
+
+// In any framework: named-routes.config.mjs (alternative shared config)
+export default defineConfig({ defaults: { basePath: "/admin" } });
 ```
 
 <a id="i18n"></a>
@@ -194,9 +212,13 @@ route(nombre, params) sin locale devuelve la ruta interna, que es lo que esperan
 
 localePrefix: always (por defecto) pone prefijo a todos los idiomas; as-needed omite el idioma por defecto; never omite todos los prefijos; { mode, prefixes: { "en-US": "/us" } } los personaliza. pathnames asigna a un patrón interno patrones localizados con los mismos parámetros. Con absolute: true, un idioma servido por un dominio configurado usa ese dominio como origen. Los idiomas están tipados: el módulo generado exporta RouteLocale y los idiomas desconocidos son errores de tipos y de runtime.
 
+**Traducir URLs entrantes.** route.localize('/sobre', 'en') devuelve /en/about si /sobre es la ruta portuguesa de /about y localePrefix es always. route.localize('/pt/produtos/42?tab=info#details', 'en') puede devolver /en/products/42?tab=info#details. Busca en todos los idiomas configurados, conserva parámetros, query y fragmento originales y devuelve null para rutas desconocidas, ambiguas o no localizadas. route.match() no cambia. Un prefijo de origen reconocido o sourceLocale para alias sin prefijo desempata patrones igualmente específicos. Sin idioma de destino se usa forLocale() o el idioma predeterminado.
+
+**Redirigir peticiones.** El runtime no intercepta peticiones. Determina el idioma preferido con tu middleware i18n, llama a route.localize(pathAndQuery, locale, { basePath: true }) para una URL pública con base y redirige temporalmente solo si cambia la ruta. El framework mantiene sus rewrites. Para una ruta interna usa includeBasePath: true para añadir el prefijo solo a la salida. Con dominios por idioma usa absolute: true y compara la URL completa. No redirijas APIs, assets, métodos distintos de GET/HEAD ni rutas sin resolver. Hay un ejemplo de proxy Next.js en examples/app-router/recipes/localized-redirect.ts.example.
+
 ```ts
 // next.config.ts — next-intl with app/[locale]/…
-import { routing } from "./src/i18n/routing"; // defineRouting({...})
+import { routing } from "./src/i18n/routing";
 export default withNamedRoutes(withNextIntl({}), { i18n: routing });
 
 // or named-routes.config.mjs (any framework)
@@ -204,16 +226,20 @@ export default defineConfig({
   i18n: {
     locales: ["en", "pt"],
     defaultLocale: "en",
-    localePrefix: "as-needed",
-    pathnames: { "/about": { pt: "/sobre" } },
+    localePrefix: "always",
+    pathnames: { "/about": { en: "/about", pt: "/sobre" } },
   },
 });
 
-route("about");                     // /about (next-intl Link adds the locale)
+// Results with the always-prefix configuration above:
+route("about"); // /about (internal pathname)
 route("about", {}, { locale: "pt" }); // /pt/sobre
-route("about", {}, { locale: "en" }); // /about
+route("about", {}, { locale: "en" }); // /en/about
+route.localize("/sobre", "en"); // /en/about
+route.localize("/en/about?tab=info#details", "pt"); // /pt/sobre?tab=info#details
+route.forLocale("en").localize("/sobre"); // /en/about
 const pt = route.forLocale("pt");
-pt("users.$user", { user: 42 });      // /pt/users/42
+pt("users.$user", { user: 42 }); // /pt/users/42
 ```
 
 <a id="typescript"></a>

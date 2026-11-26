@@ -19,6 +19,8 @@ createRoutes(manifesto, defaults?) cria um helper congelado e independente e cop
 
 Um manifesto tipado como Record<string, string> simples (por exemplo, carregado de JSON) também funciona: os nomes viram string e os parâmetros, um registro flexível, enquanto o runtime continua validando cada chamada.
 
+route.localize(url, locale?, options?: LocalizeOptions): string | null — traduz uma URL existente entre aliases configurados. Opções: sourceLocale, basePath (entrada com prefixo), includeBasePath (saída com prefixo), absolute (origin/domínio configurado). Preserva a query e o hash sem revalidar schemas de query.
+
 ```ts
 import { createRoutes } from "@triooo/named-routes";
 const route = createRoutes({

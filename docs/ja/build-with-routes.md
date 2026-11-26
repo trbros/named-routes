@@ -23,12 +23,17 @@
 
 これらのスニペットの名前は、対応するページ（posts/page.tsx、posts/[post]/page.tsx、posts/[post]/edit/page.tsx）が存在する前提です。
 
+**ベースと翻訳 URL。** ラッパーは basePath を継承します。Next Link とルーターは内部パスを使い、通常のリンクでは basePath: true を指定します。翻訳された受信 URL のリダイレクトには proxy または middleware で選択済みの言語を route.localize() に渡します。i18n を参照してください。
+
 ```tsx
-// Server Component
+// Server Component (next.config.ts has basePath: "/app")
 import Link from "next/link";
 import { route } from "@/routes.generated";
 export default function PostLink() {
-  return <Link href={route("posts.$post", { post: 42 })}>Post</Link>;
+  return <>
+    <Link href={route("posts.$post", { post: 42 })}>Post</Link>
+    <a href={route("posts.$post", { post: 42 }, { basePath: true })}>Public URL</a>
+  </>;
 }
 
 // A separate Client Component file:
@@ -37,6 +42,7 @@ import { useRouter } from "next/navigation";
 import { route } from "@/routes.generated";
 export function EditPost({ post }: { post: number }) {
   const router = useRouter();
+  // Next's router applies the base itself.
   return <button onClick={() => router.push(
     route("posts.$post.edit", { post })
   )}>Edit</button>;
@@ -53,17 +59,23 @@ export function EditPost({ post }: { post: number }) {
 
 同じ生成ヘルパーを使います。Pages Router のアプリでは、ルーターのフックは next/router から取得します。Link に専用のアダプターは不要です。移行中は両方のルーターのディレクトリをスキャンできますが、正規 URL が衝突すると生成は失敗します。
 
+**ベースと i18n。** Next Link と next/router は設定済みの basePath と locale を使用します。これらには route() の内部パスを渡します。通常の公開 URL では basePath: true と必要に応じて locale を指定します。route.localize() は i18n 設定を必要とし、自動でリダイレクトを追加しません。
+
 ```tsx
+// With basePath: "/app" in next.config.ts
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { route } from "@/routes.generated";
 export default function Page() {
   const router = useRouter();
   return <>
+    {/* Next Link adds the base and the configured locale. */}
     <Link href={route("users.$user", { user: 42 })}>User</Link>
     <button onClick={() => router.replace(route("user.profile"))}>
       Profile
     </button>
+    {/* Plain HTML URL needs the base explicitly. */}
+    <a href={route("users.$user", { user: 42 }, { basePath: true })}>Public URL</a>
   </>;
 }
 ```
@@ -170,16 +182,22 @@ withNamedRoutes は Next の設定から basePath と trailingSlash を引き継
 
 defaults はすべて、公開される生成モジュールにシリアライズされます。秘密情報は絶対に入れないでください。trailingSlash は生成されるパスの形を整えるだけで、リダイレクトや最終的な正規化は引き続き Next が担当します。
 
+**フレームワークのベースパス。** Next.js は basePath、Nuxt は app.baseURL を継承します。Astro では @triooo/named-routes/astro のネイティブ統合を integrations に登録すると、Vite のアセット用 URL ではなく Astro の最終的な base を取得します。Vue Router、React Router/Remix、TanStack Router、SvelteKit ではフレームワークと namedRoutes({ routerBase: base }) に同じナビゲーション用プレフィックスを渡してください。inheritViteBase: true は Vite の base がルーターのプレフィックスでもある場合にのみ使用します。明示的な defaults.basePath が優先されます。
+
+**CLI の単独実行。** フレームワークによる生成が成功すると .named-routes/ に有効な公開プレフィックスをフレームワークごとに保存します。defaults.basePath や --base-path がなければ CLI と doctor はこれを再利用します。設定変更後はフレームワークを再実行してください。CLI はフレームワークの設定ファイルを実行しません。初回起動前の CI では共有設定の defaults.basePath または --base-path を使用し、--base-path / で解除します。.named-routes/ は Git の対象外にしてください。route() は従来どおりプレフィックスを省略します。公開 URL や通常の HTML リンクには { basePath: true } を指定します。
+
 ```ts
 // next.config.ts
 export default withNamedRoutes({ basePath: "/admin" }, {
   defaults: { origin: "https://triooo.com.br" },
 });
 route("users.$user", { user: 42 }); // /users/42 (Next Link/router)
-route("users.$user", { user: 42 }, { basePath: true });
-// /admin/users/42 (plain anchor/fetch)
+route("users.$user", { user: 42 }, { basePath: true }); // /admin/users/42
 route("users.$user", { user: 42 }, { absolute: true });
 // https://triooo.com.br/admin/users/42
+
+// In any framework: named-routes.config.mjs (alternative shared config)
+export default defineConfig({ defaults: { basePath: "/admin" } });
 ```
 
 <a id="i18n"></a>
@@ -194,9 +212,13 @@ locale なしの route(name, params) は内部パスを返します。これは 
 
 localePrefix: always（デフォルト）はすべての言語にプレフィックスを付け、as-needed はデフォルト言語だけ省き、never はすべて省きます。{ mode, prefixes: { "en-US": "/us" } } で個別に変更することもできます。pathnames は内部パターンを、同じパラメーターを持つ翻訳済みのパターンに対応付けます。absolute: true のとき、設定したドメインで配信される言語ではそのドメインがオリジンになります。言語は型付きで、生成モジュールは RouteLocale をエクスポートし、未知の言語は型エラーにも実行時エラーにもなります。
 
+**受信 URL の翻訳。** /sobre が /about のポルトガル語パスで localePrefix が always の場合、route.localize('/sobre', 'en') は /en/about を返します。route.localize('/pt/produtos/42?tab=info#details', 'en') は /en/products/42?tab=info#details を返せます。すべての設定言語を検索し、パラメーター、元のクエリとフラグメントを保持します。不明、曖昧、非ローカライズのルートは null になります。route.match() の動作は変わりません。認識済みの元言語プレフィックス、またはプレフィックスなしの別名に対する sourceLocale で同じ具体性の候補を区別します。対象言語を省略すると forLocale() の言語または既定言語を使います。
+
+**リクエストのリダイレクト。** ランタイムはリクエストを横取りしません。既存の i18n ミドルウェアで優先言語を決め、ベースを含む公開 URL には route.localize(pathAndQuery, locale, { basePath: true }) を呼び出し、結果が異なるときだけ一時リダイレクトします。内部 rewrite はフレームワークに任せます。内部パスから公開パスを生成する場合は includeBasePath: true を使います。言語別ドメインでは absolute: true と設定済みドメインを使い、URL 全体を比較します。API、アセット、GET/HEAD 以外、解決できないパスはリダイレクトしません。Next.js proxy の例は examples/app-router/recipes/localized-redirect.ts.example にあります。
+
 ```ts
 // next.config.ts — next-intl with app/[locale]/…
-import { routing } from "./src/i18n/routing"; // defineRouting({...})
+import { routing } from "./src/i18n/routing";
 export default withNamedRoutes(withNextIntl({}), { i18n: routing });
 
 // or named-routes.config.mjs (any framework)
@@ -204,16 +226,20 @@ export default defineConfig({
   i18n: {
     locales: ["en", "pt"],
     defaultLocale: "en",
-    localePrefix: "as-needed",
-    pathnames: { "/about": { pt: "/sobre" } },
+    localePrefix: "always",
+    pathnames: { "/about": { en: "/about", pt: "/sobre" } },
   },
 });
 
-route("about");                     // /about (next-intl Link adds the locale)
+// Results with the always-prefix configuration above:
+route("about"); // /about (internal pathname)
 route("about", {}, { locale: "pt" }); // /pt/sobre
-route("about", {}, { locale: "en" }); // /about
+route("about", {}, { locale: "en" }); // /en/about
+route.localize("/sobre", "en"); // /en/about
+route.localize("/en/about?tab=info#details", "pt"); // /pt/sobre?tab=info#details
+route.forLocale("en").localize("/sobre"); // /en/about
 const pt = route.forLocale("pt");
-pt("users.$user", { user: 42 });      // /pt/users/42
+pt("users.$user", { user: 42 }); // /pt/users/42
 ```
 
 <a id="typescript"></a>

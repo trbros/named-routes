@@ -136,7 +136,7 @@ export function Documentation({ selectedId }: { selectedId?: string }) {
                     >
                       {section.title[locale]}
                       {id === "quick-start" && <small>Next.js</small>}
-                      {id === "frameworks" && <small>Vite</small>}
+                      {/* The frameworks overview includes native integrations as well as Vite. */}
                     </Link>
                   ) : null;
                 })}

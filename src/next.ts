@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { writeFrameworkBase } from "./base-path.js";
 import { resolveOptions } from "./config.js";
 import type { GeneratorOptions, I18nGeneratorOptions } from "./generator.js";
 import { generateRoutes } from "./generator.js";
@@ -104,6 +105,8 @@ export function withNamedRoutes<C extends object = NextConfigShape>(
 		};
 		const initial = await generationOptions();
 		const result = await generateRoutes(initial);
+		// Persist only the resolved public prefix, after successful generation.
+		await writeFrameworkBase(result.root, "next", result.defaults.basePath);
 		const key = resolve(result.output);
 		const typedRoutes =
 			config.typedRoutes === true || config.experimental?.typedRoutes === true;
@@ -121,6 +124,11 @@ export function withNamedRoutes<C extends object = NextConfigShape>(
 			const stop = watchGeneration(
 				async () => {
 					latest = await generateRoutes(await generationOptions());
+					await writeFrameworkBase(
+						latest.root,
+						"next",
+						latest.defaults.basePath,
+					);
 				},
 				{
 					interval: watchInterval ?? 750,

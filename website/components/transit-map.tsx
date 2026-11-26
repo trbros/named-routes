@@ -183,7 +183,11 @@ export function TransitMap() {
             configure: `${current.connect} · ${current.connectWhere}`,
             configureCode: current.id === "next"
               ? 'import { withNamedRoutes } from "@triooo/named-routes/next";\n\nexport default withNamedRoutes({\n  reactStrictMode: true\n});'
-              : `import { namedRoutes } from "@triooo/named-routes/vite";\n\nconst plugin = namedRoutes({\n  framework: "${current.id === "tanstack" ? "tanstack-router" : current.id}"\n});`,
+              : current.id === "astro"
+                ? 'import { defineConfig } from "astro/config";\nimport namedRoutes from "@triooo/named-routes/astro";\n\nexport default defineConfig({\n  integrations: [namedRoutes()],\n});'
+                : current.id === "nuxt"
+                  ? 'export default defineNuxtConfig({\n  modules: ["@triooo/named-routes/nuxt"],\n});'
+                  : `import { namedRoutes } from "@triooo/named-routes/vite";\n\nconst plugin = namedRoutes({\n  framework: "${current.id === "tanstack" ? "tanstack-router" : current.id}"\n});`,
             render: current.id === "nuxt" ? "<NuxtPage />" : current.id === "vue" ? "<RouterView />" : current.id === "astro" ? "<Page /> → HTML" : current.id === "sveltekit" ? "+page.svelte → HTML" : "<Page />",
           },
           name: current.name,

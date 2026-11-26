@@ -18,9 +18,9 @@
 
 ## Other frameworks (Vite plugin)
 
-Add namedRoutes() from @triooo/named-routes/vite to the Vite plugins of Vue, SvelteKit, Astro (vite.plugins in astro.config), React Router or TanStack Router; in Nuxt register the @triooo/named-routes/nuxt module instead. It generates when Vite starts or builds and regenerates when files are added, removed or renamed, or when the framework rewrites its route table, using Vite's own watcher.
+Use namedRoutes() from @triooo/named-routes/vite in Vue, SvelteKit, React Router/Remix and TanStack Router. Register @triooo/named-routes/nuxt in Nuxt modules and the default import from @triooo/named-routes/astro in Astro integrations. The integrations generate during startup/build and refresh as route files or framework artifacts change.
 
-The framework is detected from package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev or @remix-run/dev, TanStack router plugin/CLI/Start, unplugin-vue-router or vue-router). Set framework explicitly in monorepos or when detection is ambiguous. Run npx named-routes init to create a config for the detected framework.
+The framework is detected from package.json (nuxt, next, @sveltejs/kit, astro, @react-router/dev or @remix-run/dev, TanStack router plugin/CLI/Start, unplugin-vue-router or vue-router). Set framework explicitly in monorepos or when detection is ambiguous. Run npx @triooo/named-routes init to create a config for the detected framework.
 
 Conventions are converted to the runtime syntax. Nuxt and Vue: index, [id], [[id]] optional, [...slug] (matches an empty remainder, so it becomes [[...slug]]), (group) folders, parent.vue + parent/ nesting, mixed segments such as v[major]-[minor]; Vue also treats dots as nesting (users.edit.vue) and supports [id]+ repeatable params. Nuxt ignores files starting with -, and with includeApi scans server/api (prefixed /api) and server/routes, removing .get/.post suffixes.
 
@@ -34,20 +34,28 @@ Framework discovery (default since 2.0): where the framework publishes its final
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
 import { defineConfig } from "vite";
 import { namedRoutes } from "@triooo/named-routes/vite";
-export default defineConfig({ plugins: [namedRoutes()] });
+export default defineConfig({ plugins: [namedRoutes({ routerBase: "/app" })] });
+// Configure the same navigation base in the router itself.
 
 // nuxt.config.ts
 export default defineNuxtConfig({
+  app: { baseURL: "/app/" },
   modules: ["@triooo/named-routes/nuxt"],
-  namedRoutes: { output: "app/utils/routes.ts" },
+  namedRoutes: { output: "app/routes.generated.ts" },
 });
 
 // astro.config.mjs
-export default defineConfig({ vite: { plugins: [namedRoutes()] } });
+import { defineConfig as defineAstroConfig } from "astro/config";
+import namedRoutesAstro from "@triooo/named-routes/astro";
+export default defineAstroConfig({
+  base: "/app",
+  integrations: [namedRoutesAstro()],
+});
 
-// Any component:
-import { route } from "~/utils/routes"; // or your output path
-route("users.$id", { id: 42 }); // /users/42
+// Any component (adjust the import to your configured output):
+import { route } from "@/routes.generated";
+route("users.$id", { id: 42 }); // internal path
+route("users.$id", { id: 42 }, { basePath: true }); // /app/users/42
 ```
 
 <a id="nextjs"></a>
@@ -64,14 +72,20 @@ Wrap next.config with withNamedRoutes from @triooo/named-routes/next. The module
 
 With typedRoutes: true in the Next config, route() results are accepted by <Link>, router.push(), replace() and prefetch() without casts, because typed hrefs are the default since 2.0; the wrapper warns when typedRoutes meets hrefs: "string". Verified with the real next typegen and TypeScript on Next 16, in both routers, with webpack and Turbopack.
 
+**CLI and configuration changes.** After dev/build, the effective base is saved in .named-routes/ for CLI generation. Restart Next after changing basePath. Before the first build in CI, use shared defaults.basePath or --base-path. To redirect translated incoming URLs, see the i18n section and route.localize().
+
 ```tsx
+// next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
-export default withNamedRoutes({ reactStrictMode: true });
+export default withNamedRoutes({ basePath: "/app", typedRoutes: true });
 
 // app/users/[user]/page.tsx → users.$user
 import Link from "next/link";
 import { route } from "@/routes.generated";
+// Next Link adds /app itself.
 <Link href={route("users.$user", { user: "ana" })}>Ana</Link>;
+// Plain anchors need the public path.
+<a href={route("users.$user", { user: "ana" }, { basePath: true })}>Ana</a>;
 ```
 
 <a id="nuxt"></a>
@@ -86,9 +100,12 @@ Add "@triooo/named-routes/nuxt" to modules in nuxt.config. The module names the 
 
 **Limits and verification.** The module also writes .nuxt/named-routes/pages.json, so named-routes check and generate see the same routes after nuxt prepare. List it before @nuxtjs/i18n in modules, so it sees the routes before they are localized. The Vite plugin still works in Nuxt but only sees the files. Names follow this package's dotted style (users.$id), not Nuxt's own route names (users-id). Verified by convention tests and by examples/nuxt, which builds and runs with Nuxt 4, including a definePageMeta({ path }) page.
 
+**Base URL.** The native module inherits app.baseURL. NuxtLink uses the router’s own base, so keep its to internal; plain href and fetch need basePath: true. Restart Nuxt after changing app.baseURL and regenerate the CLI cache.
+
 ```vue
 // nuxt.config.ts
 export default defineNuxtConfig({
+  app: { baseURL: "/app/" },
   modules: ["@triooo/named-routes/nuxt"],
   namedRoutes: { output: "app/routes.generated.ts" },
 });
@@ -100,7 +117,10 @@ export default defineNuxtConfig({
 import { route } from "~/routes.generated";
 </script>
 <template>
+  <!-- NuxtLink applies app.baseURL -->
   <NuxtLink :to="route('users.$id', { id: 42 })">User 42</NuxtLink>
+  <!-- Plain HTML link: /app/users/42 -->
+  <a :href="route('users.$id', { id: 42 }, { basePath: true })">User 42</a>
 </template>
 ```
 
@@ -116,14 +136,26 @@ For Vue apps with file-based routing (Vue Router 5 vue-router/vite, or unplugin-
 
 **Verified.** Names come from the typed-router.d.ts that Vue Router 5 writes (its dts option), so definePage({ path }) overrides are named by the URL they serve; before it exists, the files are scanned. A real Vite dev server with these conventions runs in CI, and examples/vue builds, runs and is driven in a browser with Vue Router 5 (vue-router/vite), including a users/_parent.vue layout and a definePage({ path }) page.
 
+**History base.** If the actual router uses createWebHistory(import.meta.env.BASE_URL), set inheritViteBase: true and Vite base as in the example. Otherwise pass the history base explicitly as routerBase; Vite base can be an asset-only/CDN URL. RouterLink and router.push apply the history base themselves; use basePath: true only for plain public URLs.
+
 ```ts
 // vite.config.ts
+import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import VueRouter from "vue-router/vite"; // Vue Router 5 (Vue Router 4: "unplugin-vue-router/vite")
+import VueRouter from "vue-router/vite"; // Vue Router 5 (4: unplugin-vue-router/vite)
 import { namedRoutes } from "@triooo/named-routes/vite";
-export default defineConfig({ plugins: [namedRoutes(), VueRouter(), vue()] });
+export default defineConfig({
+  base: "/app/",
+  plugins: [namedRoutes({ inheritViteBase: true }), VueRouter(), vue()],
+});
 
-// src/pages/users/[id].vue → users.$id
+// src/main.ts — use the same base in the actual router:
+import { createRouter, createWebHistory } from "vue-router";
+import { routes } from "vue-router/auto-routes";
+const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes });
+
+// src/pages/users/[id].vue → users.$id (inside the template)
+import { route } from "@/routes.generated";
 <RouterLink :to="route('users.$id', { id: 42 })">User 42</RouterLink>
 ```
 
@@ -135,30 +167,36 @@ Add namedRoutes() before sveltekit() in vite.config. Writing the module to src/l
 
 **Conventions.** src/routes with +page.svelte, +page.ts or +page.server.ts (they merge into one route); (group) folders are omitted; [id=matcher] keeps the parameter and drops the matcher; [[lang]] is optional; [...rest] matches zero or more segments ([[...rest]]) and may sit before static segments; +page@ layout resets are normal pages; [x+2f] and [u+0041] escapes are decoded. +server endpoints are opt-in with includeApi.
 
-**Navigation.** Use <a href={route(...)}>, goto(route(...)) or redirect(303, route(...)). SvelteKit does not add paths.base to plain anchors, so set defaults.basePath to the same value and pass { basePath: true } when you deploy under a base path.
+**Navigation.** Pass the same navigation prefix as routerBase and SvelteKit paths.base. SvelteKit plain anchors, goto and redirects need the actual public path; use route(..., { basePath: true }) with the options in the third argument. For SvelteKit 2 share kit.paths.base from svelte.config with vite.config; SvelteKit 3 accepts paths in sveltekit() as shown below.
 
-**Verified.** Convention tests plus examples/sveltekit, which builds and runs with SvelteKit 2 and Svelte 5.
+**Verification.** Convention tests and the examples/sveltekit integration cover file discovery and navigation; the current example uses SvelteKit 3 with Svelte 5.
 
 ```svelte
-// vite.config.ts
+// vite.config.ts (SvelteKit 3)
+import { defineConfig } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { namedRoutes } from "@triooo/named-routes/vite";
+const base = "/app";
 export default defineConfig({
-  plugins: [namedRoutes({ output: "src/lib/routes.generated.ts" }), sveltekit()],
+  plugins: [
+    namedRoutes({ routerBase: base, output: "src/lib/routes.generated.ts" }),
+    sveltekit({ paths: { base } }),
+  ],
 });
 
 <!-- src/routes/blog/[slug]/+page.svelte → blog.$slug -->
 <script lang="ts">
   import { route } from "$lib/routes.generated";
 </script>
-<a href={route("blog.$slug", { slug: "hello" })}>Hello</a>
+<!-- Public URL: /app/blog/hello -->
+<a href={route("blog.$slug", { slug: "hello" }, { basePath: true })}>Hello</a>
 ```
 
 <a id="astro"></a>
 
 ## Astro
 
-Add namedRoutes() to vite.plugins in astro.config. The module defaults to src/routes.generated.ts and can be imported from .astro frontmatter, framework islands and endpoints.
+Register the native integration from @triooo/named-routes/astro in astro.config integrations. It inherits Astro’s final base. Remove namedRoutes() from vite.plugins if migrating from the old configuration. The generated module defaults to src/routes.generated.ts and is usable in .astro frontmatter, islands and endpoints.
 
 **Conventions.** src/pages with .astro, .md, .mdx, .markdown and .html pages; files and folders starting with _ are private; [id]; [...slug] matches zero or more segments ([[...slug]]); mixed segments such as [lang]-[version]. .ts/.js endpoints are opt-in with includeApi and keep their inner extension (api/data.json.ts is /api/data.json).
 
@@ -166,16 +204,26 @@ Add namedRoutes() to vite.plugins in astro.config. The module defaults to src/ro
 
 **Limits and verification.** Static builds still need getStaticPaths in dynamic pages: the package builds URLs, it does not enumerate parameters. Verified by convention tests and examples/astro, which builds and runs with Astro 5.
 
+**Deployment under a base.** With base: "/app", route() still returns an internal pathname. For an Astro HTML anchor, use the third argument { basePath: true } to obtain /app/docs/guide/install. Restart the Astro dev server or rebuild after changing base; the CLI can reuse the last successfully generated prefix or use --base-path explicitly.
+
 ```astro
 // astro.config.mjs
-import { namedRoutes } from "@triooo/named-routes/vite";
-export default defineConfig({ vite: { plugins: [namedRoutes()] } });
+import { defineConfig } from "astro/config";
+import namedRoutes from "@triooo/named-routes/astro";
+
+export default defineConfig({
+  base: "/app",
+  integrations: [namedRoutes()],
+});
 
 ---
 // src/pages/docs/[...slug].astro → docs.$slug
 import { route } from "../../routes.generated";
 ---
-<a href={route("docs.$slug", { slug: ["guide", "install"] })}>Install guide</a>
+<!-- Public URL: /app/docs/guide/install -->
+<a href={route("docs.$slug", { slug: ["guide", "install"] }, { basePath: true })}>
+  Install guide
+</a>
 ```
 
 <a id="react-router"></a>
@@ -190,18 +238,29 @@ For React Router 7 and 8 framework mode (and Remix v2), add namedRoutes() before
 
 **Limits and verification.** Without @react-router/dev installed, or when the command fails, the flat-route files above are scanned and the CLI reports why. Optional static segments such as (beta) cannot be named; the generator stops with a clear error so you can exclude the file. Verified by convention tests and examples/react-router, which builds and runs with React Router 8, including a route declared with route() in app/routes.ts.
 
+**Basename.** Share the same value between React Router’s basename and namedRoutes({ routerBase }). For Remix use its equivalent basename setting and the same routerBase; for a manually declared router use createBrowserRouter(..., { basename }) and a manual manifest when needed. Link and router navigation already apply basename; use basePath: true for plain HTML URLs.
+
 ```tsx
+// react-router.config.ts
+export default { basename: "/app" };
+
 // vite.config.ts
+import { defineConfig } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
 import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
-  plugins: [namedRoutes({ output: "app/routes.generated.ts" }), reactRouter()],
+  plugins: [
+    namedRoutes({ routerBase: "/app", output: "app/routes.generated.ts" }),
+    reactRouter(),
+  ],
 });
 
 // app/routes/concerts.$city.tsx → concerts.$city
 import { Link } from "react-router";
 import { route } from "../routes.generated";
+// Link applies basename; do not pass basePath: true here.
 <Link to={route("concerts.$city", { city: "lisbon" })}>Lisbon</Link>;
+<a href={route("concerts.$city", { city: "lisbon" }, { basePath: true })}>Lisbon</a>;
 
 // app/routes.ts: [...(await flatRoutes()), route("sobre", "about.tsx")] → sobre
 ```
@@ -218,17 +277,26 @@ Add namedRoutes() next to tanstackRouter() from @tanstack/router-plugin in vite.
 
 **Verified.** Names come from the routeTree.gen.ts the TanStack Router plugin or CLI generates (its navigable paths); before it exists, the files are scanned. Convention tests plus examples/tanstack-router, which builds and runs with the TanStack router plugin.
 
+**Router basepath.** Set createRouter({ routeTree, basepath: "/app" }) in the application and namedRoutes({ routerBase: "/app" }) in Vite. Set Vite base separately when serving assets below that path. Use basePath: true for anchors and configure defaults.origin if you need absolute URLs. Ignore .tanstack temporary files, not routeTree.gen.ts: framework discovery uses the published tree.
+
 ```tsx
 // vite.config.ts
+import { defineConfig } from "vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
 import { namedRoutes } from "@triooo/named-routes/vite";
 export default defineConfig({
-  plugins: [namedRoutes(), tanstackRouter({ target: "react" }), react()],
+  base: "/app/",
+  plugins: [tanstackRouter({ target: "react" }), namedRoutes({ routerBase: "/app" }), react()],
+  server: { watch: { ignored: ["**/.tanstack/**"] } },
 });
+
+// src/main.tsx (existing router setup):
+// const router = createRouter({ routeTree, basepath: "/app" });
 
 // src/routes/posts/$postId.tsx → posts.$postId
 import { route } from "../../routes.generated";
-<a href={route("posts.$postId", { postId: 42 }, { absolute: true })}>Share</a>;
+<a href={route("posts.$postId", { postId: 42 }, { basePath: true })}>Share</a>;
 ```
 
 <a id="manual-routes"></a>
@@ -241,6 +309,8 @@ Patterns use the bracket syntax regardless of the router's own syntax: /users/:i
 
 To share a generated module anyway (for example from a monorepo package), set framework: "manual" and list routes in extraRoutes; the generator writes the same typed module without scanning.
 
+**Manual base.** Set basePath in createRoutes() defaults and configure the same history base or basename in your router. In generator-based manual projects use defaults.basePath in named-routes.config. Route names never include the prefix.
+
 ```tsx
 // src/routes.ts
 import { createRoutes } from "@triooo/named-routes";
@@ -248,12 +318,15 @@ export const route = createRoutes({
   home: "/",
   "users.show": "/users/[id]",       // <Route path="/users/:id">
   "docs.page": "/docs/[[...path]]",   // <Route path="/docs/*">
-});
+}, { basePath: "/app" });
 
+// Configure basename/history base in your actual router too.
 // React Router
 <Link to={route("users.show", { id: 42 })}>Ana</Link>
 // Vue Router
 <RouterLink :to="route('users.show', { id: 42 })">Ana</RouterLink>
+// Plain HTML anchor: /app/users/42
+<a href={route("users.show", { id: 42 }, { basePath: true })}>Ana</a>;
 ```
 
 ---

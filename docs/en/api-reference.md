@@ -19,6 +19,8 @@ createRoutes(manifest, defaults?) creates an independent frozen helper and snaps
 
 A manifest typed as a plain Record<string, string> (for example loaded from JSON) still works: names become string and parameters become a loose record, while the runtime keeps validating every call.
 
+route.localize(url, locale?, options?: LocalizeOptions): string | null — localizes an existing URL across configured pathname aliases. Options: sourceLocale, basePath (input includes base), includeBasePath (output includes base), absolute (configured origin/domain). It preserves the query and hash without revalidating query schemas.
+
 ```ts
 import { createRoutes } from "@triooo/named-routes";
 const route = createRoutes({

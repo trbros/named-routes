@@ -4,5 +4,18 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-	plugins: [namedRoutes(), tanstackRouter({ target: "react" }), react()],
+	plugins: [
+		tanstackRouter({
+			target: "react",
+		}),
+		namedRoutes(),
+		react(),
+	],
+
+	server: {
+		watch: {
+			// Ignore temporary files created by TanStack's generator.
+			ignored: ["**/.tanstack/**"],
+		},
+	},
 });

@@ -7,6 +7,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { withFrameworkBase, writeFrameworkBase } from "./base-path.js";
 import { configFiles, resolveOptions } from "./config.js";
 import type { GeneratorOptions } from "./generator.js";
 import { generateRoutes } from "./generator.js";
@@ -27,6 +28,8 @@ export interface NuxtLike {
 	options: {
 		rootDir: string;
 		buildDir: string;
+		/** Resolved public Nuxt router base, including NUXT_APP_BASE_URL. */
+		app?: { baseURL?: string };
 		dev?: boolean;
 		namedRoutes?: NuxtNamedRoutesOptions;
 	};
@@ -81,8 +84,9 @@ const setup = async (
 					root,
 					framework: "nuxt",
 				} as GeneratorOptions & { config?: string });
-				await generateRoutes(
-					resolved,
+				// app.baseURL is the navigation prefix; defaults.basePath wins explicitly.
+				const result = await generateRoutes(
+					withFrameworkBase(resolved, nuxt.options.app?.baseURL),
 					latest && resolved.discovery !== "files"
 						? {
 								frameworkTable: {
@@ -93,6 +97,7 @@ const setup = async (
 							}
 						: {},
 				);
+				await writeFrameworkBase(result.root, "nuxt", result.defaults.basePath);
 			} catch (caught) {
 				// Keep `nuxt dev` running with the last valid module; fail builds.
 				if (!nuxt.options.dev) throw caught;

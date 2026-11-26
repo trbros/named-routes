@@ -1,0 +1,44 @@
+// Copy into src/proxy.ts (Next 16+) or src/middleware.ts (Next 15 and earlier).
+// This recipe assumes next-intl is installed and routing.localePrefix is "always",
+// with normal /en, /pt prefixes, one domain and a configured NEXT_LOCALE cookie.
+// Adapt imports to your app. Do not replace unrelated authentication middleware.
+import createMiddleware from "next-intl/middleware";
+import { NextRequest, NextResponse } from "next/server";
+import { routing } from "@/i18n/routing";
+import { route } from "@/routes.generated";
+
+const handleI18n = createMiddleware(routing);
+
+export default function proxy(request: NextRequest) {
+	if (request.method !== "GET" && request.method !== "HEAD") return handleI18n(request);
+	const url = new URL(request.url);
+	// NextURL.pathname omits Next's basePath; the original request URL includes it.
+	const internalPath = request.nextUrl.pathname;
+	const base = request.nextUrl.basePath;
+	const first = internalPath.split("/")[1];
+	const explicit = routing.locales.find((locale) => locale === first);
+	const cookie = request.cookies.get("NEXT_LOCALE")?.value;
+	const saved = routing.locales.find((locale) => locale === cookie);
+	// Keep next-intl responsible for negotiating the initial language if no preference exists.
+	// An application with its own locale resolver can replace this selection directly.
+	const response = handleI18n(request);
+	const nextIntlLocation = response.headers.get("location") ?? response.headers.get("x-middleware-rewrite");
+	const negotiatedPath = nextIntlLocation ? new URL(nextIntlLocation, url).pathname : "";
+	const negotiatedInternal = base && (negotiatedPath === base || negotiatedPath.startsWith(`${base}/`)) ? negotiatedPath.slice(base.length) : negotiatedPath;
+	const negotiated = routing.locales.find((locale) => locale === negotiatedInternal.split("/")[1]);
+	const locale = explicit ?? saved ?? negotiated ?? routing.defaultLocale;
+	const current = url.pathname + url.search;
+	const target = route.localize(current, locale, { basePath: true });
+	if (!target || target === current) return response;
+	const destination = new URL(target, url);
+	// Relative localization must never redirect to a different origin.
+	if (destination.origin !== url.origin) return response;
+	const redirect = NextResponse.redirect(destination, 307);
+	// Keep next-intl's locale preference cookie if it updated it.
+	for (const value of response.cookies.getAll()) redirect.cookies.set(value);
+	return redirect;
+}
+
+export const config = {
+	matcher: ["/((?!api|trpc|_next|_vercel|.*\\..*).*)"],
+};

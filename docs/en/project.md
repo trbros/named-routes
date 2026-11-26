@@ -130,7 +130,7 @@ After an upgrade, restart the dev server to regenerate the manifest and run your
 
 ```sh
 npm install @triooo/named-routes@^2
-npx named-routes check
+npx @triooo/named-routes check
 npx tsc --noEmit
 ```
 
@@ -138,7 +138,7 @@ npx tsc --noEmit
 
 ## Upgrading from 1.x
 
-2.0 changes defaults only where the change pays off; every change can be undone in the config. Run npx named-routes doctor --v2 to see what applies to your project, then npx named-routes migrate --to 2 (dry run) and --write to pin the 1.x behavior where the generated module would change. Remove the pinned lines when you are ready to adopt the new defaults.
+2.0 changes defaults only where the change pays off; every change can be undone in the config. Run npx @triooo/named-routes doctor --v2 to see what applies to your project, then npx @triooo/named-routes migrate --to 2 (dry run) and --write to pin the 1.x behavior where the generated module would change. Remove the pinned lines when you are ready to adopt the new defaults.
 
 Node.js 22.12+ is required (20 is end-of-life since April 2026); it brings require() of ES modules and native recursive file watching everywhere. TypeScript 5.4+ is required for the exported types, the minimum of Zod 4 and Valibot 1 as well.
 
@@ -149,9 +149,9 @@ Routes come from the framework where it publishes its table (Nuxt module, Vue Ro
 Invalid router, pageExtensions and output values raise INVALID_CONFIG instead of GENERATION_ERROR, so each error class has one code; check error.code comparisons. typesVersions was removed: TypeScript must resolve the package through exports, with moduleResolution bundler, node16 or nodenext (node10 cannot). Generated modules that import query schemas as types now use TypeOnlyQueries, so route.parseQuery() is typed as returning the raw query there.
 
 ```sh
-npx named-routes doctor --v2
-npx named-routes migrate --to 2           # dry run
-npx named-routes migrate --to 2 --write   # pins hrefs/discovery in named-routes.config
+npx @triooo/named-routes doctor --v2
+npx @triooo/named-routes migrate --to 2           # dry run
+npx @triooo/named-routes migrate --to 2 --write   # pins hrefs/discovery in named-routes.config
 
 # Keep a reassigned route as a string
 const [href, setHref] = useState<string>(route("home"));

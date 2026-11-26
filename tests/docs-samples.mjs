@@ -57,6 +57,7 @@ declare const withNamedRoutes: typeof import("@triooo/named-routes/next").withNa
 declare function defineConfig<const C extends import("@triooo/named-routes/config").NamedRoutesConfig>(config: C): C;
 declare function defineConfig(config: { plugins?: unknown[]; vite?: { plugins?: unknown[] } }): unknown;
 declare function defineNuxtConfig(config: {
+	app?: { baseURL?: string };
 	modules?: string[];
 	namedRoutes?: import("@triooo/named-routes/nuxt").NuxtNamedRoutesOptions;
 	vite?: { plugins?: unknown[] };
@@ -84,7 +85,31 @@ declare module "react-router" {
 }
 declare module "vite" {
 	// Also stands for Astro's defineConfig, which samples show next to Vite's.
-	export function defineConfig(config: { plugins?: unknown[]; vite?: { plugins?: unknown[] } }): unknown;
+	export function defineConfig(config: {
+		base?: string;
+		plugins?: unknown[];
+		vite?: { plugins?: unknown[] };
+		server?: { watch?: { ignored?: string[] } };
+	}): unknown;
+}
+declare module "astro/config" {
+	export function defineConfig(config: {
+		base?: string;
+		integrations?: unknown[];
+	}): unknown;
+}
+interface ImportMeta {
+	readonly env: { readonly BASE_URL: string };
+}
+declare module "vue-router" {
+	export function createWebHistory(base?: string): unknown;
+	export function createRouter(options: { history: unknown; routes: unknown[] }): unknown;
+}
+declare module "vue-router/auto-routes" {
+	export const routes: unknown[];
+}
+declare module "@vitejs/plugin-react" {
+	export default function react(): unknown;
 }
 declare module "@vitejs/plugin-vue" {
 	export default function vue(): unknown;
@@ -226,6 +251,7 @@ try {
 							"@triooo/named-routes/next": dist("next"),
 							"@triooo/named-routes/vite": dist("vite"),
 							"@triooo/named-routes/nuxt": dist("nuxt"),
+							"@triooo/named-routes/astro": dist("astro"),
 							zod: [join(dirname(require.resolve("zod/package.json")))],
 						},
 					},

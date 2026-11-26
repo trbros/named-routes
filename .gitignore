@@ -18,6 +18,9 @@ dist/
 # Personal Vercel deploy of the website (its own repo, see deploy-personal/README.md)
 /deploy-personal/
 
+# Local framework base snapshots (public generated metadata)
+.named-routes/
+
 # Local environment and tooling
 .env
 .env.*

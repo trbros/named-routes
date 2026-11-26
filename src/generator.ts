@@ -10,6 +10,11 @@ import {
 } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
+	normalizeBasePath,
+	readFrameworkBase,
+	withFrameworkBase,
+} from "./base-path.js";
+import {
 	type Adapter,
 	adapters,
 	detectFramework,
@@ -593,6 +598,21 @@ export interface DiscoveryContext {
 	frameworkTable?: FrameworkTable;
 }
 
+/** CLI/doctor only: reuse the last successfully resolved framework base.
+ * Framework integrations do not read this snapshot, so removing a base clears it.
+ */
+export async function withCachedFrameworkBase(
+	options: GeneratorOptions,
+): Promise<GeneratorOptions> {
+	// Validate before resolving a cache filename from framework configuration.
+	options = validateOptions(options);
+	if (options.defaults?.basePath !== undefined)
+		return withFrameworkBase(options, undefined);
+	const root = resolve(options.root ?? process.cwd());
+	const framework = await resolveFramework(root, options);
+	return withFrameworkBase(options, await readFrameworkBase(root, framework));
+}
+
 export async function discoverRoutes(
 	input: GeneratorOptions = {},
 	context: DiscoveryContext = {},
@@ -922,7 +942,9 @@ function runtimeDefaults(
 	const defaults: RouteDefaults = {};
 	const input = options.defaults ?? {};
 	// Only known public keys are serialized into the (client-visible) module.
-	if (input.basePath !== undefined) defaults.basePath = input.basePath;
+	// Normalize before serialization so CLI check and framework output agree.
+	if (input.basePath !== undefined)
+		defaults.basePath = normalizeBasePath(input.basePath);
 	if (input.trailingSlash !== undefined)
 		defaults.trailingSlash = input.trailingSlash;
 	if (input.origin !== undefined) defaults.origin = input.origin;
