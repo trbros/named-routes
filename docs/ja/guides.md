@@ -70,6 +70,7 @@ npx @triooo/named-routes doctor --v2
 npx @triooo/named-routes migrate --to 2 --write
 # With the package installed locally:
 npm exec -- named-routes generate
+npx @triooo/named-routes audit --strict --json
 ```
 
 <a id="doctor"></a>
@@ -107,6 +108,8 @@ routes.generated が見つからない場合: 統合が実行されているか�
 生成処理は手書きの出力ファイルの上書きを拒否します。無関係なコードに生成の署名を付けるのではなく、別の output を選んでください。生成された出力はルーティング対象のファイルの外に置いてください。動的な補間はリクエストを認可するものではありません。権限とアプリケーションの入力は目的地で検証してください。
 
 1.1 以降、すべての NamedRouteError は details: { file, files, route, pattern, option, hint } も持ち、わかっている情報が入ります。たとえばルートの競合では両方のファイル、名前・オプション・names のキーの綴りが誤っている場合は "Did you mean users.show?" です。INVALID_QUERY はクエリがスキーマを満たさないか、スキーマのマップが不正であることを、INVALID_URL は match() がパスでも URL でもないものを受け取ったことを意味します。2.0 からは、router、pageExtensions、output の不正な値は INVALID_CONFIG になります（1.x では GENERATION_ERROR）。メッセージは変わりません。
+
+静的ファイルの 404 は、実際のデプロイ先パスと公開ディレクトリを確認してください。`asset()` は設定されたベースを使用し、バンドラーの出力や現在のリクエストは参照しません。`INVALID_ASSET_BASE`、`INVALID_ASSET`、`INVALID_OPTIONS` は無効なベース、パス、オプションを示します。
 
 ```ts
 import { NamedRouteError } from "@triooo/named-routes";

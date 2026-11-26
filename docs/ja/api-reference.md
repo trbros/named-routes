@@ -15,11 +15,15 @@
 
 route(name, params?, options?) は URL 文字列を返します。params を省略できるのは、パターンに必須パラメーターがないときだけです。options には query、hash、absolute、basePath、locale を指定できます。route.has(name) は存在を確認し、文字列を既知の名前に絞り込みます。route.names() は利用できる名前を返し、route.pattern(name, locale?) は元のパターンまたは翻訳済みのパターンを返し、route.locales() は言語を一覧にし、route.forLocale(locale) はその言語に固定したヘルパーを返します。route.match(url)、route.is(name, url)、route.breadcrumbs(url) は URL を名前に逆変換します（「逆引きルーティング」を参照）。
 
-createRoutes(manifest, defaults?) は独立した凍結済みのヘルパーを作り、マニフェストをコピーします。defaults には basePath、trailingSlash、origin、i18n を指定します。parsePattern(pattern) は static/dynamic/optionalDynamic/catchAll/optional/mixed のセグメント情報を返して構文を検証し、formatPattern はその逆、patternParameters はパラメーター名を一覧にします。RouteValue、QueryValue、RouteParams、RouteOptions、RouteDefaults、I18nOptions、LocalePrefix、LocaleDomain、NamedRoutes、PatternSegment は型としてエクスポートされています。
+createRoutes(manifest, defaults?) は独立した凍結済みのヘルパーを作り、マニフェストをコピーします。defaults には basePath、assetBase、trailingSlash、origin、i18n を指定します。parsePattern(pattern) は static/dynamic/optionalDynamic/catchAll/optional/mixed のセグメント情報を返して構文を検証し、formatPattern はその逆、patternParameters はパラメーター名を一覧にします。RouteValue、QueryValue、RouteParams、RouteOptions、RouteDefaults、I18nOptions、LocalePrefix、LocaleDomain、NamedRoutes、PatternSegment は型としてエクスポートされています。
 
 単なる Record<string, string> として型付けされたマニフェスト（たとえば JSON から読み込んだもの）でも動作します。名前は string、パラメーターは緩いレコードになりますが、ランタイムはすべての呼び出しを引き続き検証します。
 
 route.localize(url, locale?, options?: LocalizeOptions): string | null — 設定済みの別名を使い既存 URL を翻訳します。オプションは sourceLocale、basePath（入力にベースを含む）、includeBasePath（出力にベースを含む）、absolute（設定済み origin/domain）です。クエリとハッシュは再検証せず保持します。
+
+`route.asset(path, options?)` と生成エクスポート `asset` は、ロケール、クエリスキーマ、ルート名とは独立して公開ファイルを解決します。`AssetHelper` と `AssetOptions` は公開型です。`route.localize(url, locale, options?)` は既知の URL を翻訳し、`route.match()` は名前とパラメーターを逆引きし、`route.parseQuery()` は実行時スキーマがある場合にクエリを検証します。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```ts
 import { createRoutes } from "@triooo/named-routes";
@@ -44,7 +48,13 @@ if (route.has(input)) console.log(route.pattern(input));
 
 名前: names（URL パターン → 独自の名前。各パスは実在する必要がある）、extraRoutes（明示的な名前 → パターン。リライト先など）、naming（separator、paramPrefix、home、transform）、i18n（locales、defaultLocale、localePrefix、pathnames、domains、localeParam、unlocalized）。
 
-出力: output（デフォルトは src/routes.generated.ts。.ts、.mts、.js、.mjs のいずれかで、ルーティング対象のファイルの中には置けない）、importSource（生成ファイルが createRoutes をインポートするモジュール。デフォルトはパッケージ名）、exportNames（routes、route、RouteName、RouteLocale の名前を変更）、defaults（公開される basePath、trailingSlash、origin。シリアライズされるのはこれらのキーだけ）、hrefs（2.0 からのデフォルトは "typed"、または "string"。型だけに影響）、query（ルートごとのクエリスキーマのモジュール）、validateQuery（そのスキーマをバンドルして実行する。デフォルト false）。プラグインには watch（デフォルト true）があり、withNamedRoutes では watchInterval（750 ms、25〜60000）と watchMode（auto、native、poll）も使えます。プラグインに直接渡したオプションは設定ファイルより優先されます。
+出力: output（デフォルトは src/routes.generated.ts。.ts、.mts、.js、.mjs のいずれかで、ルーティング対象のファイルの中には置けない）、importSource（生成ファイルが createRoutes をインポートするモジュール。デフォルトはパッケージ名）、exportNames（routes、route、asset、RouteName、RouteLocale の名前を変更）、defaults（公開される basePath、assetBase、trailingSlash、origin。シリアライズされるのはこれらのキーだけ）、hrefs（2.0 からのデフォルトは "typed"、または "string"。型だけに影響）、query（ルートごとのクエリスキーマのモジュール）、validateQuery（そのスキーマをバンドルして実行する。デフォルト false）。プラグインには watch（デフォルト true）があり、withNamedRoutes では watchInterval（750 ms、25〜60000）と watchMode（auto、native、poll）も使えます。プラグインに直接渡したオプションは設定ファイルより優先されます。
+
+`defaults.assetBase` は公開アセットの URL プレフィックスだけを上書きします。省略すると有効な `basePath` を引き継ぎます。ドメインのルートから配信する場合は `"/"` または `""`、CDN の場合は HTTP(S) URL を指定します。ナビゲーション、ローカライズ、逆引きには影響しません。
+
+`exportNames.asset` で生成エクスポートの名前を変更できます（デフォルト `asset`）。既存のカスタム名が衝突する場合は未使用の `$asset` エイリアスを選択します。`route.asset` は常に利用できます。公開設定に秘密情報を含めないでください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```ts
 // named-routes.config.ts (or .mjs)
@@ -55,9 +65,10 @@ export default defineConfig({
   discovery: "framework",            // or "files" (1.x)
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
+  assets: { enabled: true, strict: true, exclude: ["**/*.map"] },
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs
   importSource: "@triooo/named-routes",
-  exportNames: { route: "url", routeName: "UrlName" },
+  exportNames: { route: "url", asset: "publicAsset", routeName: "UrlName" },
   pageExtensions: ["vue"],
   includeApi: false,
   exclude: ["**/__tests__/**", "app/pages/drafts/**"],
@@ -65,7 +76,7 @@ export default defineConfig({
   extraRoutes: { "public.login": "/login" },
   naming: { separator: ".", paramPrefix: "$", home: "home" },
   i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
-  defaults: { origin: "https://triooo.com.br", trailingSlash: false },
+  defaults: { origin: "https://triooo.com.br", assetBase: "https://cdn.example.com/public", trailingSlash: false },
 });
 ```
 
@@ -108,4 +119,4 @@ await generateRoutes({ root: "/path/to/app" }, { check: true });
 
 ---
 
-← 前へ: [ルートで構築する](build-with-routes.md) · [README に戻る](../../README.ja.md) · 次へ: [ガイド](guides.md) →
+← 前へ: [公開アセット](public-assets.md) · [README に戻る](../../README.ja.md) · 次へ: [ガイド](guides.md) →

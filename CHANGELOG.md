@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Split route helper and public asset documentation into dedicated multilingual pages, with focused examples for each existing API and independent CDN configuration.
+
+### Added
+
+
+- Added opt-in public asset discovery, strict generated asset path types, asset.has(), asset.paths() and asset.info().
+- Added asset content hashing and cache-busting URLs with asset(path, { version: true }); watched asset changes regenerate manifests.
+- Added route.withQuery() for query patches, repeated values and optional named schema validation.
+- Added route.canonical(), route.alternates() and isolated route.withDefaults() contexts for SEO, SSR and multi-tenant URLs.
+- Added read-only CLI audit with route and asset diagnostics, JSON output and strict CI mode.
+- Added multilingual advanced helper documentation, a real-runtime URL helpers playground, unit/type/generator tests and production asset-version E2E checks.
+
+- Added `asset()` / `route.asset()` and independent `defaults.assetBase` for public paths and CDN URLs; exported asset types and customizable generated asset exports. Added public-file browser checks in all nine example apps, regression tests for route/localize/match/parseQuery, and multilingual asset guides.
+
 ### Documentation
 
 - Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.
@@ -21,6 +35,15 @@
 - Regression tests cover framework integration hooks, base overrides and translated path resolution, including ambiguity, query/fragment preservation and dynamic segments.
 - Prevent concurrent route tree reads during TanStack Router generation by waiting for framework artifact updates.
 - Ignore TanStack temporary generator files in the Vite watcher, reducing unnecessary regenerations and filesystem contention on Windows.
+- Improved static asset E2E verification across all supported frameworks, including image decoding, intrinsic dimensions, HTTP status, MIME type and SVG content.
+- Fixed static file response handling in the E2E test server with explicit Content-Length headers, HEAD request support and improved streaming error handling.
+- Fixed TypeScript control-flow narrowing when validating route defaults, asset manifests, i18n configuration and query schema extensions.
+- Preserved strongly typed options in canonical(), alternates(), withQuery() and withDefaults() without removing runtime validation.
+- Fixed Biome suppression placement in URL query validation.
+- Fixed TypeScript compiler resolution in asset manifest tests using the package manifest instead of a restricted package subpath.
+- Improved generated TypeScript and JavaScript asset typecheck diagnostics.
+- Improved temporary fixture cleanup and subprocess error handling on Windows.
+- Updated browser-safety test expectations to include the new browser-safe asset and URL utility modules while preserving strict runtime dependency isolation.
 
 ## 2.0.0 - 2026-11-25
 

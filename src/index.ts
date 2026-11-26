@@ -1,5 +1,27 @@
 /** Browser-safe URL generation. Node-only discovery lives in ./generator. */
+
+import type { AssetManifest } from "./asset.js";
+import { type AssetHelper, compileAsset } from "./asset.js";
 import { closest } from "./suggest.js";
+import {
+	patchQuery,
+	type QueryPatch,
+	type QueryPatchFor,
+} from "./url-tools.js";
+
+export type {
+	AssetHelper,
+	AssetInfo,
+	AssetManifest,
+	AssetMetadata,
+	AssetOptions,
+	AssetPath,
+} from "./asset.js";
+export type {
+	QueryPatch,
+	QueryPatchFor,
+	QueryPatchValue,
+} from "./url-tools.js";
 
 /** The empty object type (`{}` without its "any non-nullish value" meaning). */
 type Empty = Record<never, never>;
@@ -46,6 +68,10 @@ export interface RouteOptions<Locale extends string = string> {
 }
 export interface RouteDefaults<Locale extends string = string> {
 	basePath?: string;
+	/** Public asset prefix or HTTP(S) CDN URL; defaults to basePath. */
+	assetBase?: string;
+	/** Snapshot of discovered public files; generated automatically when assets is enabled. */
+	assetManifest?: AssetManifest;
 	trailingSlash?: boolean;
 	origin?: string;
 	i18n?: I18nOptions<Locale>;
@@ -287,12 +313,54 @@ export interface LocalizeOptions<Locale extends string = string>
 	absolute?: boolean;
 }
 
+/** Request-local URL defaults; locale rules and query schemas remain unchanged. */
+export type RouteContextDefaults = Pick<
+	RouteDefaults,
+	"basePath" | "assetBase" | "origin" | "trailingSlash"
+>;
 /** Methods shared by every route helper. */
 export interface RouteHelpers<
 	Routes extends Readonly<Record<string, string>>,
 	Locale extends string = never,
 	Queries = Empty,
 > {
+	/** Resolve a public asset independently of the current locale. */
+	asset: AssetHelper;
+	/** Update an existing URL; undefined keeps a key, null removes it. */
+	withQuery(
+		url: string | URL,
+		patch: QueryPatch,
+		options?: MatchOptions & { name?: never },
+	): string;
+	withQuery<Name extends keyof Routes & string>(
+		url: string | URL,
+		patch: Name extends keyof Queries
+			? QueryPatchFor<QueryInput<Queries[Name]>>
+			: QueryPatch,
+		options: MatchOptions & { name: Name },
+	): string;
+	/** Absolute canonical URL; defaults to the bound/default locale. */
+	canonical<Name extends keyof Routes & string>(
+		name: Name,
+		...args: Args<
+			Routes[Name],
+			OptionsFor<Queries, Name, Locale>,
+			QueryRequired<Queries, Name>
+		>
+	): string;
+	/** Locale URL map; empty for unlocalized routes, absolute by default. */
+	alternates<Name extends keyof Routes & string>(
+		name: Name,
+		...args: Args<
+			Routes[Name],
+			OptionsFor<Queries, Name, Locale>,
+			QueryRequired<Queries, Name>
+		>
+	): Readonly<Partial<Record<Locale, string>>>;
+	/** Create a separate helper, retaining route/query types and bound locale. */
+	withDefaults(
+		defaults: RouteContextDefaults,
+	): NamedRoutes<Routes, Locale, Queries>;
 	has(name: string): name is keyof Routes & string;
 	names(): (keyof Routes & string)[];
 	pattern<Name extends keyof Routes & string>(name: Name): Routes[Name];
@@ -873,7 +941,7 @@ export function createRoutes(
 ): unknown {
 	if (!isObject(manifest))
 		fail("INVALID_MANIFEST", "Expected a name-to-pattern object");
-	if (!isObject(defaults))
+	if (!isObject(defaults as unknown))
 		fail("INVALID_OPTIONS", "Defaults must be an object");
 	const entries = new Map<string, CompiledEntry>(
 		Object.entries(manifest).map(([name, pattern]): [string, CompiledEntry] => {
@@ -892,6 +960,14 @@ export function createRoutes(
 			? ""
 			: staticPrefix(defaults.basePath, "basePath", "INVALID_BASE_PATH");
 	const origin = originOf(defaults.origin);
+	// Snapshot the public asset base together with the other defaults.
+	const asset = compileAsset(
+		defaults.assetBase,
+		prefix,
+		origin,
+		fail,
+		defaults.assetManifest,
+	);
 	if (
 		defaults.trailingSlash !== undefined &&
 		typeof defaults.trailingSlash !== "boolean"
@@ -908,7 +984,7 @@ export function createRoutes(
 		defaults.i18n === undefined
 			? undefined
 			: compileI18n(defaults.i18n, entries);
-	if (!isObject(extensions))
+	if (!isObject(extensions as unknown))
 		fail("INVALID_OPTIONS", "createRoutes extensions must be an object");
 	if (
 		extensions.validateQuery !== undefined &&
@@ -1008,7 +1084,7 @@ export function createRoutes(
 	) {
 		if (!isObject(params))
 			fail("INVALID_PARAMETER", "Parameters must be an object");
-		if (!isObject(options))
+		if (!isObject(options as unknown))
 			fail("INVALID_OPTIONS", "Options must be an object");
 		if (options.query !== undefined && !isObject(options.query))
 			fail("INVALID_QUERY", "query must be an object");
@@ -1248,7 +1324,7 @@ export function createRoutes(
 		pool: Candidate[];
 	}
 	function locate(input: string | URL, options: MatchOptions = {}) {
-		if (!isObject(options))
+		if (!isObject(options as unknown))
 			fail("INVALID_OPTIONS", "Match options must be an object");
 		let url: URL;
 		if (input instanceof URL) url = input;
@@ -1400,7 +1476,7 @@ export function createRoutes(
 		locale: string | undefined,
 		options: LocalizeOptions = {},
 	) {
-		if (!isObject(options))
+		if (!isObject(options as unknown))
 			fail("INVALID_OPTIONS", "Localize options must be an object");
 		if (!i18n) return null;
 		const target = checkLocale(locale ?? i18n.defaultLocale);
@@ -1588,6 +1664,54 @@ export function createRoutes(
 		}
 	}
 
+	// Snapshot only public configuration; keep schema validators by reference.
+	const contextManifest = Object.fromEntries(
+		[...entries].map(([name, entry]) => [name, entry.pattern]),
+	);
+	const contextDefaults: RouteDefaults = {
+		basePath: prefix,
+		origin,
+		assetBase: defaults.assetBase,
+		trailingSlash,
+		hrefs: defaults.hrefs,
+		i18n:
+			defaults.i18n === undefined
+				? undefined
+				: structuredClone({
+						locales: defaults.i18n.locales,
+						defaultLocale: defaults.i18n.defaultLocale,
+						localePrefix: defaults.i18n.localePrefix,
+						pathnames: defaults.i18n.pathnames,
+						domains: defaults.i18n.domains?.map(
+							({ domain, defaultLocale, locales, http }) => ({
+								domain,
+								defaultLocale,
+								locales,
+								http,
+							}),
+						),
+						unlocalized: defaults.i18n.unlocalized,
+					}),
+		assetManifest:
+			defaults.assetManifest === undefined
+				? undefined
+				: {
+						strict: defaults.assetManifest.strict,
+						files: Object.fromEntries(
+							asset.paths().map((path) => {
+								const info = asset.info(path);
+								return [
+									path,
+									{ version: info?.version ?? "", size: info?.size ?? 0 },
+								];
+							}),
+						),
+					},
+	};
+	const contextExtensions = {
+		...extensions,
+		...(extensions.query ? { query: { ...extensions.query } } : {}),
+	};
 	function helper(bound: string | undefined): unknown {
 		const named = (
 			name: string,
@@ -1596,6 +1720,95 @@ export function createRoutes(
 		) => build(bound, name, params, options);
 		return Object.freeze(
 			Object.assign(named, {
+				asset,
+				withQuery: (
+					url: string | URL,
+					patch: QueryPatch,
+					options: MatchOptions & { name?: string } = {},
+				) => {
+					if (!isObject(options as unknown))
+						fail("INVALID_OPTIONS", "withQuery options must be an object");
+					const updated = patchQuery(url, patch, fail);
+					const match =
+						matchUrl(url, options) ??
+						(options.basePath === undefined && prefix
+							? matchUrl(url, { basePath: true })
+							: null);
+					const name =
+						typeof options.name === "string" ? options.name : match?.name;
+					if (options.name !== undefined && (!name || match?.name !== name))
+						fail(
+							"INVALID_QUERY",
+							"URL does not match the specified route name",
+						);
+					if (name) {
+						const parsed = parseQuery(name, updated);
+						if (!parsed.ok)
+							fail("INVALID_QUERY", `Invalid query for ${name}`, {
+								route: name,
+								option: "query",
+							});
+					}
+					return updated;
+				},
+				canonical: (
+					name: string,
+					params?: Record<string, unknown>,
+					options: RouteOptions<string> = {},
+				) => {
+					if (!isObject(options as unknown))
+						fail("INVALID_OPTIONS", "canonical options must be an object");
+					const locale = options.locale ?? bound ?? i18n?.defaultLocale;
+					return build(bound, name, params, {
+						...options,
+						...(locale === undefined ? {} : { locale }),
+						absolute: true,
+					});
+				},
+				alternates: (
+					name: string,
+					params?: Record<string, unknown>,
+					options: RouteOptions<string> = {},
+				) => {
+					get(name);
+					if (!isObject(options as unknown))
+						fail("INVALID_OPTIONS", "alternates options must be an object");
+					if (!i18n || i18n.unlocalized.has(name)) return Object.freeze({});
+					return Object.freeze(
+						Object.fromEntries(
+							i18n.list.map((locale) => [
+								locale,
+								build(undefined, name, params, {
+									...options,
+									locale,
+									absolute: options.absolute ?? true,
+									basePath: options.basePath ?? true,
+								}),
+							]),
+						),
+					);
+				},
+				withDefaults: (overrides: RouteContextDefaults) => {
+					if (
+						!isObject(overrides) ||
+						Object.keys(overrides).some(
+							(key) =>
+								!["basePath", "assetBase", "origin", "trailingSlash"].includes(
+									key,
+								),
+						)
+					)
+						fail(
+							"INVALID_OPTIONS",
+							"withDefaults accepts only basePath, assetBase, origin and trailingSlash",
+						);
+					const scoped = createRoutes(
+						contextManifest,
+						{ ...contextDefaults, ...overrides },
+						contextExtensions,
+					);
+					return bound === undefined ? scoped : scoped.forLocale(bound);
+				},
 				has: (name: string) => typeof name === "string" && entries.has(name),
 				names: () => [...entries.keys()],
 				pattern: (name: string, locale?: string) => {

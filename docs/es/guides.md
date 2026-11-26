@@ -70,6 +70,7 @@ npx @triooo/named-routes doctor --v2
 npx @triooo/named-routes migrate --to 2 --write
 # With the package installed locally:
 npm exec -- named-routes generate
+npx @triooo/named-routes audit --strict --json
 ```
 
 <a id="doctor"></a>
@@ -107,6 +108,8 @@ No se encuentra routes.generated: confirma que la integración se ejecuta, ejecu
 La generación se niega a sobrescribir un archivo de salida escrito a mano. Elige otro output en lugar de añadir la firma de generado a código no relacionado. Mantén la salida generada fuera de los archivos enrutables. La interpolación dinámica no autoriza una petición; valida los permisos y las entradas de la aplicación en el destino.
 
 Desde la 1.1, todo NamedRouteError también tiene details: { file, files, route, pattern, option, hint } con lo que se conozca, por ejemplo los dos archivos de un conflicto de rutas o "Did you mean users.show?" para un nombre, una opción o una clave de names mal escritos. INVALID_QUERY indica que una query no cumplió su schema o que un mapa de schemas no es válido; INVALID_URL, que match() recibió algo que no es una ruta ni una URL. Desde la 2.0, los valores no válidos de router, pageExtensions y output producen INVALID_CONFIG (GENERATION_ERROR en la 1.x); los mensajes no cambian.
+
+Ante un error 404 de archivos estáticos, comprueba la ruta real de despliegue y el directorio público. `asset()` utiliza la base configurada, no la salida del bundler ni la petición actual. `INVALID_ASSET_BASE`, `INVALID_ASSET` e `INVALID_OPTIONS` identifican bases, rutas y opciones inválidas.
 
 ```ts
 import { NamedRouteError } from "@triooo/named-routes";

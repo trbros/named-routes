@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { route } from "../routes.generated";
+import { asset, route } from "../routes.generated";
 
 const links = [
   { label: "users.$id", href: route("users.$id", { id: 42 }) },
@@ -8,6 +8,7 @@ const links = [
 export const Route = createFileRoute("/")({
   component: () => (
     <ul>
+      <li><img data-testid="public-asset" src={asset("named-routes-probe.svg")} data-versioned-src={asset("named-routes-probe.svg", { version: true })} alt="Named Routes asset" width={32} height={32} /></li>
       {links.map((link) => (
         // Plain anchors: TanStack's typed <Link> expects its own route ids.
         <li key={link.href}>

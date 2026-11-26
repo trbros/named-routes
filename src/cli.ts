@@ -2,6 +2,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { auditProject, formatAudit } from "./audit.js";
 import { FRAMEWORK_BASE_DIR, normalizeBasePath } from "./base-path.js";
 import { findConfiguration, loadConfiguration } from "./config.js";
 import { diagnose, formatDiagnosis } from "./doctor.js";
@@ -22,7 +23,7 @@ import {
 	watchModes,
 } from "./watch.js";
 
-const help = `Usage: named-routes [generate|check|list|watch|init|doctor|migrate] [options]
+const help = `Usage: named-routes [generate|check|list|watch|init|doctor|audit|migrate] [options]
 
 Commands:
   generate            Write the typed route module (default)
@@ -32,6 +33,7 @@ Commands:
   init                Create named-routes.config.mjs for the detected framework
   doctor              Diagnose configuration, discovery, output and integration
                       (read-only; exit 1 on errors, or on warnings with --strict)
+  audit               Audit literal route and public asset references (read-only)
   migrate --to 2      Pin 1.x behavior in the named-routes config where 2.0
                       changes the generated module (dry run; --write applies)
 
@@ -46,8 +48,8 @@ Options:
   --api                   Include API routes and endpoints
   --watch-interval <ms>   Polling interval for watch (default 750)
   --watch-mode <mode>     auto (file events + rescan), native or poll (default auto)
-  --json                  doctor: machine-readable report
-  --strict                doctor: warnings also fail (exit code 1)
+  --json                  doctor/audit: machine-readable report
+  --strict                doctor/audit: warnings also fail (exit code 1)
   --no-color              doctor: plain output (also NO_COLOR or non-TTY)
   --v2                    doctor: also list what a 1.x project changes for 2.0
   --to <major>            migrate: target major version (2)
@@ -109,6 +111,7 @@ async function main() {
 			"watch",
 			"init",
 			"doctor",
+			"audit",
 			"migrate",
 		].includes(command)
 	)
@@ -153,6 +156,17 @@ async function main() {
 				: {}),
 		});
 	};
+	if (command === "audit") {
+		const result = await auditProject(await options());
+		process.stdout.write(
+			values.json
+				? `${JSON.stringify(result, null, 2)}\n`
+				: formatAudit(result),
+		);
+		if (result.summary.errors || (values.strict && result.summary.warnings))
+			process.exitCode = 1;
+		return;
+	}
 	if (command === "migrate") {
 		if (values.to !== "2")
 			throw new Error("Pass --to 2 (the only migration available).");

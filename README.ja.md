@@ -1,10 +1,12 @@
-# @triooo/named-routes
+# Named Routes
+
+**ルート、URL、アセットのための型安全なツールキット。**
 
 [English](README.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md)
 
 <!-- Generated from docs/content.json, docs/groups.json and docs/locales.json; run pnpm docs. -->
 
-**v2.1.0** · [ローカルインストールガイド（ポルトガル語）](LOCAL-DEVELOPMENT.pt-BR.md)
+`@triooo/named-routes` · **v2.1.0** · [ローカルインストールガイド（ポルトガル語）](LOCAL-DEVELOPMENT.pt-BR.md)
 
 ## 目次
 
@@ -19,7 +21,7 @@
 
 ## このパッケージでできること
 
-Triooo Named Routes は、フレームワークがすでにルーティングしているページを検出し、型付きの URL ヘルパーを生成します。ページを作り、route をインポートし、推論された名前で移動するだけです。信頼できる情報源は、これまでどおりファイルシステムです。
+Named Routes は、ルート、URL、アセットのための型安全なツールキットです。フレームワークがすでにルーティングしているページを検出し、型付きヘルパーを生成します。ナビゲーション用の route()、公開ファイルと CDN URL 用の asset()、既存 URL を読み取り・ローカライズ・正規化するヘルパーです。ファイルシステムが引き続き信頼できる唯一の情報源です。
 
 Next.js は withNamedRoutes、Nuxt はネイティブモジュール、Astro はネイティブ統合を使用します。ファイルベースの Vue Router、SvelteKit、React Router/Remix、TanStack Router は Vite プラグインを使用します。手動ルーターは手書きマニフェストで同じ型付きランタイムを使えます。
 
@@ -68,16 +70,19 @@ bun add @triooo/named-routes
 
 **ベースパス。** Next.js の basePath は自動的に取得され、名前や内部パスは変わりません。完全な公開パスが必要な場合にだけ basePath: true を指定します。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
 ```ts
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ basePath: "/app" });
 
 // In your application:
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("user.profile"); // /user/profile (Next Link)
 route("users.$user", { user: "ana" }); // /users/ana
 route("users.$user", { user: "ana" }, { basePath: true }); // /app/users/ana
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="frameworks"></a>
@@ -95,6 +100,10 @@ SvelteKit: +page.* ファイル、[id=matcher]（matcher は捨てる）、[[lan
 React Router / Remix の flat routes（app/routes）: ドットでネスト、_index、$param、($optional)、splat の $（名前は splat）、_ で始まるパスなしレイアウト、name_ によるネスト解除、[.] エスケープ、フォルダー/route.tsx モジュール。TanStack Router（src/routes）: フラットなファイルとフォルダーの併用、index/route、$param、{-$optional}、prefix{$param}、splat の $（名前は _splat）、_layout、- で始まる無視ファイル、(group)、.lazy ファイル。(beta) のようなオプションの静的セグメントには名前を付けられないため、ファイルを除外するか extraRoutes を使ってください。
 
 フレームワークによる検出（2.0 からのデフォルト）：フレームワークが最終的なルート表を公式に公開している場合は、その表から名前を付けるため、コードで宣言したパスも含まれます。Nuxt はモジュールが pages:resolved（definePageMeta の path と alias、モジュールが追加したページ）を読みます。Vue Router 5 は生成される typed-router.d.ts（definePage の path）、React Router は react-router routes --json（app/routes.ts の route()、index()、layout()、prefix()）、TanStack Router は routeTree.gen.ts です。あなたのコードを実行したり解析したりはしません。フレームワークが表を書き出すまでは上記のファイル規約を使い、CLI がその旨を表示します。discovery: "files" で 1.x のスキャナーを使い続けられます。Next.js、SvelteKit、Astro はコードでルートを宣言できないため、ファイルがソースです。
+
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
@@ -119,9 +128,10 @@ export default defineAstroConfig({
 });
 
 // Any component (adjust the import to your configured output):
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("users.$id", { id: 42 }); // internal path
 route("users.$id", { id: 42 }, { basePath: true }); // /app/users/42
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="naming"></a>
@@ -154,11 +164,17 @@ app/shop/[[...path]]/page.tsx        pages/shop/[[...path]].tsx        shop.$pat
 
 **[ルートで構築する](docs/ja/build-with-routes.md)** — [App Router のレシピ](docs/ja/build-with-routes.md#app-router) · [Pages Router のレシピ](docs/ja/build-with-routes.md#pages-router) · [パラメーターとエンコード](docs/ja/build-with-routes.md#parameters) · [クエリ文字列とフラグメント](docs/ja/build-with-routes.md#query-hash) · [型付きのクエリパラメーター](docs/ja/build-with-routes.md#typed-query) · [逆引きルーティングとアクティブなルート](docs/ja/build-with-routes.md#reverse-routing) · [basePath、末尾スラッシュ、オリジン](docs/ja/build-with-routes.md#base-path) · [言語と i18n](docs/ja/build-with-routes.md#i18n) · [TypeScript と Next の typedRoutes](docs/ja/build-with-routes.md#typescript) · [Next.js の typedRoutes 向けの型付き href](docs/ja/build-with-routes.md#typed-hrefs)
 
+**[ルートヘルパー](docs/ja/route-helpers.md)** — [route()](docs/ja/route-helpers.md#helper-route) · [route.localize()](docs/ja/route-helpers.md#helper-localize) · [route.match()](docs/ja/route-helpers.md#helper-match) · [route.parseQuery()](docs/ja/route-helpers.md#helper-parse-query) · [route.is()](docs/ja/route-helpers.md#helper-is) · [route.breadcrumbs()](docs/ja/route-helpers.md#helper-breadcrumbs) · [route.has()](docs/ja/route-helpers.md#helper-has) · [route.names()](docs/ja/route-helpers.md#helper-names) · [route.pattern()](docs/ja/route-helpers.md#helper-pattern) · [route.locales()](docs/ja/route-helpers.md#helper-locales) · [route.forLocale()](docs/ja/route-helpers.md#helper-for-locale)
+
+**[公開アセット](docs/ja/public-assets.md)** — [asset() / route.asset()](docs/ja/public-assets.md#assets) · [assetBase と CDN](docs/ja/public-assets.md#asset-base)
+
 **[API リファレンス](docs/ja/api-reference.md)** — [ランタイム API リファレンス](docs/ja/api-reference.md#runtime-api) · [ジェネレーターの設定](docs/ja/api-reference.md#configuration) · [固定名（任意）](docs/ja/api-reference.md#stable-names) · [ジェネレーターのプログラム API](docs/ja/api-reference.md#generator-api)
 
 **[ガイド](docs/ja/guides.md)** — [検出のエッジケース](docs/ja/guides.md#discovery) · [開発中の自動更新](docs/ja/guides.md#development) · [CLI と CI](docs/ja/guides.md#cli) · [診断: named-routes doctor](docs/ja/guides.md#doctor) · [エラーとトラブルシューティング](docs/ja/guides.md#errors) · [リライトと境界](docs/ja/guides.md#boundaries)
 
 **[プロジェクト](docs/ja/project.md)** — [ドキュメントサイト](docs/ja/project.md#website) · [試してみる: フレームワーク別デモ](docs/ja/project.md#demos) · [ステップごとのコントリビュート](docs/ja/project.md#contributing) · [バージョンとアップグレード](docs/ja/project.md#versioning) · [1.x からのアップグレード](docs/ja/project.md#migration)
+
+**[高度な URL ヘルパー](docs/ja/advanced-helpers.md)** — [型付きアセット](docs/ja/advanced-helpers.md#typed-assets) · [asset.has() / paths() / info()](docs/ja/advanced-helpers.md#asset-metadata) · [アセットのバージョン管理](docs/ja/advanced-helpers.md#asset-versioning) · [route.withQuery()](docs/ja/advanced-helpers.md#helper-with-query) · [route.alternates()](docs/ja/advanced-helpers.md#helper-alternates) · [route.canonical()](docs/ja/advanced-helpers.md#helper-canonical) · [route.withDefaults()](docs/ja/advanced-helpers.md#helper-with-defaults) · [ルートとアセットの監査](docs/ja/advanced-helpers.md#audit) · [ヘルパープレイグラウンド](docs/ja/advanced-helpers.md#helpers-playground)
 
 ## 公式リファレンス
 

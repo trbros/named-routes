@@ -1,5 +1,13 @@
 import { randomUUID } from "node:crypto";
 import {
+	type AssetDiscoveryOptions,
+	assetDirectory,
+	scanAssets,
+} from "./asset-manifest.js";
+
+export type { AssetDiscoveryOptions } from "./asset-manifest.js";
+
+import {
 	mkdir,
 	readdir,
 	readFile,
@@ -82,6 +90,8 @@ export interface ExportNames {
 	routes?: string;
 	/** URL helper export. Default "route". */
 	route?: string;
+	/** Public asset URL helper export. Default "asset". */
+	asset?: string;
 	/** Route name union type. Default "RouteName". */
 	routeName?: string;
 	/** Locale union type (with i18n). Default "RouteLocale". */
@@ -116,7 +126,9 @@ export interface GeneratorOptions {
 	importSource?: string;
 	exportNames?: ExportNames;
 	/** Public URL defaults serialized into the generated module. Never put secrets here. */
-	defaults?: Omit<RouteDefaults, "i18n" | "hrefs">;
+	defaults?: Omit<RouteDefaults, "i18n" | "hrefs" | "assetManifest">;
+	/** Opt in to typed public assets and content hashing. */
+	assets?: AssetDiscoveryOptions;
 	/**
 	 * "typed" (default since 2.0) makes route() return template literal types
 	 * (`/users/${string}`) accepted by Next.js typedRoutes without casts;
@@ -173,6 +185,8 @@ export interface Discovery {
 	entries: DiscoveredRoute[];
 	/** Runtime defaults written into the generated module. */
 	defaults: RouteDefaults;
+	/** Public directory watched when asset discovery is enabled. */
+	assetDirectory?: string;
 }
 
 const PACKAGE = "@triooo/named-routes";
@@ -240,6 +254,7 @@ const generatorKeys = new Set([
 	"importSource",
 	"exportNames",
 	"defaults",
+	"assets",
 	"hrefs",
 	"query",
 	"validateQuery",
@@ -380,10 +395,13 @@ export function validateOptions(options: unknown): GeneratorOptions {
 		if (!isRecord(o.exportNames)) invalid("exportNames must be an object");
 		const seen = new Set<string>();
 		for (const [key, value] of Object.entries(o.exportNames)) {
-			if (!["routes", "route", "routeName", "routeLocale"].includes(key))
+			if (
+				!["routes", "route", "asset", "routeName", "routeLocale"].includes(key)
+			)
 				unknownKey("exportNames", key, [
 					"routes",
 					"route",
+					"asset",
 					"routeName",
 					"routeLocale",
 				]);
@@ -421,8 +439,15 @@ export function validateOptions(options: unknown): GeneratorOptions {
 		for (const key of Object.keys(o.defaults))
 			if (key === "i18n")
 				invalid("Configure locales with the top-level i18n option");
-			else if (!["basePath", "trailingSlash", "origin"].includes(key))
-				unknownKey("defaults", key, ["basePath", "trailingSlash", "origin"]);
+			else if (
+				!["basePath", "assetBase", "trailingSlash", "origin"].includes(key)
+			)
+				unknownKey("defaults", key, [
+					"basePath",
+					"assetBase",
+					"trailingSlash",
+					"origin",
+				]);
 	}
 	return o;
 }
@@ -920,6 +945,16 @@ export async function discoverRoutes(
 		entries.map((entry) => [entry.name, entry.path]),
 	);
 	const defaults = runtimeDefaults(options, entries);
+	let publicDirectory: string | undefined;
+	if (options.assets !== undefined) {
+		// Validate options even if discovery is explicitly disabled.
+		assetDirectory(root, framework, options.assets);
+		if (options.assets.enabled !== false) {
+			const scanned = await scanAssets(root, framework, options.assets);
+			publicDirectory = scanned.directory;
+			defaults.assetManifest = scanned.manifest;
+		}
+	}
 	createRoutes(routes, defaults);
 	return {
 		root,
@@ -932,6 +967,7 @@ export async function discoverRoutes(
 		routes,
 		entries,
 		defaults,
+		...(publicDirectory ? { assetDirectory: publicDirectory } : {}),
 	};
 }
 
@@ -948,6 +984,7 @@ function runtimeDefaults(
 	if (input.trailingSlash !== undefined)
 		defaults.trailingSlash = input.trailingSlash;
 	if (input.origin !== undefined) defaults.origin = input.origin;
+	if (input.assetBase !== undefined) defaults.assetBase = input.assetBase;
 	// Type-only: typed is the createRoutes default; "string" selects the 1.x overload.
 	if (options.hrefs === "string") defaults.hrefs = "string";
 	const i18n = options.i18n;
@@ -984,10 +1021,24 @@ function render(
 	const names = {
 		routes: "routes",
 		route: "route",
+		asset: "asset",
 		routeName: "RouteName",
 		routeLocale: "RouteLocale",
 		...options.exportNames,
 	};
+	// Preserve existing custom exports: choose an unused alias if they already use "asset".
+	const occupied = new Set([
+		names.routes,
+		names.route,
+		names.routeName,
+		names.routeLocale,
+		"createRoutes",
+		"TypeOnlyQueries",
+		QUERIES,
+	]);
+	if (options.exportNames?.asset !== undefined && occupied.has(names.asset))
+		invalid(`exportNames.asset duplicates ${names.asset}`);
+	while (occupied.has(names.asset)) names.asset = `$${names.asset}`;
 	const literal = `{\n${Object.entries(discovery.routes)
 		.map(
 			([name, path]) => `  [${JSON.stringify(name)}]: ${JSON.stringify(path)}`,
@@ -1031,6 +1082,20 @@ function render(
 		lines.push(
 			`export const ${names.route} = createRoutes(${names.routes}, ${defaults}, { query: ${QUERIES}, validateQuery: ${options.validateQuery === true} });`,
 		);
+	// Export the bound asset helper for both TS and JS modules, including query schemas.
+	if (discovery.defaults.assetManifest?.strict) {
+		// Type-only path union: the same runtime helper still owns validation.
+		const paths =
+			Object.keys(discovery.defaults.assetManifest.files)
+				.map((path) => JSON.stringify(path))
+				.join(" | ") || "never";
+		const type = `import(${source}).AssetHelper<${paths}>`;
+		lines.push(
+			format === "ts"
+				? `export const ${names.asset} = ${names.route}.asset as unknown as ${type};`
+				: `export const ${names.asset} = /** @type {${type}} */ (/** @type {unknown} */ (${names.route}.asset));`,
+		);
+	} else lines.push(`export const ${names.asset} = ${names.route}.asset;`);
 	if (format === "ts") {
 		lines.push(
 			`export type ${names.routeName} = keyof typeof ${names.routes};`,

@@ -223,10 +223,27 @@ export async function serveStatic(directory, { fallback } = {}) {
 				.end("Not found");
 			return;
 		}
+		// Send an explicit content length for static responses.
+		const { size } = await stat(file);
+
 		response.writeHead(status, {
 			"content-type": types[extname(file)] ?? "application/octet-stream",
+			"content-length": size,
+			"cache-control": "no-store",
 		});
-		createReadStream(file).pipe(response);
+
+		if (request.method === "HEAD") {
+			response.end();
+			return;
+		}
+
+		const stream = createReadStream(file);
+
+		stream.on("error", (error) => {
+			response.destroy(error);
+		});
+
+		stream.pipe(response);
 	});
 	const port = await freePort();
 	await new Promise((done) => server.listen(port, "127.0.0.1", done));

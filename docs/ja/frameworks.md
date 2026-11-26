@@ -30,6 +30,10 @@ React Router / Remix の flat routes（app/routes）: ドットでネスト、_i
 
 フレームワークによる検出（2.0 からのデフォルト）：フレームワークが最終的なルート表を公式に公開している場合は、その表から名前を付けるため、コードで宣言したパスも含まれます。Nuxt はモジュールが pages:resolved（definePageMeta の path と alias、モジュールが追加したページ）を読みます。Vue Router 5 は生成される typed-router.d.ts（definePage の path）、React Router は react-router routes --json（app/routes.ts の route()、index()、layout()、prefix()）、TanStack Router は routeTree.gen.ts です。あなたのコードを実行したり解析したりはしません。フレームワークが表を書き出すまでは上記のファイル規約を使い、CLI がその旨を表示します。discovery: "files" で 1.x のスキャナーを使い続けられます。Next.js、SvelteKit、Astro はコードでルートを宣言できないため、ファイルがソースです。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
+
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
 import { defineConfig } from "vite";
@@ -53,9 +57,10 @@ export default defineAstroConfig({
 });
 
 // Any component (adjust the import to your configured output):
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("users.$id", { id: 42 }); // internal path
 route("users.$id", { id: 42 }, { basePath: true }); // /app/users/42
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="nextjs"></a>
@@ -74,6 +79,10 @@ Next の設定で typedRoutes: true にしている場合も、2.0 からは型�
 
 **CLI と設定変更。** dev/build 後に .named-routes/ へ有効なプレフィックスを保存します。basePath を変更したら Next を再起動してください。CI の初回ビルド前には共有 defaults.basePath または --base-path を使用します。翻訳 URL のリダイレクトは i18n と route.localize() を参照してください。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
+
 ```tsx
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
@@ -81,11 +90,13 @@ export default withNamedRoutes({ basePath: "/app", typedRoutes: true });
 
 // app/users/[user]/page.tsx → users.$user
 import Link from "next/link";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 // Next Link adds /app itself.
 <Link href={route("users.$user", { user: "ana" })}>Ana</Link>;
 // Plain anchors need the public path.
 <a href={route("users.$user", { user: "ana" }, { basePath: true })}>Ana</a>;
+<img src={asset("images/logo.svg")} alt="Logo" />;
+// File: public/images/logo.svg
 ```
 
 <a id="nuxt"></a>
@@ -102,6 +113,10 @@ nuxt.config の modules に "@triooo/named-routes/nuxt" を追加します。こ
 
 **ベース URL。** ネイティブモジュールは app.baseURL を継承します。NuxtLink はルーター側のベースを使用するため to は内部パスにし、通常の href や fetch には basePath: true を指定します。app.baseURL の変更後に Nuxt を再起動して CLI キャッシュを更新してください。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
+
 ```vue
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -114,14 +129,16 @@ export default defineNuxtConfig({
 
 <!-- app/pages/users/[id].vue → users.$id -->
 <script setup lang="ts">
-import { route } from "~/routes.generated";
+import { asset, route } from "~/routes.generated";
 </script>
 <template>
   <!-- NuxtLink applies app.baseURL -->
   <NuxtLink :to="route('users.$id', { id: 42 })">User 42</NuxtLink>
   <!-- Plain HTML link: /app/users/42 -->
   <a :href="route('users.$id', { id: 42 }, { basePath: true })">User 42</a>
+  <img :src="asset('images/logo.svg')" alt="Logo" />
 </template>
+<!-- File: public/images/logo.svg -->
 ```
 
 <a id="vue"></a>
@@ -137,6 +154,10 @@ import { route } from "~/routes.generated";
 **検証済み。** 名前は Vue Router 5 が書き出す typed-router.d.ts（dts オプション）から取るため、definePage({ path }) で上書きしたルートは実際に配信する URL で名前が付きます。このファイルができるまではファイルを走査します。これらの規約を使う実際の Vite 開発サーバーを CI で動かし、examples/vue を Vue Router 5（vue-router/vite）でビルド・実行してブラウザーで操作しています。users/_parent.vue のレイアウトと definePage({ path }) のページも含みます。
 
 **History のベース。** createWebHistory(import.meta.env.BASE_URL) を使う場合は例のように inheritViteBase: true と Vite の base を設定します。それ以外は history のベースを routerBase に明示します。Vite の base はアセット/CDN 専用の場合があります。RouterLink と router.push はプレフィックスを付けるため、通常の公開 URL にのみ basePath: true を使います。
+
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```ts
 // vite.config.ts
@@ -155,8 +176,10 @@ import { routes } from "vue-router/auto-routes";
 const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes });
 
 // src/pages/users/[id].vue → users.$id (inside the template)
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 <RouterLink :to="route('users.$id', { id: 42 })">User 42</RouterLink>
+<img :src="asset('images/logo.svg')" alt="Logo" />
+// File: public/images/logo.svg
 ```
 
 <a id="sveltekit"></a>
@@ -170,6 +193,10 @@ vite.config で sveltekit() の前に namedRoutes() を追加します。モジ�
 **ナビゲーション。** routerBase と SvelteKit の paths.base に同じプレフィックスを設定します。通常のリンク、goto、リダイレクトには公開 URL が必要なので、route() の第 3 引数に { basePath: true } を渡します。SvelteKit 2 は svelte.config の kit.paths.base を vite.config と共有し、SvelteKit 3 は以下のように sveltekit() に paths を渡します。
 
 **検証。** 規約テストと examples/sveltekit の統合テストはルート検出とナビゲーションを対象とします。現在の例は SvelteKit 3 と Svelte 5 を使用します。
+
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```svelte
 // vite.config.ts (SvelteKit 3)
@@ -186,10 +213,12 @@ export default defineConfig({
 
 <!-- src/routes/blog/[slug]/+page.svelte → blog.$slug -->
 <script lang="ts">
-  import { route } from "$lib/routes.generated";
+  import { asset, route } from "$lib/routes.generated";
 </script>
 <!-- Public URL: /app/blog/hello -->
 <a href={route("blog.$slug", { slug: "hello" }, { basePath: true })}>Hello</a>
+<img src={asset("images/logo.svg")} alt="Logo" />
+<!-- File: static/images/logo.svg -->
 ```
 
 <a id="astro"></a>
@@ -206,6 +235,10 @@ astro.config の integrations に @triooo/named-routes/astro のネイティブ�
 
 **ベース下へのデプロイ。** base: "/app" でも route() は内部パスを返します。Astro の HTML リンクでは第 3 引数に { basePath: true } を指定して /app/docs/guide/install を生成します。base の変更後は開発サーバーを再起動するか再ビルドしてください。CLI は最後に正常生成されたプレフィックスを再利用するか、--base-path で指定できます。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
+
 ```astro
 // astro.config.mjs
 import { defineConfig } from "astro/config";
@@ -218,12 +251,14 @@ export default defineConfig({
 
 ---
 // src/pages/docs/[...slug].astro → docs.$slug
-import { route } from "../../routes.generated";
+import { asset, route } from "../../routes.generated";
 ---
 <!-- Public URL: /app/docs/guide/install -->
 <a href={route("docs.$slug", { slug: ["guide", "install"] }, { basePath: true })}>
   Install guide
 </a>
+<img src={asset("images/logo.svg")} alt="Logo" />
+<!-- File: public/images/logo.svg -->
 ```
 
 <a id="react-router"></a>
@@ -239,6 +274,10 @@ React Router 7・8 のフレームワークモード（と Remix v2）では、v
 **制限と検証。** @react-router/dev が入っていない場合やコマンドが失敗した場合は、上記の flat routes のファイルを走査し、CLI が理由を表示します。(beta) のような省略可能な静的セグメントには名前を付けられません。ジェネレーターは明確なエラーで止まるので、そのファイルを除外してください。規約テストと、React Router 8 でビルドして実行する examples/react-router（app/routes.ts の route() で宣言したルートを含む）で検証しています。
 
 **Basename。** React Router の basename と namedRoutes({ routerBase }) に同じ値を設定します。Remix は対応する basename と同じ routerBase を使用します。手動ルーターは createBrowserRouter(..., { basename }) と必要に応じて手動マニフェストを使います。Link とルーターは basename を付けるため通常の HTML URL に basePath: true を指定します。
+
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```tsx
 // react-router.config.ts
@@ -257,12 +296,14 @@ export default defineConfig({
 
 // app/routes/concerts.$city.tsx → concerts.$city
 import { Link } from "react-router";
-import { route } from "../routes.generated";
+import { asset, route } from "../routes.generated";
 // Link applies basename; do not pass basePath: true here.
 <Link to={route("concerts.$city", { city: "lisbon" })}>Lisbon</Link>;
 <a href={route("concerts.$city", { city: "lisbon" }, { basePath: true })}>Lisbon</a>;
 
 // app/routes.ts: [...(await flatRoutes()), route("sobre", "about.tsx")] → sobre
+<img src={asset("images/logo.svg")} alt="Logo" />;
+// File: public/images/logo.svg
 ```
 
 <a id="tanstack-router"></a>
@@ -278,6 +319,10 @@ vite.config で @tanstack/router-plugin の tanstackRouter() と並べて namedR
 **検証済み。** 名前は TanStack Router のプラグインまたは CLI が生成する routeTree.gen.ts（遷移可能なパス）から取ります。このファイルができるまではファイルを走査します。規約テストと、TanStack Router プラグインでビルドして実行する examples/tanstack-router で検証しています。
 
 **ルーターの basepath。** アプリで createRouter({ routeTree, basepath: "/app" })、Vite で namedRoutes({ routerBase: "/app" }) を設定します。アセットを同じ配下で配信する場合は Vite の base を別途設定します。通常のリンクには basePath: true、絶対 URL には defaults.origin が必要です。.tanstack の一時ファイルは除外しますが、公開ルート表 routeTree.gen.ts は除外しないでください。
+
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
 
 ```tsx
 // vite.config.ts
@@ -295,8 +340,10 @@ export default defineConfig({
 // const router = createRouter({ routeTree, basepath: "/app" });
 
 // src/routes/posts/$postId.tsx → posts.$postId
-import { route } from "../../routes.generated";
+import { asset, route } from "../../routes.generated";
 <a href={route("posts.$postId", { postId: 42 }, { basePath: true })}>Share</a>;
+<img src={asset("images/logo.svg")} alt="Logo" />;
+// File: public/images/logo.svg
 ```
 
 <a id="manual-routes"></a>
@@ -310,6 +357,8 @@ import { route } from "../../routes.generated";
 それでも生成されたモジュールを共有したい場合（たとえばモノレポのパッケージから）は、framework: "manual" を指定して extraRoutes にルートを並べてください。ジェネレーターはスキャンせずに同じ型付きモジュールを書き出します。
 
 **手動ベース。** createRoutes() の defaults に basePath を設定し、ルーターの history base または basename に同じ値を指定します。ジェネレーターを使う手動プロジェクトでは named-routes.config の defaults.basePath を設定します。ルート名にプレフィックスは含まれません。
+
+**公開アセット。** 手動のモジュールから `const asset = route.asset` をエクスポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
 
 ```tsx
 // src/routes.ts
@@ -327,6 +376,9 @@ export const route = createRoutes({
 <RouterLink :to="route('users.show', { id: 42 })">Ana</RouterLink>
 // Plain HTML anchor: /app/users/42
 <a href={route("users.show", { id: 42 }, { basePath: true })}>Ana</a>;
+// Public files: export the helper with the manual manifest.
+export const asset = route.asset;
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 ---

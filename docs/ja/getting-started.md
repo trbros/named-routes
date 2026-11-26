@@ -14,7 +14,7 @@
 
 ## このパッケージでできること
 
-Triooo Named Routes は、フレームワークがすでにルーティングしているページを検出し、型付きの URL ヘルパーを生成します。ページを作り、route をインポートし、推論された名前で移動するだけです。信頼できる情報源は、これまでどおりファイルシステムです。
+Named Routes は、ルート、URL、アセットのための型安全なツールキットです。フレームワークがすでにルーティングしているページを検出し、型付きヘルパーを生成します。ナビゲーション用の route()、公開ファイルと CDN URL 用の asset()、既存 URL を読み取り・ローカライズ・正規化するヘルパーです。ファイルシステムが引き続き信頼できる唯一の情報源です。
 
 Next.js は withNamedRoutes、Nuxt はネイティブモジュール、Astro はネイティブ統合を使用します。ファイルベースの Vue Router、SvelteKit、React Router/Remix、TanStack Router は Vite プラグインを使用します。手動ルーターは手書きマニフェストで同じ型付きランタイムを使えます。
 
@@ -100,16 +100,19 @@ bun add @triooo/named-routes
 
 **ベースパス。** Next.js の basePath は自動的に取得され、名前や内部パスは変わりません。完全な公開パスが必要な場合にだけ basePath: true を指定します。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
 ```ts
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ basePath: "/app" });
 
 // In your application:
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("user.profile"); // /user/profile (Next Link)
 route("users.$user", { user: "ana" }); // /users/ana
 route("users.$user", { user: "ana" }, { basePath: true }); // /app/users/ana
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="naming"></a>

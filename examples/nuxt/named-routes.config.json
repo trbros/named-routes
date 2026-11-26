@@ -1,3 +1,7 @@
 {
-	"output": "app/routes.generated.ts"
+	"output": "app/routes.generated.ts",
+	"assets": {
+		"enabled": true,
+		"strict": true
+	}
 }

@@ -29,7 +29,7 @@ test("the runtime import graph contains only relative browser-safe modules", asy
 	}
 	assert.deepEqual(
 		[...seen].map((file) => relative(pkg, file).split(sep).join("/")).sort(),
-		["dist/index.js", "dist/suggest.js"],
+		["dist/asset.js", "dist/index.js", "dist/suggest.js", "dist/url-tools.js"],
 	);
 });
 

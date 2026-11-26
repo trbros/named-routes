@@ -159,4 +159,4 @@ const [href, setHref] = useState<string>(route("home"));
 
 ---
 
-← Anterior: [Guias](guides.md) · [Voltar ao README](../../README.pt-BR.md)
+← Anterior: [Guias](guides.md) · [Voltar ao README](../../README.pt-BR.md) · Próximo: [Helpers avançados de URL](advanced-helpers.md) →

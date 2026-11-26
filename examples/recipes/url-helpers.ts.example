@@ -1,0 +1,23 @@
+// Framework-agnostic recipe. For generated helpers, enable assets in named-routes.config.
+import { createRoutes } from "@triooo/named-routes";
+const route = createRoutes({ home: "/", products: "/products", about: "/about", "users.show": "/users/[id]" }, {
+  basePath: "/app",
+  origin: "https://example.com",
+  assetBase: "https://cdn.example.com/public",
+  i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "always", pathnames: { "/about": { pt: "/sobre" } } },
+  // Only needed with manual manifests: generated projects discover and hash real files.
+  assetManifest: { strict: true, files: { "images/logo.svg": { size: 64, version: "a8f32c910123" } } },
+});
+const asset = route.asset;
+asset("images/logo.svg", { version: true });
+asset.has("images/logo.svg");
+asset.paths();
+asset.info("images/logo.svg");
+route.withQuery("/products?page=1&category=books", { page: 2 });
+route.localize("/sobre", "en");
+route.match("/pt/sobre");
+route.parseQuery("products", "?page=2");
+route.canonical("about", {}, { locale: "pt" });
+route.alternates("about");
+const tenant = route.withDefaults({ origin: "https://tenant.example.com", assetBase: "https://cdn.tenant.example.com" });
+tenant.canonical("about");

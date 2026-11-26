@@ -68,6 +68,7 @@ export function namedRoutes(
 	let output = "";
 	/** Framework artifacts (typed-router.d.ts, routeTree.gen.ts, routes.ts) of the last run. */
 	let inputs = new Set<string>();
+	let publicDirectory: string | undefined;
 	// TanStack owns its generated route tree.
 	// Wait for the framework to publish it before reading it again.
 	let waitForTanstackTree = false;
@@ -90,6 +91,7 @@ export function namedRoutes(
 		);
 		output = result.output;
 		inputs = new Set(result.discovery.inputs.map((file) => resolve(file)));
+		publicDirectory = result.assetDirectory;
 		waitForTanstackTree =
 			result.framework === "tanstack-router" &&
 			result.discovery.used === "framework";
@@ -171,6 +173,17 @@ export function namedRoutes(
 					return;
 				}
 
+				// Assets must regenerate even when TanStack is waiting for its route tree.
+				if (publicDirectory) {
+					const offset = relative(publicDirectory, absolute);
+					if (
+						!isAbsolute(offset) &&
+						offset !== ".." &&
+						!offset.startsWith("../") &&
+						!offset.startsWith("..\\")
+					)
+						return schedule(log);
+				}
 				const structural =
 					event === "add" ||
 					event === "unlink" ||

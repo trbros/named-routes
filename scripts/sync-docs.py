@@ -76,8 +76,8 @@ def readme(item):
     code, labels = item["code"], item["labels"]
     switcher = " · ".join(f"[{other['name']}]({other['readme']})" for other in locales)
     lines = [
-        "# @triooo/named-routes", "", switcher, "", GENERATED, "",
-        f"**v{version}** · [{labels['localGuide']}](LOCAL-DEVELOPMENT.pt-BR.md)", "",
+        "# Named Routes", "", f"**{labels['tagline']}**", "", switcher, "", GENERATED, "",
+        f"`@triooo/named-routes` · **v{version}** · [{labels['localGuide']}](LOCAL-DEVELOPMENT.pt-BR.md)", "",
         "## " + labels["contents"], "",
     ]
     for item_id in FEATURED:

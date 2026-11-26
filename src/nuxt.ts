@@ -74,6 +74,7 @@ const setup = async (
 	const snapshotPath = resolve(nuxt.options.buildDir, NUXT_SNAPSHOT);
 	const artifact = relative(root, snapshotPath).split(sep).join("/");
 	let latest: NuxtSnapshot | undefined;
+	let publicDirectory: string | undefined;
 	let warned = false;
 	let running: Promise<void> = Promise.resolve();
 	const generate = () => {
@@ -98,6 +99,7 @@ const setup = async (
 						: {},
 				);
 				await writeFrameworkBase(result.root, "nuxt", result.defaults.basePath);
+				publicDirectory = result.assetDirectory;
 			} catch (caught) {
 				// Keep `nuxt dev` running with the last valid module; fail builds.
 				if (!nuxt.options.dev) throw caught;
@@ -125,6 +127,15 @@ const setup = async (
 	nuxt.hook("builder:watch", (_event, path) => {
 		const absolute = isAbsolute(path) ? path : resolve(root, path);
 		if (configs.has(absolute)) return generate();
+		if (publicDirectory) {
+			const offset = relative(publicDirectory, absolute);
+			if (
+				!isAbsolute(offset) &&
+				offset !== ".." &&
+				!offset.startsWith(`..${sep}`)
+			)
+				return generate();
+		}
 	});
 };
 

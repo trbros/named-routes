@@ -8,3 +8,4 @@ export const patterns = {
 	"docs.page": "/docs/[[...path]]",
 } as const;
 export const route = createRoutes(patterns);
+export const asset = route.asset;

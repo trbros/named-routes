@@ -25,21 +25,26 @@ Each name in these snippets assumes the corresponding page exists: posts/page.ts
 
 **Base and localized URLs.** The wrapper inherits basePath. Keep Next Link and router navigation internal; add basePath: true for plain anchors. Use route.localize() with the already selected locale in your proxy or middleware when redirecting incoming translated aliases; see the i18n section.
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
+
 ```tsx
 // Server Component (next.config.ts has basePath: "/app")
 import Link from "next/link";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 export default function PostLink() {
   return <>
     <Link href={route("posts.$post", { post: 42 })}>Post</Link>
     <a href={route("posts.$post", { post: 42 }, { basePath: true })}>Public URL</a>
+    <img src={asset("images/logo.svg")} alt="Logo" />
   </>;
 }
 
 // A separate Client Component file:
 "use client";
 import { useRouter } from "next/navigation";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 export function EditPost({ post }: { post: number }) {
   const router = useRouter();
   // Next's router applies the base itself.
@@ -51,6 +56,7 @@ export function EditPost({ post }: { post: number }) {
 // In a server-side redirect flow:
 // import { redirect } from "next/navigation";
 // redirect(route("posts"));
+// File: public/images/logo.svg
 ```
 
 <a id="pages-router"></a>
@@ -61,11 +67,15 @@ Use the same generated helper. The router hook comes from next/router in Pages R
 
 **Base and i18n.** Next Link and next/router use the configured basePath and locale themselves. Keep route() internal for those consumers. Use basePath: true and, when applicable, locale for plain public URLs; route.localize() requires configured i18n and does not install redirects automatically.
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
+
 ```tsx
 // With basePath: "/app" in next.config.ts
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 export default function Page() {
   const router = useRouter();
   return <>
@@ -74,10 +84,12 @@ export default function Page() {
     <button onClick={() => router.replace(route("user.profile"))}>
       Profile
     </button>
+    <img src={asset("images/logo.svg")} alt="Logo" />
     {/* Plain HTML URL needs the base explicitly. */}
     <a href={route("users.$user", { user: 42 }, { basePath: true })}>Public URL</a>
   </>;
 }
+// File: public/images/logo.svg
 ```
 
 <a id="parameters"></a>
@@ -186,6 +198,8 @@ All defaults are serialized into the public generated module. Never put secrets 
 
 **Standalone CLI.** After a successful framework generation, .named-routes/ stores the effective public prefix per framework. The CLI and doctor reuse it unless defaults.basePath or --base-path is supplied. Run the framework again after changing its config; the CLI does not execute framework configs itself. In a clean checkout or CI before the first framework run, put defaults.basePath in the shared named-routes config or pass --base-path. Use --base-path / to clear it. Ignore .named-routes/ in Git. The ordinary route() still omits the prefix; pass { basePath: true } for public URLs and plain anchors.
 
+`defaults.assetBase` overrides only the asset URL prefix. Omit it to inherit the effective `basePath`; use `"/"` or `""` for domain-root assets, or an HTTP(S) CDN URL. Navigation, localization and reverse matching remain unchanged.
+
 ```ts
 // next.config.ts
 export default withNamedRoutes({ basePath: "/admin" }, {
@@ -198,6 +212,11 @@ route("users.$user", { user: 42 }, { absolute: true });
 
 // In any framework: named-routes.config.mjs (alternative shared config)
 export default defineConfig({ defaults: { basePath: "/admin" } });
+
+// Public assets are separate from navigation; configure a CDN if needed.
+route.asset("images/logo.svg"); // /admin/images/logo.svg
+// defaults: { basePath: "/admin", assetBase: "https://cdn.example.com/public" }
+// route.asset("images/logo.svg") → https://cdn.example.com/public/images/logo.svg
 ```
 
 <a id="i18n"></a>
@@ -284,4 +303,4 @@ const href = route("users.$user", { user: 42 }); // `/users/${string}`
 
 ---
 
-← Previous: [Frameworks](frameworks.md) · [Back to README](../../README.md) · Next: [API reference](api-reference.md) →
+← Previous: [Frameworks](frameworks.md) · [Back to README](../../README.md) · Next: [Route helpers](route-helpers.md) →

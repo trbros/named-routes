@@ -1,38 +1,171 @@
 [
-  {
-    "id": "start",
-    "page": "getting-started.md",
-    "title": { "en": "Getting started", "pt": "Primeiros passos", "es": "Primeros pasos", "ja": "はじめに" },
-    "items": ["overview", "comparison", "installation", "quick-start", "naming"]
-  },
-  {
-    "id": "frameworks",
-    "page": "frameworks.md",
-    "title": { "en": "Frameworks", "pt": "Frameworks", "es": "Frameworks", "ja": "フレームワーク" },
-    "items": ["frameworks", "nextjs", "nuxt", "vue", "sveltekit", "astro", "react-router", "tanstack-router", "manual-routes"]
-  },
-  {
-    "id": "use",
-    "page": "build-with-routes.md",
-    "title": { "en": "Build with routes", "pt": "Desenvolva com rotas", "es": "Construye con rutas", "ja": "ルートで構築する" },
-    "items": ["app-router", "pages-router", "parameters", "query-hash", "typed-query", "reverse-routing", "base-path", "i18n", "typescript", "typed-hrefs"]
-  },
-  {
-    "id": "reference",
-    "page": "api-reference.md",
-    "title": { "en": "API reference", "pt": "Referência da API", "es": "Referencia de la API", "ja": "API リファレンス" },
-    "items": ["runtime-api", "configuration", "stable-names", "generator-api"]
-  },
-  {
-    "id": "advanced",
-    "page": "guides.md",
-    "title": { "en": "Guides", "pt": "Guias", "es": "Guías", "ja": "ガイド" },
-    "items": ["discovery", "development", "cli", "doctor", "errors", "boundaries"]
-  },
-  {
-    "id": "project",
-    "page": "project.md",
-    "title": { "en": "Project", "pt": "Projeto", "es": "Proyecto", "ja": "プロジェクト" },
-    "items": ["website", "demos", "contributing", "versioning", "migration"]
-  }
+	{
+		"id": "start",
+		"page": "getting-started.md",
+		"title": {
+			"en": "Getting started",
+			"pt": "Primeiros passos",
+			"es": "Primeros pasos",
+			"ja": "はじめに"
+		},
+		"items": [
+			"overview",
+			"comparison",
+			"installation",
+			"quick-start",
+			"naming"
+		]
+	},
+	{
+		"id": "frameworks",
+		"page": "frameworks.md",
+		"title": {
+			"en": "Frameworks",
+			"pt": "Frameworks",
+			"es": "Frameworks",
+			"ja": "フレームワーク"
+		},
+		"items": [
+			"frameworks",
+			"nextjs",
+			"nuxt",
+			"vue",
+			"sveltekit",
+			"astro",
+			"react-router",
+			"tanstack-router",
+			"manual-routes"
+		]
+	},
+	{
+		"id": "use",
+		"page": "build-with-routes.md",
+		"title": {
+			"en": "Build with routes",
+			"pt": "Desenvolva com rotas",
+			"es": "Construye con rutas",
+			"ja": "ルートで構築する"
+		},
+		"items": [
+			"app-router",
+			"pages-router",
+			"parameters",
+			"query-hash",
+			"typed-query",
+			"reverse-routing",
+			"base-path",
+			"i18n",
+			"typescript",
+			"typed-hrefs"
+		]
+	},
+	{
+		"id": "route-helpers",
+		"page": "route-helpers.md",
+		"title": {
+			"en": "Route helpers",
+			"pt": "Helpers de rotas",
+			"es": "Helpers de rutas",
+			"ja": "ルートヘルパー"
+		},
+		"items": [
+			"helper-route",
+			"helper-localize",
+			"helper-match",
+			"helper-parse-query",
+			"helper-is",
+			"helper-breadcrumbs",
+			"helper-has",
+			"helper-names",
+			"helper-pattern",
+			"helper-locales",
+			"helper-for-locale"
+		]
+	},
+	{
+		"id": "public-assets",
+		"page": "public-assets.md",
+		"title": {
+			"en": "Public assets",
+			"pt": "Arquivos públicos",
+			"es": "Archivos públicos",
+			"ja": "公開アセット"
+		},
+		"items": [
+			"assets",
+			"asset-base"
+		]
+	},
+	{
+		"id": "reference",
+		"page": "api-reference.md",
+		"title": {
+			"en": "API reference",
+			"pt": "Referência da API",
+			"es": "Referencia de la API",
+			"ja": "API リファレンス"
+		},
+		"items": [
+			"runtime-api",
+			"configuration",
+			"stable-names",
+			"generator-api"
+		]
+	},
+	{
+		"id": "advanced",
+		"page": "guides.md",
+		"title": {
+			"en": "Guides",
+			"pt": "Guias",
+			"es": "Guías",
+			"ja": "ガイド"
+		},
+		"items": [
+			"discovery",
+			"development",
+			"cli",
+			"doctor",
+			"errors",
+			"boundaries"
+		]
+	},
+	{
+		"id": "project",
+		"page": "project.md",
+		"title": {
+			"en": "Project",
+			"pt": "Projeto",
+			"es": "Proyecto",
+			"ja": "プロジェクト"
+		},
+		"items": [
+			"website",
+			"demos",
+			"contributing",
+			"versioning",
+			"migration"
+		]
+	},
+	{
+		"id": "advanced-helpers",
+		"page": "advanced-helpers.md",
+		"title": {
+			"en": "Advanced URL helpers",
+			"pt": "Helpers avançados de URL",
+			"es": "Helpers avanzados de URL",
+			"ja": "高度な URL ヘルパー"
+		},
+		"items": [
+			"typed-assets",
+			"asset-metadata",
+			"asset-versioning",
+			"helper-with-query",
+			"helper-alternates",
+			"helper-canonical",
+			"helper-with-defaults",
+			"audit",
+			"helpers-playground"
+		]
+	}
 ]

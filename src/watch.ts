@@ -215,6 +215,7 @@ export function generationTargets(
 		root: string;
 		sources: readonly { directory: string }[];
 		discovery?: { inputs: readonly string[] };
+		assetDirectory?: string;
 	},
 	config?: string,
 ): WatchTarget[] {
@@ -222,6 +223,9 @@ export function generationTargets(
 		path: source.directory,
 		recursive: true,
 	}));
+	// Assets also regenerate on content changes (cache-busting hashes).
+	if (result.assetDirectory)
+		targets.push({ path: result.assetDirectory, recursive: true });
 	// Framework artifacts such as src/routeTree.gen.ts or app/routes.ts.
 	for (const input of result.discovery?.inputs ?? [])
 		targets.push({ path: dirname(resolve(input)), recursive: false });

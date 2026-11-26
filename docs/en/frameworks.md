@@ -30,6 +30,10 @@ React Router / Remix flat routes (app/routes): dots nest, _index, $param, ($opti
 
 Framework discovery (default since 2.0): where the framework publishes its final route table through a documented channel, names come from it, so paths declared in code are included. Nuxt: the module reads pages:resolved (definePageMeta path and alias, pages added by modules). Vue Router 5: the typed-router.d.ts it generates (definePage path). React Router: react-router routes --json (route(), index(), layout() and prefix() in app/routes.ts). TanStack Router: routeTree.gen.ts. Nothing executes or parses your code. Until the framework has written its table, the file conventions above are used and the CLI says so; discovery: "files" keeps the 1.x scanner. Next.js, SvelteKit and Astro cannot declare routes in code, so their files are the source.
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
+
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
 import { defineConfig } from "vite";
@@ -53,9 +57,10 @@ export default defineAstroConfig({
 });
 
 // Any component (adjust the import to your configured output):
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("users.$id", { id: 42 }); // internal path
 route("users.$id", { id: 42 }, { basePath: true }); // /app/users/42
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="nextjs"></a>
@@ -74,6 +79,10 @@ With typedRoutes: true in the Next config, route() results are accepted by <Link
 
 **CLI and configuration changes.** After dev/build, the effective base is saved in .named-routes/ for CLI generation. Restart Next after changing basePath. Before the first build in CI, use shared defaults.basePath or --base-path. To redirect translated incoming URLs, see the i18n section and route.localize().
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
+
 ```tsx
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
@@ -81,11 +90,13 @@ export default withNamedRoutes({ basePath: "/app", typedRoutes: true });
 
 // app/users/[user]/page.tsx → users.$user
 import Link from "next/link";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 // Next Link adds /app itself.
 <Link href={route("users.$user", { user: "ana" })}>Ana</Link>;
 // Plain anchors need the public path.
 <a href={route("users.$user", { user: "ana" }, { basePath: true })}>Ana</a>;
+<img src={asset("images/logo.svg")} alt="Logo" />;
+// File: public/images/logo.svg
 ```
 
 <a id="nuxt"></a>
@@ -102,6 +113,10 @@ Add "@triooo/named-routes/nuxt" to modules in nuxt.config. The module names the 
 
 **Base URL.** The native module inherits app.baseURL. NuxtLink uses the router’s own base, so keep its to internal; plain href and fetch need basePath: true. Restart Nuxt after changing app.baseURL and regenerate the CLI cache.
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
+
 ```vue
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -114,14 +129,16 @@ export default defineNuxtConfig({
 
 <!-- app/pages/users/[id].vue → users.$id -->
 <script setup lang="ts">
-import { route } from "~/routes.generated";
+import { asset, route } from "~/routes.generated";
 </script>
 <template>
   <!-- NuxtLink applies app.baseURL -->
   <NuxtLink :to="route('users.$id', { id: 42 })">User 42</NuxtLink>
   <!-- Plain HTML link: /app/users/42 -->
   <a :href="route('users.$id', { id: 42 }, { basePath: true })">User 42</a>
+  <img :src="asset('images/logo.svg')" alt="Logo" />
 </template>
+<!-- File: public/images/logo.svg -->
 ```
 
 <a id="vue"></a>
@@ -137,6 +154,10 @@ For Vue apps with file-based routing (Vue Router 5 vue-router/vite, or unplugin-
 **Verified.** Names come from the typed-router.d.ts that Vue Router 5 writes (its dts option), so definePage({ path }) overrides are named by the URL they serve; before it exists, the files are scanned. A real Vite dev server with these conventions runs in CI, and examples/vue builds, runs and is driven in a browser with Vue Router 5 (vue-router/vite), including a users/_parent.vue layout and a definePage({ path }) page.
 
 **History base.** If the actual router uses createWebHistory(import.meta.env.BASE_URL), set inheritViteBase: true and Vite base as in the example. Otherwise pass the history base explicitly as routerBase; Vite base can be an asset-only/CDN URL. RouterLink and router.push apply the history base themselves; use basePath: true only for plain public URLs.
+
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
 
 ```ts
 // vite.config.ts
@@ -155,8 +176,10 @@ import { routes } from "vue-router/auto-routes";
 const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes });
 
 // src/pages/users/[id].vue → users.$id (inside the template)
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 <RouterLink :to="route('users.$id', { id: 42 })">User 42</RouterLink>
+<img :src="asset('images/logo.svg')" alt="Logo" />
+// File: public/images/logo.svg
 ```
 
 <a id="sveltekit"></a>
@@ -170,6 +193,10 @@ Add namedRoutes() before sveltekit() in vite.config. Writing the module to src/l
 **Navigation.** Pass the same navigation prefix as routerBase and SvelteKit paths.base. SvelteKit plain anchors, goto and redirects need the actual public path; use route(..., { basePath: true }) with the options in the third argument. For SvelteKit 2 share kit.paths.base from svelte.config with vite.config; SvelteKit 3 accepts paths in sveltekit() as shown below.
 
 **Verification.** Convention tests and the examples/sveltekit integration cover file discovery and navigation; the current example uses SvelteKit 3 with Svelte 5.
+
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
 
 ```svelte
 // vite.config.ts (SvelteKit 3)
@@ -186,10 +213,12 @@ export default defineConfig({
 
 <!-- src/routes/blog/[slug]/+page.svelte → blog.$slug -->
 <script lang="ts">
-  import { route } from "$lib/routes.generated";
+  import { asset, route } from "$lib/routes.generated";
 </script>
 <!-- Public URL: /app/blog/hello -->
 <a href={route("blog.$slug", { slug: "hello" }, { basePath: true })}>Hello</a>
+<img src={asset("images/logo.svg")} alt="Logo" />
+<!-- File: static/images/logo.svg -->
 ```
 
 <a id="astro"></a>
@@ -206,6 +235,10 @@ Register the native integration from @triooo/named-routes/astro in astro.config 
 
 **Deployment under a base.** With base: "/app", route() still returns an internal pathname. For an Astro HTML anchor, use the third argument { basePath: true } to obtain /app/docs/guide/install. Restart the Astro dev server or rebuild after changing base; the CLI can reuse the last successfully generated prefix or use --base-path explicitly.
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
+
 ```astro
 // astro.config.mjs
 import { defineConfig } from "astro/config";
@@ -218,12 +251,14 @@ export default defineConfig({
 
 ---
 // src/pages/docs/[...slug].astro → docs.$slug
-import { route } from "../../routes.generated";
+import { asset, route } from "../../routes.generated";
 ---
 <!-- Public URL: /app/docs/guide/install -->
 <a href={route("docs.$slug", { slug: ["guide", "install"] }, { basePath: true })}>
   Install guide
 </a>
+<img src={asset("images/logo.svg")} alt="Logo" />
+<!-- File: public/images/logo.svg -->
 ```
 
 <a id="react-router"></a>
@@ -239,6 +274,10 @@ For React Router 7 and 8 framework mode (and Remix v2), add namedRoutes() before
 **Limits and verification.** Without @react-router/dev installed, or when the command fails, the flat-route files above are scanned and the CLI reports why. Optional static segments such as (beta) cannot be named; the generator stops with a clear error so you can exclude the file. Verified by convention tests and examples/react-router, which builds and runs with React Router 8, including a route declared with route() in app/routes.ts.
 
 **Basename.** Share the same value between React Router’s basename and namedRoutes({ routerBase }). For Remix use its equivalent basename setting and the same routerBase; for a manually declared router use createBrowserRouter(..., { basename }) and a manual manifest when needed. Link and router navigation already apply basename; use basePath: true for plain HTML URLs.
+
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
 
 ```tsx
 // react-router.config.ts
@@ -257,12 +296,14 @@ export default defineConfig({
 
 // app/routes/concerts.$city.tsx → concerts.$city
 import { Link } from "react-router";
-import { route } from "../routes.generated";
+import { asset, route } from "../routes.generated";
 // Link applies basename; do not pass basePath: true here.
 <Link to={route("concerts.$city", { city: "lisbon" })}>Lisbon</Link>;
 <a href={route("concerts.$city", { city: "lisbon" }, { basePath: true })}>Lisbon</a>;
 
 // app/routes.ts: [...(await flatRoutes()), route("sobre", "about.tsx")] → sobre
+<img src={asset("images/logo.svg")} alt="Logo" />;
+// File: public/images/logo.svg
 ```
 
 <a id="tanstack-router"></a>
@@ -278,6 +319,10 @@ Add namedRoutes() next to tanstackRouter() from @tanstack/router-plugin in vite.
 **Verified.** Names come from the routeTree.gen.ts the TanStack Router plugin or CLI generates (its navigable paths); before it exists, the files are scanned. Convention tests plus examples/tanstack-router, which builds and runs with the TanStack router plugin.
 
 **Router basepath.** Set createRouter({ routeTree, basepath: "/app" }) in the application and namedRoutes({ routerBase: "/app" }) in Vite. Set Vite base separately when serving assets below that path. Use basePath: true for anchors and configure defaults.origin if you need absolute URLs. Ignore .tanstack temporary files, not routeTree.gen.ts: framework discovery uses the published tree.
+
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
+**Typed assets.** Enable assets: { strict: true } in named-routes.config; public paths are inferred from the local public directory (static/ in SvelteKit). See Typed assets, Asset versioning and Audit.
 
 ```tsx
 // vite.config.ts
@@ -295,8 +340,10 @@ export default defineConfig({
 // const router = createRouter({ routeTree, basepath: "/app" });
 
 // src/routes/posts/$postId.tsx → posts.$postId
-import { route } from "../../routes.generated";
+import { asset, route } from "../../routes.generated";
 <a href={route("posts.$postId", { postId: 42 }, { basePath: true })}>Share</a>;
+<img src={asset("images/logo.svg")} alt="Logo" />;
+// File: public/images/logo.svg
 ```
 
 <a id="manual-routes"></a>
@@ -310,6 +357,8 @@ Patterns use the bracket syntax regardless of the router's own syntax: /users/:i
 To share a generated module anyway (for example from a monorepo package), set framework: "manual" and list routes in extraRoutes; the generator writes the same typed module without scanning.
 
 **Manual base.** Set basePath in createRoutes() defaults and configure the same history base or basename in your router. In generator-based manual projects use defaults.basePath in named-routes.config. Route names never include the prefix.
+
+**Public assets.** Export `const asset = route.asset` from your manual module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
 
 ```tsx
 // src/routes.ts
@@ -327,6 +376,9 @@ export const route = createRoutes({
 <RouterLink :to="route('users.show', { id: 42 })">Ana</RouterLink>
 // Plain HTML anchor: /app/users/42
 <a href={route("users.show", { id: 42 }, { basePath: true })}>Ana</a>;
+// Public files: export the helper with the manual manifest.
+export const asset = route.asset;
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 ---

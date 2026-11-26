@@ -14,7 +14,7 @@
 
 ## Qué hace
 
-Triooo Named Routes descubre las páginas que tu framework ya enruta y genera helpers de URL tipados. Crea una página, importa route y navega por su nombre inferido. El sistema de archivos sigue siendo la fuente de verdad.
+Named Routes es el toolkit type-safe para rutas, URLs y assets. Descubre las páginas que tu framework ya enruta y genera helpers tipados: route() para la navegación, asset() para archivos públicos y URLs de CDN, y helpers que leen, localizan y canonicalizan URLs existentes. El sistema de archivos sigue siendo la fuente de verdad.
 
 Next.js usa withNamedRoutes, Nuxt su módulo nativo y Astro su integración nativa. Vue Router por archivos, SvelteKit, React Router/Remix y TanStack Router usan el plugin Vite. Los routers manuales usan el mismo runtime tipado con un manifiesto escrito a mano.
 
@@ -100,16 +100,19 @@ El alias de import @/routes.generated de abajo supone que @/* apunta a src/*. Si
 
 **Ruta base.** Next.js proporciona automáticamente su basePath; los nombres y las rutas internas no cambian. Usa basePath: true solo cuando se necesite la ruta pública completa.
 
+**Archivos públicos.** Importa `asset` desde el módulo generado y pasa una ruta relativa al directorio público, por ejemplo `asset("images/logo.svg")`. Incluye por defecto la base de navegación, pero nunca el idioma. Define `defaults.assetBase` explícitamente si los archivos se sirven desde otra ruta o CDN. No uses el helper con assets importados o procesados por el bundler. Consulta Archivos públicos.
+
 ```ts
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ basePath: "/app" });
 
 // In your application:
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("user.profile"); // /user/profile (Next Link)
 route("users.$user", { user: "ana" }); // /users/ana
 route("users.$user", { user: "ana" }, { basePath: true }); // /app/users/ana
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="naming"></a>

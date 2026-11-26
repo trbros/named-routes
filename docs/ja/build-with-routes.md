@@ -25,21 +25,26 @@
 
 **ベースと翻訳 URL。** ラッパーは basePath を継承します。Next Link とルーターは内部パスを使い、通常のリンクでは basePath: true を指定します。翻訳された受信 URL のリダイレクトには proxy または middleware で選択済みの言語を route.localize() に渡します。i18n を参照してください。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
+
 ```tsx
 // Server Component (next.config.ts has basePath: "/app")
 import Link from "next/link";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 export default function PostLink() {
   return <>
     <Link href={route("posts.$post", { post: 42 })}>Post</Link>
     <a href={route("posts.$post", { post: 42 }, { basePath: true })}>Public URL</a>
+    <img src={asset("images/logo.svg")} alt="Logo" />
   </>;
 }
 
 // A separate Client Component file:
 "use client";
 import { useRouter } from "next/navigation";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 export function EditPost({ post }: { post: number }) {
   const router = useRouter();
   // Next's router applies the base itself.
@@ -51,6 +56,7 @@ export function EditPost({ post }: { post: number }) {
 // In a server-side redirect flow:
 // import { redirect } from "next/navigation";
 // redirect(route("posts"));
+// File: public/images/logo.svg
 ```
 
 <a id="pages-router"></a>
@@ -61,11 +67,15 @@ export function EditPost({ post }: { post: number }) {
 
 **ベースと i18n。** Next Link と next/router は設定済みの basePath と locale を使用します。これらには route() の内部パスを渡します。通常の公開 URL では basePath: true と必要に応じて locale を指定します。route.localize() は i18n 設定を必要とし、自動でリダイレクトを追加しません。
 
+**公開アセット。** 生成モジュールから `asset` をインポートし、公開ディレクトリからの相対パス（例：`asset("images/logo.svg")`）を渡します。デフォルトではナビゲーションのベースを含みますが、ロケールは含めません。別のパスや CDN から配信する場合は `defaults.assetBase` を明示します。バンドラーで処理されたアセットには使用しないでください。公開アセットの項目を参照してください。
+
+**型付きアセット。** named-routes.config の assets: { strict: true } を有効にすると公開ディレクトリ（SvelteKit は static/）のパスを推論します。型付きアセット、バージョン管理、監査を参照してください。
+
 ```tsx
 // With basePath: "/app" in next.config.ts
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 export default function Page() {
   const router = useRouter();
   return <>
@@ -74,10 +84,12 @@ export default function Page() {
     <button onClick={() => router.replace(route("user.profile"))}>
       Profile
     </button>
+    <img src={asset("images/logo.svg")} alt="Logo" />
     {/* Plain HTML URL needs the base explicitly. */}
     <a href={route("users.$user", { user: 42 }, { basePath: true })}>Public URL</a>
   </>;
 }
+// File: public/images/logo.svg
 ```
 
 <a id="parameters"></a>
@@ -186,6 +198,8 @@ defaults はすべて、公開される生成モジュールにシリアライ�
 
 **CLI の単独実行。** フレームワークによる生成が成功すると .named-routes/ に有効な公開プレフィックスをフレームワークごとに保存します。defaults.basePath や --base-path がなければ CLI と doctor はこれを再利用します。設定変更後はフレームワークを再実行してください。CLI はフレームワークの設定ファイルを実行しません。初回起動前の CI では共有設定の defaults.basePath または --base-path を使用し、--base-path / で解除します。.named-routes/ は Git の対象外にしてください。route() は従来どおりプレフィックスを省略します。公開 URL や通常の HTML リンクには { basePath: true } を指定します。
 
+`defaults.assetBase` は公開アセットの URL プレフィックスだけを上書きします。省略すると有効な `basePath` を引き継ぎます。ドメインのルートから配信する場合は `"/"` または `""`、CDN の場合は HTTP(S) URL を指定します。ナビゲーション、ローカライズ、逆引きには影響しません。
+
 ```ts
 // next.config.ts
 export default withNamedRoutes({ basePath: "/admin" }, {
@@ -198,6 +212,11 @@ route("users.$user", { user: 42 }, { absolute: true });
 
 // In any framework: named-routes.config.mjs (alternative shared config)
 export default defineConfig({ defaults: { basePath: "/admin" } });
+
+// Public assets are separate from navigation; configure a CDN if needed.
+route.asset("images/logo.svg"); // /admin/images/logo.svg
+// defaults: { basePath: "/admin", assetBase: "https://cdn.example.com/public" }
+// route.asset("images/logo.svg") → https://cdn.example.com/public/images/logo.svg
 ```
 
 <a id="i18n"></a>
@@ -284,4 +303,4 @@ const href = route("users.$user", { user: 42 }); // `/users/${string}`
 
 ---
 
-← 前へ: [フレームワーク](frameworks.md) · [README に戻る](../../README.ja.md) · 次へ: [API リファレンス](api-reference.md) →
+← 前へ: [フレームワーク](frameworks.md) · [README に戻る](../../README.ja.md) · 次へ: [ルートヘルパー](route-helpers.md) →

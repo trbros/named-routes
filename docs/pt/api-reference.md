@@ -15,11 +15,15 @@
 
 route(nome, params?, opções?) retorna uma string de URL. params só é opcional quando o padrão não tem parâmetros obrigatórios. options contém query, hash, absolute, basePath e locale. route.has(nome) verifica a existência e restringe uma string a um nome conhecido; route.names() retorna os nomes; route.pattern(nome, locale?) retorna o padrão original ou traduzido; route.locales() lista os idiomas; route.forLocale(locale) retorna um helper vinculado a um idioma. route.match(url), route.is(nome, url) e route.breadcrumbs(url) mapeiam URLs de volta para nomes (veja Roteamento reverso).
 
-createRoutes(manifesto, defaults?) cria um helper congelado e independente e copia o manifesto. Defaults contém basePath, trailingSlash, origin e i18n. parsePattern(padrão) retorna segmentos static/dynamic/optionalDynamic/catchAll/optional/mixed e valida a sintaxe; formatPattern faz o inverso e patternParameters lista os nomes dos parâmetros. RouteValue, QueryValue, RouteParams, RouteOptions, RouteDefaults, I18nOptions, LocalePrefix, LocaleDomain, NamedRoutes e PatternSegment são tipos exportados.
+createRoutes(manifesto, defaults?) cria um helper congelado e independente e copia o manifesto. Defaults contém basePath, assetBase, trailingSlash, origin e i18n. parsePattern(padrão) retorna segmentos static/dynamic/optionalDynamic/catchAll/optional/mixed e valida a sintaxe; formatPattern faz o inverso e patternParameters lista os nomes dos parâmetros. RouteValue, QueryValue, RouteParams, RouteOptions, RouteDefaults, I18nOptions, LocalePrefix, LocaleDomain, NamedRoutes e PatternSegment são tipos exportados.
 
 Um manifesto tipado como Record<string, string> simples (por exemplo, carregado de JSON) também funciona: os nomes viram string e os parâmetros, um registro flexível, enquanto o runtime continua validando cada chamada.
 
 route.localize(url, locale?, options?: LocalizeOptions): string | null — traduz uma URL existente entre aliases configurados. Opções: sourceLocale, basePath (entrada com prefixo), includeBasePath (saída com prefixo), absolute (origin/domínio configurado). Preserva a query e o hash sem revalidar schemas de query.
+
+`route.asset(path, options?)` e a exportação gerada `asset` resolvem arquivos públicos sem depender do idioma, schemas de query ou nomes de rotas. `AssetHelper` e `AssetOptions` são tipos exportados. `route.localize(url, locale, options?)` traduz URLs conhecidas; `route.match()` encontra nome e parâmetros; `route.parseQuery()` valida a query quando há schemas em runtime.
+
+**Assets tipados.** Ative assets: { strict: true } em named-routes.config; caminhos públicos vêm da pasta pública local (static/ no SvelteKit). Veja Assets tipados, Versionamento e Auditoria.
 
 ```ts
 import { createRoutes } from "@triooo/named-routes";
@@ -44,7 +48,13 @@ Descoberta: discovery ("framework" por padrão desde a 2.0: a tabela de rotas do
 
 Nomes: names (padrão de URL → nome personalizado; todo caminho deve existir), extraRoutes (nome → padrão explícito, por exemplo destinos de rewrites), naming (separator, paramPrefix, home, transform) e i18n (locales, defaultLocale, localePrefix, pathnames, domains, localeParam, unlocalized).
 
-Saída: output (padrão src/routes.generated.ts; .ts, .mts, .js ou .mjs, nunca dentro de um arquivo roteável), importSource (módulo de onde o arquivo gerado importa createRoutes; padrão, o nome do pacote), exportNames (renomeia routes, route, RouteName e RouteLocale), defaults (basePath, trailingSlash e origin públicos; apenas essas chaves são serializadas), hrefs ("typed" por padrão desde a 2.0, ou "string"; só de tipos), query (módulo de schemas de query por rota) e validateQuery (empacota e executa esses schemas; padrão false). Os plugins aceitam watch (padrão true); o withNamedRoutes também aceita watchInterval (750 ms, 25–60000) e watchMode (auto, native ou poll). Opções passadas ao plugin sobrescrevem o arquivo de configuração.
+Saída: output (padrão src/routes.generated.ts; .ts, .mts, .js ou .mjs, nunca dentro de um arquivo roteável), importSource (módulo de onde o arquivo gerado importa createRoutes; padrão, o nome do pacote), exportNames (renomeia routes, route, asset, RouteName e RouteLocale), defaults (basePath, assetBase, trailingSlash e origin públicos; apenas essas chaves são serializadas), hrefs ("typed" por padrão desde a 2.0, ou "string"; só de tipos), query (módulo de schemas de query por rota) e validateQuery (empacota e executa esses schemas; padrão false). Os plugins aceitam watch (padrão true); o withNamedRoutes também aceita watchInterval (750 ms, 25–60000) e watchMode (auto, native ou poll). Opções passadas ao plugin sobrescrevem o arquivo de configuração.
+
+`defaults.assetBase` sobrescreve apenas o prefixo das URLs de arquivos públicos. Omita para herdar o `basePath` efetivo; use `"/"` ou `""` para arquivos na raiz do domínio, ou uma URL HTTP(S) de CDN. Navegação, localização e roteamento reverso não mudam.
+
+`exportNames.asset` renomeia a exportação gerada (padrão `asset`). Se uma exportação antiga já usar esse nome, um alias livre `$asset` será escolhido; `route.asset` continua disponível no helper. Nunca inclua segredos nos defaults públicos.
+
+**Assets tipados.** Ative assets: { strict: true } em named-routes.config; caminhos públicos vêm da pasta pública local (static/ no SvelteKit). Veja Assets tipados, Versionamento e Auditoria.
 
 ```ts
 // named-routes.config.ts (or .mjs)
@@ -55,9 +65,10 @@ export default defineConfig({
   discovery: "framework",            // or "files" (1.x)
   routesDir: "app/pages",            // non-Next frameworks
   // appDir: "src/app", pagesDir: false, // Next.js
+  assets: { enabled: true, strict: true, exclude: ["**/*.map"] },
   output: "app/utils/routes.ts",     // .ts .mts .js .mjs
   importSource: "@triooo/named-routes",
-  exportNames: { route: "url", routeName: "UrlName" },
+  exportNames: { route: "url", asset: "publicAsset", routeName: "UrlName" },
   pageExtensions: ["vue"],
   includeApi: false,
   exclude: ["**/__tests__/**", "app/pages/drafts/**"],
@@ -65,7 +76,7 @@ export default defineConfig({
   extraRoutes: { "public.login": "/login" },
   naming: { separator: ".", paramPrefix: "$", home: "home" },
   i18n: { locales: ["en", "pt"], defaultLocale: "en", localePrefix: "as-needed" },
-  defaults: { origin: "https://triooo.com.br", trailingSlash: false },
+  defaults: { origin: "https://triooo.com.br", assetBase: "https://cdn.example.com/public", trailingSlash: false },
 });
 ```
 
@@ -108,4 +119,4 @@ await generateRoutes({ root: "/path/to/app" }, { check: true });
 
 ---
 
-← Anterior: [Desenvolva com rotas](build-with-routes.md) · [Voltar ao README](../../README.pt-BR.md) · Próximo: [Guias](guides.md) →
+← Anterior: [Arquivos públicos](public-assets.md) · [Voltar ao README](../../README.pt-BR.md) · Próximo: [Guias](guides.md) →

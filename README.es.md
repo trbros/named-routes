@@ -1,10 +1,12 @@
-# @triooo/named-routes
+# Named Routes
+
+**El toolkit type-safe para rutas, URLs y assets.**
 
 [English](README.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md)
 
 <!-- Generated from docs/content.json, docs/groups.json and docs/locales.json; run pnpm docs. -->
 
-**v2.1.0** · [Guía de instalación local (en portugués)](LOCAL-DEVELOPMENT.pt-BR.md)
+`@triooo/named-routes` · **v2.1.0** · [Guía de instalación local (en portugués)](LOCAL-DEVELOPMENT.pt-BR.md)
 
 ## Contenido
 
@@ -19,7 +21,7 @@
 
 ## Qué hace
 
-Triooo Named Routes descubre las páginas que tu framework ya enruta y genera helpers de URL tipados. Crea una página, importa route y navega por su nombre inferido. El sistema de archivos sigue siendo la fuente de verdad.
+Named Routes es el toolkit type-safe para rutas, URLs y assets. Descubre las páginas que tu framework ya enruta y genera helpers tipados: route() para la navegación, asset() para archivos públicos y URLs de CDN, y helpers que leen, localizan y canonicalizan URLs existentes. El sistema de archivos sigue siendo la fuente de verdad.
 
 Next.js usa withNamedRoutes, Nuxt su módulo nativo y Astro su integración nativa. Vue Router por archivos, SvelteKit, React Router/Remix y TanStack Router usan el plugin Vite. Los routers manuales usan el mismo runtime tipado con un manifiesto escrito a mano.
 
@@ -68,16 +70,19 @@ El alias de import @/routes.generated de abajo supone que @/* apunta a src/*. Si
 
 **Ruta base.** Next.js proporciona automáticamente su basePath; los nombres y las rutas internas no cambian. Usa basePath: true solo cuando se necesite la ruta pública completa.
 
+**Archivos públicos.** Importa `asset` desde el módulo generado y pasa una ruta relativa al directorio público, por ejemplo `asset("images/logo.svg")`. Incluye por defecto la base de navegación, pero nunca el idioma. Define `defaults.assetBase` explícitamente si los archivos se sirven desde otra ruta o CDN. No uses el helper con assets importados o procesados por el bundler. Consulta Archivos públicos.
+
 ```ts
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ basePath: "/app" });
 
 // In your application:
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("user.profile"); // /user/profile (Next Link)
 route("users.$user", { user: "ana" }); // /users/ana
 route("users.$user", { user: "ana" }, { basePath: true }); // /app/users/ana
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="frameworks"></a>
@@ -95,6 +100,10 @@ SvelteKit: archivos +page.*, [id=matcher] (el matcher se descarta), [[lang]], [.
 Flat routes de React Router / Remix (app/routes): los puntos anidan, _index, $param, ($opcional), splat $ (llamado splat), layouts _sin-ruta, exclusión con nombre_, escapes [.] y módulos carpeta/route.tsx. TanStack Router (src/routes): archivos planos y en carpetas, index/route, $param, {-$opcional}, prefijo{$param}, splat $ (llamado _splat), _layouts, archivos -ignorados, (grupos) y archivos .lazy. Los segmentos estáticos opcionales como (beta) no pueden nombrarse; excluye el archivo o usa extraRoutes.
 
 Descubrimiento por el framework (por defecto desde la 2.0): cuando el framework publica su tabla final de rutas por un canal documentado, los nombres salen de ella, así que las rutas declaradas en código también se incluyen. Nuxt: el módulo lee pages:resolved (path y alias de definePageMeta, páginas añadidas por módulos). Vue Router 5: el typed-router.d.ts que genera (path de definePage). React Router: react-router routes --json (route(), index(), layout() y prefix() en app/routes.ts). TanStack Router: routeTree.gen.ts. Nada ejecuta ni analiza tu código. Mientras el framework no haya escrito su tabla se usan las convenciones de archivos anteriores y la CLI lo indica; discovery: "files" mantiene el escáner de la 1.x. Next.js, SvelteKit y Astro no declaran rutas en código, así que sus archivos son la fuente.
+
+**Archivos públicos.** Importa `asset` desde el módulo generado y pasa una ruta relativa al directorio público, por ejemplo `asset("images/logo.svg")`. Incluye por defecto la base de navegación, pero nunca el idioma. Define `defaults.assetBase` explícitamente si los archivos se sirven desde otra ruta o CDN. No uses el helper con assets importados o procesados por el bundler. Consulta Archivos públicos.
+
+**Assets tipados.** Activa assets: { strict: true } en named-routes.config; las rutas públicas se infieren de la carpeta pública (static/ en SvelteKit). Consulta Assets tipados, Versionado y Auditoría.
 
 ```ts
 // vite.config.ts (Vue, SvelteKit, React Router, TanStack Router)
@@ -119,9 +128,10 @@ export default defineAstroConfig({
 });
 
 // Any component (adjust the import to your configured output):
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("users.$id", { id: 42 }); // internal path
 route("users.$id", { id: 42 }, { basePath: true }); // /app/users/42
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="naming"></a>
@@ -154,11 +164,17 @@ app/shop/[[...path]]/page.tsx        pages/shop/[[...path]].tsx        shop.$pat
 
 **[Construye con rutas](docs/es/build-with-routes.md)** — [Recetas para el App Router](docs/es/build-with-routes.md#app-router) · [Recetas para el Pages Router](docs/es/build-with-routes.md#pages-router) · [Parámetros y codificación](docs/es/build-with-routes.md#parameters) · [Query strings y fragmentos](docs/es/build-with-routes.md#query-hash) · [Parámetros de query tipados](docs/es/build-with-routes.md#typed-query) · [Enrutamiento inverso y ruta activa](docs/es/build-with-routes.md#reverse-routing) · [basePath, barras finales y orígenes](docs/es/build-with-routes.md#base-path) · [Idiomas e i18n](docs/es/build-with-routes.md#i18n) · [TypeScript y typedRoutes de Next](docs/es/build-with-routes.md#typescript) · [Hrefs tipados para typedRoutes de Next.js](docs/es/build-with-routes.md#typed-hrefs)
 
+**[Helpers de rutas](docs/es/route-helpers.md)** — [route()](docs/es/route-helpers.md#helper-route) · [route.localize()](docs/es/route-helpers.md#helper-localize) · [route.match()](docs/es/route-helpers.md#helper-match) · [route.parseQuery()](docs/es/route-helpers.md#helper-parse-query) · [route.is()](docs/es/route-helpers.md#helper-is) · [route.breadcrumbs()](docs/es/route-helpers.md#helper-breadcrumbs) · [route.has()](docs/es/route-helpers.md#helper-has) · [route.names()](docs/es/route-helpers.md#helper-names) · [route.pattern()](docs/es/route-helpers.md#helper-pattern) · [route.locales()](docs/es/route-helpers.md#helper-locales) · [route.forLocale()](docs/es/route-helpers.md#helper-for-locale)
+
+**[Archivos públicos](docs/es/public-assets.md)** — [asset() / route.asset()](docs/es/public-assets.md#assets) · [assetBase y CDN](docs/es/public-assets.md#asset-base)
+
 **[Referencia de la API](docs/es/api-reference.md)** — [Referencia de la API del runtime](docs/es/api-reference.md#runtime-api) · [Configuración del generador](docs/es/api-reference.md#configuration) · [Nombres estables opcionales](docs/es/api-reference.md#stable-names) · [API programática del generador](docs/es/api-reference.md#generator-api)
 
 **[Guías](docs/es/guides.md)** — [Casos límite del descubrimiento](docs/es/guides.md#discovery) · [Actualizaciones automáticas en desarrollo](docs/es/guides.md#development) · [CLI e integración continua](docs/es/guides.md#cli) · [Diagnóstico: named-routes doctor](docs/es/guides.md#doctor) · [Errores y solución de problemas](docs/es/guides.md#errors) · [Rewrites y límites](docs/es/guides.md#boundaries)
 
 **[Proyecto](docs/es/project.md)** — [Sitio de documentación](docs/es/project.md#website) · [Pruébalo: demos por framework](docs/es/project.md#demos) · [Contribuye paso a paso](docs/es/project.md#contributing) · [Versiones y actualizaciones](docs/es/project.md#versioning) · [Actualizar desde la 1.x](docs/es/project.md#migration)
+
+**[Helpers avanzados de URL](docs/es/advanced-helpers.md)** — [Assets tipados](docs/es/advanced-helpers.md#typed-assets) · [asset.has() / paths() / info()](docs/es/advanced-helpers.md#asset-metadata) · [Versionado de assets](docs/es/advanced-helpers.md#asset-versioning) · [route.withQuery()](docs/es/advanced-helpers.md#helper-with-query) · [route.alternates()](docs/es/advanced-helpers.md#helper-alternates) · [route.canonical()](docs/es/advanced-helpers.md#helper-canonical) · [route.withDefaults()](docs/es/advanced-helpers.md#helper-with-defaults) · [Auditoría de rutas y assets](docs/es/advanced-helpers.md#audit) · [Playground de helpers](docs/es/advanced-helpers.md#helpers-playground)
 
 ## Referencias oficiales
 

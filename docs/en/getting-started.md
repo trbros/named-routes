@@ -14,7 +14,7 @@
 
 ## What it does
 
-Triooo Named Routes discovers the pages your framework already routes and generates typed URL helpers. Create a page, import route, and navigate by its inferred name. The filesystem remains the source of truth.
+Named Routes is the type-safe toolkit for routes, URLs and assets. It discovers the pages your framework already routes and generates typed helpers: route() for navigation, asset() for public files and CDN URLs, and helpers that read, localize and canonicalize existing URLs. The filesystem remains the source of truth.
 
 Next.js uses withNamedRoutes, Nuxt uses its native module, and Astro uses the native integration. Vue Router file-based routing, SvelteKit, React Router/Remix and TanStack Router use the Vite plugin. Manual routers use the same typed runtime with a written manifest.
 
@@ -100,16 +100,19 @@ The import alias @/routes.generated below assumes @/* points to src/*. If your a
 
 **Base path.** Next.js provides its basePath automatically; the route names and internal paths do not change. Only ask for basePath: true when the consumer needs a complete public path.
 
+**Public assets.** Import `asset` from the generated module and pass a path relative to the public directory, for example `asset("images/logo.svg")`. It includes the configured navigation base by default and never includes a locale. Set `defaults.assetBase` explicitly if the public files are hosted on a different path or CDN. Do not pass imported/bundled assets to this helper. See Public assets.
+
 ```ts
 // next.config.ts
 import { withNamedRoutes } from "@triooo/named-routes/next";
 export default withNamedRoutes({ basePath: "/app" });
 
 // In your application:
-import { route } from "@/routes.generated";
+import { asset, route } from "@/routes.generated";
 route("user.profile"); // /user/profile (Next Link)
 route("users.$user", { user: "ana" }); // /users/ana
 route("users.$user", { user: "ana" }, { basePath: true }); // /app/users/ana
+asset("images/logo.svg"); // /app/images/logo.svg
 ```
 
 <a id="naming"></a>

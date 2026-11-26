@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Link, Route, Routes, useParams } from "react-router";
-import { route } from "./routes";
+import { asset, route } from "./routes";
 
 function Home() {
   const links = [
@@ -10,6 +10,7 @@ function Home() {
   ];
   return (
     <ul>
+      <li><img data-testid="public-asset" src={asset("named-routes-probe.svg")} alt="Named Routes asset" width={32} height={32} /></li>
       {links.map((link) => (
         <li key={link.href}>
           <Link to={link.href}>{link.label}</Link> → <code>{link.href}</code>

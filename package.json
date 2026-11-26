@@ -1,7 +1,7 @@
 {
 	"name": "@triooo/named-routes",
 	"version": "2.1.0",
-	"description": "Typed named routes for Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router, discovered from the framework's own route table",
+	"description": "The type-safe toolkit for routes, URLs and assets in Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router",
 	"keywords": [
 		"named-routes",
 		"typescript",
