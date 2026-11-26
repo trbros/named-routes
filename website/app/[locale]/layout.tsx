@@ -3,14 +3,13 @@ import { isLocale } from "../../lib/locales";
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { release } from "../../lib/release";
 import { DocumentLanguage } from "../../components/document-language";
 import { MotionObserver } from "../../components/motion";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ui");
   return {
     title: {
-      default: `Named Routes v${release.version} — ${t("site_tagline_5e1f02")}`,
+      default: `Named Routes — ${t("site_tagline_5e1f02")}`,
       template: "%s · triooo Named Routes",
     },
     description: t("site_description_9a7c33"),

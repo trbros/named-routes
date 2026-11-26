@@ -2,6 +2,7 @@
 import { useSiteLocale } from "./use-site-locale";
 import { useState } from "react";
 import { Icon } from "./icon";
+import { Button } from "./ui/button";
 export function CopyButton({ text, label }: { text: string; label?: string }) {
   const { t } = useSiteLocale();
   const [status, setStatus] = useState("");
@@ -15,15 +16,10 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
   }
   return (
     <span className="copy-control">
-      <button
-        type="button"
-        className="button quiet"
-        onClick={copy}
-        aria-label={label ?? t("copy_code_6c1069")}
-      >
+      <Button type="button" variant="outline" size="sm" onClick={copy} aria-label={label ?? t("copy_code_6c1069")}>
         <Icon name={status === "copied" ? "check" : "copy"} size={15} />
         {label ?? t("copy_code_6c1069")}
-      </button>
+      </Button>
       <span role="status" className="copy-status">
         {status === "copied"
           ? t("copied_8e3df4")

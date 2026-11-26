@@ -8,9 +8,27 @@ import { type RouteName, route, routes } from "../src/routes.generated";
 import { CodeBlock, InlineCode } from "./code-block";
 import { CopyButton } from "./copy-button";
 import { FlapText } from "./flap-text";
+import { HelpersPlayground } from "./helpers-playground";
 import { Icon } from "./icon";
 import { formatParams, RouteStoryboard } from "./route-storyboard";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { useSiteLocale } from "./use-site-locale";
+
+/** A labelled shadcn Input in the playground's monospace field style. */
+function Field({ id, label, hint, ...props }: { id: string; label: string; hint?: string } & React.ComponentProps<typeof Input>) {
+  return (
+    <div className="grid min-w-0 gap-2">
+      <Label htmlFor={id} className="font-mono text-[11px] font-normal text-muted-foreground">
+        {label}
+        {hint && <span className="text-[10px] opacity-70">{hint}</span>}
+      </Label>
+      <Input id={id} spellCheck={false} className="h-9 bg-background font-mono text-xs md:text-xs" {...props} />
+    </div>
+  );
+}
 
 const scenarios = [
   { id: "users", label: "scenario_0", name: "users.$user", file: "users/[user]/page.tsx", parameter: "user", initial: "ana" },
@@ -139,23 +157,30 @@ export function OpenPage() {
               <Icon name="code" size={14} />
               page.tsx <small>home</small>
             </div>
-            {scenarios.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={index === selected}
-                className={`file-item ${index === selected ? "selected" : ""}`}
-                onClick={() => choose(index)}
-              >
-                <span className="file-folder">
-                  <Icon name="folder" size={15} />
-                  {`[locale]/${item.file.split("/").slice(0, -1).join("/")}`}
-                </span>
-                <span className="file-page">
-                  <span>TSX</span>page.tsx
-                </span>
-              </button>
-            ))}
+            <ToggleGroup
+              type="single"
+              orientation="vertical"
+              value={String(selected)}
+              onValueChange={(next) => next && choose(Number(next))}
+              className="grid w-full gap-1"
+              aria-label="EXPLORER"
+            >
+              {scenarios.map((item, index) => (
+                <ToggleGroupItem
+                  key={item.id}
+                  value={String(index)}
+                  className={`file-item h-auto w-full flex-col items-stretch gap-0 whitespace-normal rounded-md! px-4 py-3 text-left font-normal data-[state=on]:border-border data-[state=on]:bg-accent ${index === selected ? "selected" : ""}`}
+                >
+                  <span className="file-folder">
+                    <Icon name="folder" size={15} />
+                    {`[locale]/${item.file.split("/").slice(0, -1).join("/")}`}
+                  </span>
+                  <span className="file-page">
+                    <span>TSX</span>page.tsx
+                  </span>
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </div>
           <div className="file-tip">
             <Icon name="check" size={15} />
@@ -171,44 +196,51 @@ export function OpenPage() {
             <span className="badge">{t(scenario.label)}</span>
           </div>
           <div className="route-controls">
-            <div className="fields">
+            <div className="grid gap-3 sm:grid-cols-3">
               {scenario.parameter && (
-                <label>
-                  params.{scenario.parameter}
-                  <input
-                    value={value}
-                    onChange={(event) => setValue(event.target.value)}
-                    spellCheck={false}
-                    aria-invalid={!!error}
-                    aria-describedby={error ? "route-error" : undefined}
-                  />
-                </label>
-              )}
-              <label>
-                query.tab <span>{t("optional_48a7b8")}</span>
-                <input value={query} onChange={(event) => setQuery(event.target.value)} spellCheck={false} />
-              </label>
-              <label>
-                hash <span>{t("optional_48a7b8")}</span>
-                <input
-                  value={hash}
-                  placeholder={t("activity_0bf417")}
-                  onChange={(event) => setHash(event.target.value)}
-                  spellCheck={false}
+                <Field
+                  id="playground-param"
+                  label={`params.${scenario.parameter}`}
+                  value={value}
+                  onChange={(event) => setValue(event.target.value)}
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "route-error" : undefined}
                 />
-              </label>
+              )}
+              <Field
+                id="playground-query"
+                label="query.tab"
+                hint={t("optional_48a7b8")}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+              <Field
+                id="playground-hash"
+                label="hash"
+                hint={t("optional_48a7b8")}
+                value={hash}
+                placeholder={t("activity_0bf417")}
+                onChange={(event) => setHash(event.target.value)}
+              />
             </div>
           </div>
           <div className="code-area" key={scenario.id + view}>
             <div className="code-toolbar">
-              <div className="view-switch" role="group" aria-label={t("integration_example_8bc3e1")}>
-                <button type="button" onClick={() => setView("link")} aria-pressed={view === "link"}>
+              <ToggleGroup
+                type="single"
+                size="sm"
+                value={view}
+                onValueChange={(next) => next && setView(next as "link" | "router")}
+                aria-label={t("integration_example_8bc3e1")}
+                spacing={1}
+              >
+                <ToggleGroupItem value="link" className="h-7 rounded-md! font-mono text-[11px] text-[#c1cbdf] data-[state=on]:bg-white/10 data-[state=on]:text-white hover:bg-white/5 hover:text-white">
                   next/link
-                </button>
-                <button type="button" onClick={() => setView("router")} aria-pressed={view === "router"}>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="router" className="h-7 rounded-md! font-mono text-[11px] text-[#c1cbdf] data-[state=on]:bg-white/10 data-[state=on]:text-white hover:bg-white/5 hover:text-white">
                   router.push
-                </button>
-              </div>
+                </ToggleGroupItem>
+              </ToggleGroup>
               <span>TSX</span>
             </div>
             <CodeBlock code={code} language="tsx" lineNumbers label={t("integration_code_d516e0")} />
@@ -229,15 +261,17 @@ export function OpenPage() {
             </div>
             {!error &&
               (view === "link" ? (
-                <Link href={href} className="button primary">
-                  {t("open_page_9ee309")}
-                  <Icon name="arrow" size={16} />
-                </Link>
+                <Button asChild>
+                  <Link href={href}>
+                    {t("open_page_9ee309")}
+                    <Icon name="arrow" size={16} />
+                  </Link>
+                </Button>
               ) : (
-                <button type="button" className="button primary" onClick={() => router.push(href)}>
+                <Button type="button" onClick={() => router.push(href)}>
                   {t("open_page_9ee309")}
                   <Icon name="arrow" size={16} />
-                </button>
+                </Button>
               ))}
           </div>
           <div className="playground-bottom">
@@ -250,6 +284,7 @@ export function OpenPage() {
         </div>
       </section>
       <ReverseRouting />
+      <HelpersPlayground />
       <section className="benefits" aria-label={t("why_use_it_8b5b9d")}>
         <article>
           <Icon name="folder" />
@@ -313,12 +348,7 @@ route.breadcrumbs(${JSON.stringify(url)}).map((item) => item.name);
       <p>{t("reverse_lead")}</p>
       <div className="route-panel">
         <div className="route-controls">
-          <div className="fields">
-            <label>
-              {t("reverse_input_label")}
-              <input value={url} onChange={(event) => setUrl(event.target.value)} spellCheck={false} />
-            </label>
-          </div>
+          <Field id="reverse-url" label={t("reverse_input_label")} value={url} onChange={(event) => setUrl(event.target.value)} />
         </div>
         <div className="code-area">
           <CodeBlock code={code} language="ts" lineNumbers label={t("integration_code_d516e0")} />

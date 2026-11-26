@@ -5,6 +5,7 @@ import { getDoc } from "../../../../../lib/docs";
 import { getLocale } from "../../../../../lib/locale";
 import { getTranslations } from "next-intl/server";
 import { plainText } from "../../../../../components/rich-text";
+import { readChangelog } from "../../../../../lib/read-changelog";
 
 type Props = { params: Promise<{ slug?: string[] }> };
 /** /docs is the index; /docs/<topic> is one topic. Deeper paths do not exist. */
@@ -26,5 +27,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 export default async function Page({ params }: Props) {
-  return <Documentation selectedId={await topic(params)} />;
+  return <Documentation selectedId={await topic(params)} changelog={readChangelog()} />;
 }

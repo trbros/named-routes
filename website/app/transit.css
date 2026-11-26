@@ -1319,7 +1319,7 @@
 .release-line {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   gap: 28px;
   margin: 22px 0 0;
   padding: 0;
@@ -1330,7 +1330,7 @@
   position: absolute;
   top: 9px;
   left: 10px;
-  right: 50%;
+  right: 10px;
   height: 3px;
   border-radius: 3px;
   background: linear-gradient(90deg, var(--line), var(--accent));
@@ -2425,4 +2425,168 @@ html[lang="ja"] .workspace :is(p, li) {
 }
 .journey-tree li:last-child {
   color: var(--lc);
+}
+
+/* Changelog: docs version picker and the releases page (entries from CHANGELOG.md) */
+.release-line a {
+  color: inherit;
+}
+.release-line a:hover code {
+  color: var(--accent);
+}
+.version-changes {
+  margin-block: 8px 28px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+.version-changes-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 12px 16px;
+}
+.version-changes-label {
+  font-family: JetBrains, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.version-changes-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 13px;
+}
+.version-changes details {
+  border-top: 1px solid var(--line);
+}
+.version-changes summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+.version-changes summary::after {
+  content: "+";
+  font-family: JetBrains, monospace;
+  color: var(--muted);
+}
+.version-changes details[open] summary::after {
+  content: "−";
+}
+.version-changes summary .badge {
+  margin-left: auto;
+  font-size: 11px;
+}
+.version-changes .changelog-entry {
+  padding: 0 16px 4px;
+  max-height: min(60vh, 560px);
+  overflow: auto;
+}
+.changelog-note {
+  margin: 0;
+  padding: 10px 16px 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.changelog-summary {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.changelog-section h4 {
+  margin: 18px 0 8px;
+  font-family: JetBrains, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.changelog-section h4[data-kind="breaking"] {
+  color: #ff8f8f;
+}
+.changelog-section ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.changelog-section li {
+  margin-block: 6px;
+  font-size: 14px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.changelog-section li::marker {
+  color: var(--muted);
+}
+.changelog-section code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--raised);
+  font-size: 0.86em;
+}
+.changelog-entry a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.release-changelog > p {
+  color: var(--muted);
+}
+.changelog-version {
+  scroll-margin-top: 96px;
+  margin-top: 22px;
+  padding: 20px 22px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.changelog-version header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.changelog-version h3 {
+  margin: 0;
+  font-family: JetBrains, monospace;
+  font-size: 20px;
+}
+.changelog-version h3 a {
+  color: inherit;
+}
+.changelog-version time,
+.changelog-count {
+  font-family: JetBrains, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.changelog-count {
+  margin-left: auto;
+}
+html[data-theme="light"] .changelog-section h4[data-kind="breaking"] {
+  color: #b42318;
+}
+.helpers-lab .code-area[data-error] {
+  box-shadow: inset 3px 0 0 #e5484d;
+}
+.helpers-lab .playground-bottom > span {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.helpers-lab .code-area pre {
+  min-height: 0;
+  padding-block: 4px 18px;
 }

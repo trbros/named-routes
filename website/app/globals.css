@@ -16,10 +16,22 @@
   --color-background: var(--bg);
   --color-foreground: var(--text);
   --color-panel: var(--panel);
-  --color-muted: var(--muted);
+  /* shadcn/ui semantics (components/ui) mapped onto the site tokens. */
+  --color-muted: var(--raised);
   --color-muted-foreground: var(--muted);
   --color-border: var(--line);
-  --color-accent: var(--accent);
+  --color-input: var(--line);
+  --color-ring: var(--accent);
+  --color-accent: var(--raised);
+  --color-accent-foreground: var(--text);
+  --color-popover: var(--panel);
+  --color-popover-foreground: var(--text);
+  --color-secondary: var(--raised);
+  --color-secondary-foreground: var(--text);
   --color-primary: var(--action);
   --color-primary-foreground: var(--action-ink);
+  --color-destructive: #e5484d;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
 }

@@ -1,29 +1,25 @@
 "use client";
 import Link from "../i18n/navigation";
 import { docHref } from "../lib/docs";
+import { type ChangelogVersion, versionAnchor } from "../lib/changelog";
 import { release } from "../lib/release";
+import { ChangelogEntry, changeCount } from "./changelog";
 import { CodeBlock } from "./code-block";
 import { FlapText } from "./flap-text";
 import { Icon } from "./icon";
 import { useSiteLocale } from "./use-site-locale";
 
-/** Versions from CHANGELOG.md, oldest first. A version appears once package.json reaches it. */
-const published = release.version.split(".").map(Number);
-const reached = (version: string) => {
-  const target = version.split(".").map(Number);
-  for (let index = 0; index < 3; index++)
-    if ((published[index] ?? 0) !== target[index]) return (published[index] ?? 0) > target[index];
-  return true;
+/** Translated one-line summaries; the full entries come from CHANGELOG.md. */
+const notes: Record<string, string> = {
+  "1.0.0": "release_v100_note_7b2c94",
+  "1.1.0": "release_v110_note",
+  "2.0.0": "release_v200_note",
+  "2.1.0": "release_v210_note",
 };
-const timeline = [
-  { version: "0.1.0", note: "release_v010_note_4e8a21" },
-  { version: "1.0.0", note: "release_v100_note_7b2c94" },
-  { version: "1.1.0", note: "release_v110_note" },
-  { version: "2.0.0", note: "release_v200_note" },
-].filter((item) => reached(item.version));
 
-export function ReleaseNotes() {
+export function ReleaseNotes({ changelog }: { changelog: ChangelogVersion[] }) {
   const { t } = useSiteLocale();
+  const timeline = [...changelog].reverse();
   return (
     <article className="doc-article page-article release-page">
       <div className="doc-breadcrumb">
@@ -48,11 +44,35 @@ export function ReleaseNotes() {
           {timeline.map((item, index) => (
             <li key={item.version} className={index === timeline.length - 1 ? "is-current" : undefined}>
               <span className="release-dot" aria-hidden="true" />
-              <code>v{item.version}</code>
-              <p>{t(item.note)}</p>
+              <a href={`#${versionAnchor(item.version)}`}>
+                <code>v{item.version}</code>
+              </a>
+              <p>{notes[item.version] ? t(notes[item.version]) : (item.summary[0] ?? "")}</p>
             </li>
           ))}
         </ol>
+      </section>
+      <section className="release-changelog" aria-labelledby="changelog">
+        <h2 id="changelog">{t("changelog_title")}</h2>
+        <p>
+          {t("changelog_lead")} {t("changelog_english")}
+        </p>
+        {changelog.map((entry) => (
+          <section key={entry.version} id={versionAnchor(entry.version)} className="changelog-version">
+            <header>
+              <h3>
+                <a href={`#${versionAnchor(entry.version)}`}>v{entry.version}</a>
+              </h3>
+              {entry.unreleased ? (
+                <span className="badge">{t("changelog_unreleased")}</span>
+              ) : (
+                entry.date && <time dateTime={entry.date}>{entry.date}</time>
+              )}
+              <span className="changelog-count">{t("changelog_changes", { count: changeCount(entry) })}</span>
+            </header>
+            <ChangelogEntry entry={entry} />
+          </section>
+        ))}
       </section>
       <section className="release-contract">
         <h2>{t("stable_in_1_x_52c983")}</h2>

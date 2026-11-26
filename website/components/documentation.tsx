@@ -11,8 +11,10 @@ import { Icon } from "./icon";
 import { RichText } from "./rich-text";
 import { lines } from "../lib/transit";
 import { RouteStoryboard } from "./route-storyboard";
+import { VersionChanges } from "./changelog";
+import type { ChangelogVersion } from "../lib/changelog";
 
-export function Documentation({ selectedId }: { selectedId?: string }) {
+export function Documentation({ selectedId, changelog }: { selectedId?: string; changelog: ChangelogVersion[] }) {
   const { locale, t } = useSiteLocale();
   const selected = getDoc(selectedId);
   const side = useRef<HTMLElement>(null);
@@ -28,6 +30,7 @@ export function Documentation({ selectedId }: { selectedId?: string }) {
   const anchors = selected
     ? [
         { id: "introduction", label: t("overview_0efc2e") },
+        { id: "version-changes", label: t("changelog_title") },
         ...(lines.some((line) => line.docId === selected.id)
           ? [{ id: "journey", label: t("how_this_url_was_built_4d2a9c") }]
           : []),
@@ -41,6 +44,7 @@ export function Documentation({ selectedId }: { selectedId?: string }) {
       ]
     : [
         { id: "introduction", label: t("documentation_9e9cf3") },
+        { id: "version-changes", label: t("changelog_title") },
         { id: "start-here", label: t("start_here_54acc2") },
         {
           id: "explore-guides",
@@ -186,6 +190,7 @@ export function Documentation({ selectedId }: { selectedId?: string }) {
                 )}
           </p>
         </section>
+        <VersionChanges changelog={changelog} />
         {selected ? (
           <>
             {lines.some((line) => line.docId === selected.id) && (
