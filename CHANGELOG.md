@@ -1,24 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2.1.0 - 2026-11-26
 
-- Split route helper and public asset documentation into dedicated multilingual pages, with focused examples for each existing API and independent CDN configuration.
-
-### Added
-
-
-- Added opt-in public asset discovery, strict generated asset path types, asset.has(), asset.paths() and asset.info().
-- Added asset content hashing and cache-busting URLs with asset(path, { version: true }); watched asset changes regenerate manifests.
-- Added route.withQuery() for query patches, repeated values and optional named schema validation.
-- Added route.canonical(), route.alternates() and isolated route.withDefaults() contexts for SEO, SSR and multi-tenant URLs.
-- Added read-only CLI audit with route and asset diagnostics, JSON output and strict CI mode.
-- Added multilingual advanced helper documentation, a real-runtime URL helpers playground, unit/type/generator tests and production asset-version E2E checks.
-
-- Added `asset()` / `route.asset()` and independent `defaults.assetBase` for public paths and CDN URLs; exported asset types and customizable generated asset exports. Added public-file browser checks in all nine example apps, regression tests for route/localize/match/parseQuery, and multilingual asset guides.
-
-### Documentation
-
-- Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.
+Split route helper and public asset documentation into dedicated multilingual pages, with focused examples for each existing API and independent CDN configuration.
 
 ### Added
 
@@ -26,6 +10,13 @@
 - `namedRoutes({ routerBase })` accepts a router prefix or getter for SvelteKit, Vue Router, React Router/Remix and TanStack Router; `inheritViteBase` opts in when Vite's base is also the navigation base.
 - `route.localize(url, locale?, options?)` resolves translated aliases across configured languages, even without a locale prefix, preserves decoded route parameters and the original query/fragment, supports custom locale prefixes, base paths and configured domains, and returns `null` for ambiguous or unlocalized routes. Existing `route.match()` semantics remain unchanged.
 - `--base-path` for standalone generation, watch, check, list and doctor; framework integrations cache their last successful effective public base under `.named-routes/` so CLI regeneration does not discard it.
+- Added opt-in public asset discovery, strict generated asset path types, asset.has(), asset.paths() and asset.info().
+- Added asset content hashing and cache-busting URLs with asset(path, { version: true }); watched asset changes regenerate manifests.
+- Added route.withQuery() for query patches, repeated values and optional named schema validation.
+- Added route.canonical(), route.alternates() and isolated route.withDefaults() contexts for SEO, SSR and multi-tenant URLs.
+- Added read-only CLI audit with route and asset diagnostics, JSON output and strict CI mode.
+- Added multilingual advanced helper documentation, a real-runtime URL helpers playground, unit/type/generator tests and production asset-version E2E checks.
+- Added `asset()` / `route.asset()` and independent `defaults.assetBase` for public paths and CDN URLs; exported asset types and customizable generated asset exports. Added public-file browser checks in all nine example apps, regression tests for route/localize/match/parseQuery, and multilingual asset guides.
 
 ### Fixed
 
@@ -44,6 +35,10 @@
 - Improved generated TypeScript and JavaScript asset typecheck diagnostics.
 - Improved temporary fixture cleanup and subprocess error handling on Windows.
 - Updated browser-safety test expectations to include the new browser-safe asset and URL utility modules while preserving strict runtime dependency isolation.
+
+### Documentation
+
+- Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.
 
 ## 2.0.0 - 2026-11-25
 
