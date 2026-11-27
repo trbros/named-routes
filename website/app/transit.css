@@ -739,14 +739,14 @@
 }
 
 /* ---------------------------------------------- page-wide scroll reveals */
-:is([data-reveal], .doc-article > section, .release-contract, .release-validation) {
+:is([data-reveal], .doc-article > section:not(.release-changelog), .release-contract, .release-validation) {
   transition:
     opacity 0.8s var(--ease-out),
     transform 0.8s var(--ease-out);
   transition-delay: calc(var(--reveal-order, 0) * 90ms);
 }
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-  :is([data-reveal], .doc-article > section, .release-contract, .release-validation):not(.is-visible) {
+  :is([data-reveal], .doc-article > section:not(.release-changelog), .release-contract, .release-validation):not(.is-visible) {
     opacity: 0;
     transform: translateY(28px);
   }

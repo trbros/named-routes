@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 /** Elements revealed on scroll. They are present in the server HTML, so the CSS hides them only when scripting is enabled. */
 export const revealSelector =
-  "[data-reveal], .doc-article > section, .release-contract, .release-validation";
+  "[data-reveal], .doc-article > section:not(.release-changelog), .release-contract, .release-validation";
 
 /**
  * Scroll reveals for every page. Elements entering together are staggered.
