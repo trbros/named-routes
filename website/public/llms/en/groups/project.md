@@ -71,7 +71,7 @@ Topic: `contributing` · Named Routes v2.2.0
 
 **13. Open a pull request.** Keep the change focused, add regression tests, update CHANGELOG.md under the next version, run pnpm release:check, pnpm locales:check and pnpm run docs:check, and never commit generated files (dist/, routes.generated.ts, .next/, demo build output); .gitignore already excludes them.
 
-**14. Releases (maintainers).** Bump version in package.json, move the CHANGELOG entry under it, run pnpm release:check, then publish a GitHub release tagged named-routes-vX.Y.Z. The publish workflow validates the tag, runs CI again and publishes to npm with provenance through npm trusted publishing (no npm token is stored). Apache License 2.0 applies; bundled fonts keep their OFL licenses.
+**14. Releases (maintainers).** Bump version in package.json, move the CHANGELOG entry under it, run pnpm release:check, commit, then push the tag named-routes-vX.Y.Z. The publish workflow validates the tag against package.json and the CHANGELOG, runs CI again, publishes to npm with provenance through npm trusted publishing (no npm token is stored) after the npm-publish approval, and creates the GitHub release from the CHANGELOG. Apache License 2.0 applies; bundled fonts keep their OFL licenses.
 
 ```sh
 git clone https://github.com/trbros/named-routes.git

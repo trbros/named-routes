@@ -71,7 +71,7 @@ Topic: `contributing` · Named Routes v2.2.0
 
 **13. Abre un pull request.** Mantén el cambio acotado, añade pruebas de regresión, actualiza CHANGELOG.md en la próxima versión, ejecuta pnpm release:check, pnpm locales:check y pnpm run docs:check, y nunca versiones archivos generados (dist/, routes.generated.ts, .next/, salida de build de las demos); .gitignore ya los excluye.
 
-**14. Publicaciones (mantenedores).** Sube version en package.json, mueve la entrada del CHANGELOG a esa versión, ejecuta pnpm release:check y publica una release en GitHub con la etiqueta named-routes-vX.Y.Z. El workflow de publicación valida la etiqueta, vuelve a ejecutar la CI y publica en npm con provenance mediante trusted publishing de npm (no se guarda ningún token de npm). Se aplica la Licencia Apache 2.0; las fuentes incluidas conservan sus licencias OFL.
+**14. Publicaciones (mantenedores).** Sube version en package.json, mueve la entrada del CHANGELOG a esa versión, ejecuta pnpm release:check, haz el commit y envía la etiqueta named-routes-vX.Y.Z. El workflow de publicación valida la etiqueta con package.json y el CHANGELOG, vuelve a ejecutar la CI, publica en npm con provenance mediante trusted publishing de npm (no se guarda ningún token de npm) tras la aprobación de npm-publish y crea la release en GitHub a partir del CHANGELOG. Se aplica la Licencia Apache 2.0; las fuentes incluidas conservan sus licencias OFL.
 
 ```sh
 git clone https://github.com/trbros/named-routes.git

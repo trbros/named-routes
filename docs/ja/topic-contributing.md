@@ -34,7 +34,7 @@
 
 **13. プルリクエストを出す。** 変更は焦点を絞り、回帰テストを追加し、次のバージョンとして CHANGELOG.md を更新し、pnpm release:check、pnpm locales:check、pnpm run docs:check を実行してください。生成ファイル（dist/、routes.generated.ts、.next/、デモのビルド出力）は決してコミットしないでください。.gitignore ですでに除外しています。
 
-**14. リリース（メンテナー向け）。** package.json の version を上げ、CHANGELOG のエントリーをそのバージョンに移し、pnpm release:check を実行してから、named-routes-vX.Y.Z というタグで GitHub のリリースを公開します。公開用ワークフローがタグを検証し、CI をもう一度実行し、npm の trusted publishing を使って provenance 付きで npm に公開します（npm のトークンは保存しません）。Apache License 2.0 が適用され、同梱フォントはそれぞれの OFL ライセンスに従います。
+**14. リリース（メンテナー向け）。** package.json の version を上げ、CHANGELOG のエントリーをそのバージョンに移し、pnpm release:check を実行してコミットし、named-routes-vX.Y.Z というタグを push します。公開用ワークフローがタグを package.json と CHANGELOG に照らして検証し、CI をもう一度実行し、npm-publish の承認後に npm の trusted publishing を使って provenance 付きで npm に公開し（npm のトークンは保存しません）、CHANGELOG から GitHub のリリースを作成します。Apache License 2.0 が適用され、同梱フォントはそれぞれの OFL ライセンスに従います。
 
 ## 例
 

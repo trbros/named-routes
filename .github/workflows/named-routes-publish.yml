@@ -1,23 +1,28 @@
 name: Publish Named Routes
 
+# Pushing a named-routes-vX.Y.Z tag publishes that version: the tag is
+# validated against package.json and the CHANGELOG, CI and E2E run again, npm
+# publishing waits for the npm-publish approval, and the GitHub release is then
+# created from the CHANGELOG section (skipped if it already exists).
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "named-routes-v*"
 
 permissions:
   contents: read
 
 concurrency:
-  group: named-routes-publish-${{ github.event.release.tag_name }}
+  group: named-routes-publish-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
   release-info:
-    if: startsWith(github.event.release.tag_name, 'named-routes-v')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       dist-tag: ${{ steps.release.outputs.dist_tag }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -26,11 +31,10 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
-      - name: Match the release tag and package version
+      - name: Match the tag, package version and CHANGELOG
         id: release
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: node scripts/check-release.mjs
 
   validate:
@@ -78,3 +82,39 @@ jobs:
         env:
           NPM_CONFIG_TAG: ${{ needs.release-info.outputs.dist-tag }}
         run: npm publish --access public --provenance
+
+  # Created with GITHUB_TOKEN, so it does not trigger other workflows.
+  github-release:
+    needs: [release-info, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Extract the release notes from the CHANGELOG
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
+        run: node scripts/check-release.mjs
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_NOTES_FILE: ${{ runner.temp }}/release-notes.md
+          PRERELEASE: ${{ needs.release-info.outputs.prerelease }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; leaving it unchanged."
+            exit 0
+          fi
+          if [ "$PRERELEASE" = "true" ]; then kind=--prerelease; else kind=--latest; fi
+          gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "named-routes ${RELEASE_TAG#named-routes-}" \
+            --notes-file "$RELEASE_NOTES_FILE" "$kind"
