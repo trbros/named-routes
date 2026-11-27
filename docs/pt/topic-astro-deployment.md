@@ -1,0 +1,41 @@
+# Base path e deploy
+
+[Documentação](index.md) / [Astro](framework-astro.md)
+
+[English](../en/topic-astro-deployment.md) · [Português](../pt/topic-astro-deployment.md) · [Español](../es/topic-astro-deployment.md) · [日本語](../ja/topic-astro-deployment.md)
+
+<!-- Generated from docs/content.json, docs/groups.json, docs/legacy-groups.json and docs/locales.json; run pnpm run docs. -->
+
+<a id="astro-deployment"></a>
+
+Configure `base` no Astro. O route() gerado inclui a base e a âncora recebe /app/users/42.
+
+<a id="without-base"></a>
+## Sem base path
+
+A aplicação é servida na raiz do domínio. Não configure um prefixo de navegação.
+
+```ts
+route("users.$id", { id: 42 }); // /users/42
+route.url("users.$id", { params: { id: 42 } }); // /users/42
+```
+
+<a id="with-base"></a>
+## Com base path
+
+A aplicação é servida em /app. Configure a base do framework antes de regenerar as rotas.
+
+```ts
+route("users.$id", { id: 42 }); // /app/users/42
+route.url("users.$id", { params: { id: 42 } }); // /app/users/42
+```
+
+## Tópicos relacionados
+
+- [Base path — URL interna e pública](topic-base-path.md)
+- [route.url() — URLs públicas](topic-public-url.md)
+- [assetBase e CDN](topic-asset-base.md)
+
+---
+
+← Anterior: [Navegação — Astro.redirect()](topic-astro-programmatic.md) · [Todos os tópicos](framework-astro.md) · Próximo: [Arquivos públicos](topic-astro-assets.md) →

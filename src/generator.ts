@@ -11,7 +11,6 @@ import {
 	mkdir,
 	readdir,
 	readFile,
-	rename,
 	stat,
 	unlink,
 	writeFile,
@@ -22,6 +21,7 @@ import {
 	readFrameworkBase,
 	withFrameworkBase,
 } from "./base-path.js";
+import { endpointMethods, type HttpMethod } from "./endpoint-methods.js";
 import {
 	type Adapter,
 	adapters,
@@ -40,6 +40,8 @@ import {
 	parsePattern,
 	type RouteDefaults,
 } from "./index.js";
+import { renameWithRetry } from "./rename-retry.js";
+import { semanticName } from "./semantic-names.js";
 import {
 	type DiscoveryMode,
 	discoveryModes,
@@ -65,6 +67,8 @@ export interface NamingContext {
 	router: string;
 }
 export interface NamingOptions {
+	/** "path" keeps v2.1 names; "semantic" uses index/show where unambiguous. */
+	style?: "path" | "semantic";
 	/** Joins URL segments. Default "." (user.profile). */
 	separator?: string;
 	/** Marks parameters. Default "$" (users.$user). May be "". */
@@ -158,6 +162,8 @@ export interface DiscoveredRoute {
 	/** Source kind: app, pages, routes, api, server or explicit. */
 	router: string;
 	framework: FrameworkId;
+	methods?: readonly HttpMethod[];
+	endpointFiles?: readonly string[];
 	variant?: boolean;
 	localized?: boolean;
 }
@@ -339,14 +345,21 @@ export function validateOptions(options: unknown): GeneratorOptions {
 	if (o.naming !== undefined) {
 		if (!isRecord(o.naming)) invalid("naming must be an object");
 		for (const key of Object.keys(o.naming))
-			if (!["separator", "paramPrefix", "home", "transform"].includes(key))
+			if (
+				!["separator", "paramPrefix", "home", "transform", "style"].includes(
+					key,
+				)
+			)
 				unknownKey("naming", key, [
 					"separator",
 					"paramPrefix",
 					"home",
 					"transform",
+					"style",
 				]);
-		const { separator, paramPrefix, home, transform } = o.naming;
+		const { separator, paramPrefix, home, transform, style } = o.naming;
+		if (style !== undefined && style !== "path" && style !== "semantic")
+			invalid('naming.style must be "path" or "semantic"');
 		if (
 			separator !== undefined &&
 			(typeof separator !== "string" ||
@@ -440,13 +453,20 @@ export function validateOptions(options: unknown): GeneratorOptions {
 			if (key === "i18n")
 				invalid("Configure locales with the top-level i18n option");
 			else if (
-				!["basePath", "assetBase", "trailingSlash", "origin"].includes(key)
+				![
+					"basePath",
+					"assetBase",
+					"trailingSlash",
+					"origin",
+					"includeBasePath",
+				].includes(key)
 			)
 				unknownKey("defaults", key, [
 					"basePath",
 					"assetBase",
 					"trailingSlash",
 					"origin",
+					"includeBasePath",
 				]);
 	}
 	return o;
@@ -615,6 +635,8 @@ interface Candidate {
 	variant?: boolean;
 	localized?: boolean;
 	api?: boolean;
+	methods?: HttpMethod[];
+	endpointFiles?: string[];
 }
 
 /** Not configuration: lets an integration hand over the framework's table directly. */
@@ -721,6 +743,9 @@ export async function discoverRoutes(
 			});
 		}
 	}
+	const sourceInput = (file: string) => {
+		if (!source.inputs.includes(file)) source.inputs.push(file);
+	};
 	for (const source of sources) {
 		if (
 			table &&
@@ -776,7 +801,16 @@ export async function discoverRoutes(
 							);
 						throw caught;
 					}
-					candidates.push({ ...mapped, router: source.kind, file });
+					const methods = mapped.api
+						? await endpointMethods(framework, source.kind, absolute)
+						: [];
+					if (mapped.api) sourceInput(absolute);
+					candidates.push({
+						...mapped,
+						router: source.kind,
+						file,
+						...(mapped.api ? { methods, endpointFiles: [file] } : {}),
+					});
 				}
 			}
 		};
@@ -838,6 +872,30 @@ export async function discoverRoutes(
 				hint: "Both files resolve to the same URL; remove or rename one, or exclude it.",
 			});
 		if (previous.path !== candidate.path) conflict();
+		// Nitro method-suffixed files share one URL; SvelteKit can colocate a page and endpoint.
+		if (
+			(framework === "nuxt" && previous.api && candidate.api) ||
+			(framework === "sveltekit" &&
+				Boolean(previous.api) !== Boolean(candidate.api))
+		) {
+			const chosen = previous.api && !candidate.api ? candidate : previous;
+			paths.set(key, {
+				...chosen,
+				methods: [
+					...new Set([
+						...(previous.methods ?? []),
+						...(candidate.methods ?? []),
+					]),
+				].sort(),
+				endpointFiles: [
+					...new Set([
+						...(previous.endpointFiles ?? []),
+						...(candidate.endpointFiles ?? []),
+					]),
+				].sort(),
+			});
+			continue;
+		}
 		if (
 			adapter.strictDuplicates &&
 			previous.localized === candidate.localized &&
@@ -883,10 +941,29 @@ export async function discoverRoutes(
 			});
 		}
 	const entries: DiscoveredRoute[] = [];
+	const discoveredPaths = new Set<string>();
+	for (const entry of discovered) {
+		for (
+			let offset = entry.path.indexOf("/", 1);
+			offset !== -1;
+			offset = entry.path.indexOf("/", offset + 1)
+		)
+			discoveredPaths.add(entry.path.slice(0, offset));
+	}
 	for (const candidate of discovered) {
 		let name = Object.hasOwn(aliases, candidate.path)
 			? aliases[candidate.path]
 			: automaticName(candidate.path, options.naming);
+		if (
+			!Object.hasOwn(aliases, candidate.path) &&
+			options.naming?.style === "semantic"
+		)
+			name = semanticName(
+				candidate.path,
+				name,
+				discoveredPaths,
+				options.naming.separator,
+			);
 		if (!Object.hasOwn(aliases, candidate.path) && options.naming?.transform) {
 			const transformed = options.naming.transform({
 				path: candidate.path,
@@ -909,6 +986,10 @@ export async function discoverRoutes(
 			file: candidate.file,
 			router: candidate.router,
 			framework,
+			...(candidate.methods?.length ? { methods: candidate.methods } : {}),
+			...(candidate.endpointFiles?.length
+				? { endpointFiles: candidate.endpointFiles }
+				: {}),
 			...(candidate.variant ? { variant: true } : {}),
 			...(i18n ? { localized: candidate.localized !== false } : {}),
 		});
@@ -944,7 +1025,7 @@ export async function discoverRoutes(
 	const routes = Object.fromEntries(
 		entries.map((entry) => [entry.name, entry.path]),
 	);
-	const defaults = runtimeDefaults(options, entries);
+	const defaults = runtimeDefaults(options, entries, framework);
 	let publicDirectory: string | undefined;
 	if (options.assets !== undefined) {
 		// Validate options even if discovery is explicitly disabled.
@@ -974,6 +1055,7 @@ export async function discoverRoutes(
 function runtimeDefaults(
 	options: GeneratorOptions,
 	entries: DiscoveredRoute[],
+	framework: FrameworkId,
 ): RouteDefaults {
 	const defaults: RouteDefaults = {};
 	const input = options.defaults ?? {};
@@ -981,6 +1063,14 @@ function runtimeDefaults(
 	// Normalize before serialization so CLI check and framework output agree.
 	if (input.basePath !== undefined)
 		defaults.basePath = normalizeBasePath(input.basePath);
+	// Astro/SvelteKit use regular hrefs; Next/Nuxt/Vue/RR/TanStack routers add their own prefix.
+	if (input.includeBasePath !== undefined)
+		defaults.includeBasePath = input.includeBasePath;
+	else if (
+		defaults.basePath &&
+		["astro", "sveltekit", "manual"].includes(framework)
+	)
+		defaults.includeBasePath = true;
 	if (input.trailingSlash !== undefined)
 		defaults.trailingSlash = input.trailingSlash;
 	if (input.origin !== undefined) defaults.origin = input.origin;
@@ -1039,11 +1129,24 @@ function render(
 	if (options.exportNames?.asset !== undefined && occupied.has(names.asset))
 		invalid(`exportNames.asset duplicates ${names.asset}`);
 	while (occupied.has(names.asset)) names.asset = `$${names.asset}`;
-	const literal = `{\n${Object.entries(discovery.routes)
-		.map(
-			([name, path]) => `  [${JSON.stringify(name)}]: ${JSON.stringify(path)}`,
-		)
-		.join(",\n")}\n}`;
+	const property = (key: string) =>
+		key === "__proto__" ? `[${JSON.stringify(key)}]` : JSON.stringify(key);
+	const comment = (file: string) =>
+		posix(isAbsolute(file) ? relative(discovery.root, file) : file).replace(
+			/[\r\n\u2028\u2029]/g,
+			" ",
+		);
+	const literal = `{\n${discovery.entries
+		.map((entry) => {
+			const files = [
+				...new Set([
+					...(entry.file ? [entry.file] : []),
+					...(entry.endpointFiles ?? []),
+				]),
+			];
+			return `  ${property(entry.name)}: ${JSON.stringify(entry.path)}, // ${files.length ? files.map(comment).join(", ") : "explicit route (no source file)"}`;
+		})
+		.join("\n")}\n}`;
 	const manifest =
 		format === "ts"
 			? `${literal} as const`
@@ -1096,6 +1199,29 @@ function render(
 				: `export const ${names.asset} = /** @type {${type}} */ (/** @type {unknown} */ (${names.route}.asset));`,
 		);
 	} else lines.push(`export const ${names.asset} = ${names.route}.asset;`);
+	if (options.includeApi) {
+		let apiName = "api";
+		while (occupied.has(apiName) || apiName === names.asset)
+			apiName = `$${apiName}`;
+		const endpointEntries = discovery.entries.filter(
+			(entry) => entry.methods?.length,
+		);
+		const keys = new Set<string>();
+		const body = endpointEntries
+			.map((entry) => {
+				const key = entry.name.startsWith("api.")
+					? entry.name.slice(4)
+					: entry.name;
+				if (keys.has(key))
+					invalid(
+						`API export key collision: ${key}; use names to disambiguate`,
+					);
+				keys.add(key);
+				return `  ${property(key)}: Object.freeze({ ${entry.methods?.map((method) => `${method.toLowerCase()}: ${names.route}.endpoint(${JSON.stringify(entry.name)}, ${JSON.stringify(method)})`).join(", ")} }),`;
+			})
+			.join("\n");
+		lines.push(`export const ${apiName} = Object.freeze({\n${body}\n});`);
+	}
 	if (format === "ts") {
 		lines.push(
 			`export type ${names.routeName} = keyof typeof ${names.routes};`,
@@ -1217,7 +1343,7 @@ export async function generateRoutes(
 		try {
 			// wx: never follow or reuse a pre-existing path.
 			await writeFile(temporary, content, { encoding: "utf8", flag: "wx" });
-			await rename(temporary, output);
+			await renameWithRetry(temporary, output);
 		} finally {
 			await unlink(temporary).catch((caught: NodeJS.ErrnoException) => {
 				if (caught.code !== "ENOENT") throw caught;

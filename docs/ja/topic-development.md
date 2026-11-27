@@ -1,0 +1,21 @@
+# 開発中の自動更新
+
+[ドキュメント](index.md) / [CLI、CI、トラブルシューティング](guides.md)
+
+[English](../en/topic-development.md) · [Português](../pt/topic-development.md) · [Español](../es/topic-development.md) · [日本語](../ja/topic-development.md)
+
+<!-- Generated from docs/content.json, docs/groups.json, docs/legacy-groups.json and docs/locales.json; run pnpm run docs. -->
+
+<a id="development"></a>
+
+Next.js: ラッパーは Next の起動前に生成し、その後は開発プロセスの中でモジュールを最新に保ちます。デフォルト（watchMode: "auto"）では、ルートのディレクトリとプロジェクトのルートからのファイルイベントにデバウンスと直列化をかけて反応し、OS が取りこぼしたイベントに備えて 5 秒ごとに再スキャンします。ページの追加、削除、名前変更を検知し、モジュールは内容が変わったときだけ更新されます。webpack や Turbopack のフックには手を加えません。next start（本番サーバー）では一切書き込まないため、読み取り専用のデプロイでも安全です。
+
+Vite 系フレームワーク：プラグインは buildStart で生成し、モジュールが最初に読み込まれる前（フレームワークがルート表を書き出した後）にもう一度生成します。Vite の watcher の add/unlink イベント、named-routes の設定ファイルの変更、typed-router.d.ts・routeTree.gen.ts・app/routes.ts の書き換えに反応します。プロジェクトルートは Vite のルートから package.json まで上にたどって見つけます。Nuxt モジュールは、ページが変わると Nuxt が呼ぶ pages:resolved のたびに再生成します。
+
+watcher は本番ビルド中には動かず、それ自体がプロセスを生かし続けることもありません。編集中に生成エラーが起きても最後の有効なモジュールは保たれ、エラーがログに出ます。設定ファイルがインポートしているモジュールを変更したときは再起動が必要です。設定ファイル自体は内容が変わったときだけ再インポートされます。Node.js は ES モジュールをアンロードできないため、JavaScript / TypeScript の設定ファイルは内容の異なるバージョンごとに（設定モジュール本体のみで、そこからインポートしたものは含みません）プロセスを再起動するまでメモリに残ります。watch: false で止まるのは継続的な更新だけで、最初の生成は行われます。
+
+ファイルイベントが信頼できない環境ではポーリングに切り替わります。/mnt 配下の WSL のパス、WATCHPACK_POLLING または CHOKIDAR_USEPOLLING が設定されている場合、NAMED_ROUTES_WATCH=poll の場合、OS が watcher を拒否した場合（EMFILE や ENOSPC など。一度だけ報告します）です。watchMode: "poll" で 1.0 の動作（watchInterval ごとの完全な再スキャン）に戻せます。再現可能なベンチマーク（pnpm bench:watch、Linux、Node 26）では、200 ルートでアイドル時の CPU が毎秒 36 ms から 6 ms に下がり、新しいページがモジュールに反映されるまでの時間が 478 ms から 90 ms になりました。2000 ルートでは毎秒 153 ms から 29 ms、582 ms から 203 ms です。
+
+---
+
+← 前へ: [検出のエッジケース](topic-discovery.md) · [全トピック](guides.md) · 次へ: [エラーとトラブルシューティング](topic-errors.md) →

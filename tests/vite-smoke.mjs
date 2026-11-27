@@ -163,7 +163,7 @@ export default defineConfig({
 
 		// Verify initial route generation.
 		await until(
-			async () => (await readFile(output, "utf8")).includes('["home"]'),
+			async () => (await readFile(output, "utf8")).includes('"home"'),
 			"initial generation",
 		);
 

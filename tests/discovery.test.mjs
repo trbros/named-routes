@@ -465,9 +465,9 @@ test("Nuxt module: pages:resolved writes the module and the CLI snapshot", async
 	await namedRoutesNuxt({ output: "app/routes.generated.ts" }, nuxt);
 	await hooks.get("pages:resolved")(withRoot(nuxtPages, root));
 	const module = await readFile(join(root, "app/routes.generated.ts"), "utf8");
-	assert.match(module, /\["sobre"\]: "\/sobre"/);
-	assert.match(module, /\["a-propos"\]: "\/a-propos"/);
-	assert.match(module, /\["added-by-module"\]: "\/added-by-module"/);
+	assert.match(module, /"sobre": "\/sobre"/);
+	assert.match(module, /"a-propos": "\/a-propos"/);
+	assert.match(module, /"added-by-module": "\/added-by-module"/);
 	assert.match(module, /export const url = /);
 	// The CLI reads the same table from .nuxt (written by nuxt prepare/dev/build).
 	await writeFile(
@@ -524,7 +524,7 @@ test("Vite plugin regenerates when the framework rewrites its route table", asyn
 		watcher: { on: (_event, callback) => (listener = callback) },
 	});
 	const output = join(root, "src/routes.generated.ts");
-	assert.match(await readFile(output, "utf8"), /\["sobre"\]/);
+	assert.match(await readFile(output, "utf8"), /"sobre"/);
 	await writeFile(
 		join(root, "typed-router.d.ts"),
 		typedRouterDts.replace("'/sobre'", "'/acerca'"),
@@ -534,7 +534,7 @@ test("Vite plugin regenerates when the framework rewrites its route table", asyn
 		if ((await readFile(output, "utf8")).includes("acerca")) break;
 		await new Promise((done) => setTimeout(done, 20));
 	}
-	assert.match(await readFile(output, "utf8"), /\["acerca"\]/);
+	assert.match(await readFile(output, "utf8"), /"acerca"/);
 });
 
 test("2.0 error codes: invalid router, pageExtensions and output are INVALID_CONFIG", async (t) => {

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Documentation } from "../../../../../components/documentation";
 import { getDoc } from "../../../../../lib/docs";
 import { getLocale } from "../../../../../lib/locale";
-import { getTranslations } from "next-intl/server";
+import { pageMetadata, sectionMetadata, jsonLd } from "../../../../../lib/seo";
+import { localizedUrl } from "../../../../../lib/seo-urls.mjs";
 import { plainText } from "../../../../../components/rich-text";
 import { readChangelog } from "../../../../../lib/read-changelog";
 
@@ -20,12 +21,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const id = await topic(params);
   const locale = await getLocale();
   const section = getDoc(id);
-  const t = await getTranslations("ui");
-  return {
-    title: section ? section.title[locale] : t("documentation_9e9cf3"),
-    description: section ? plainText(section.paragraphs[locale][0]) : undefined,
-  };
+  return section ? pageMetadata(locale, `/docs/${section.id}`, section.title[locale], plainText(section.paragraphs[locale][0])) : sectionMetadata(locale, "docs");
 }
 export default async function Page({ params }: Props) {
-  return <Documentation selectedId={await topic(params)} changelog={readChangelog()} />;
+  const id = await topic(params);
+  const locale = await getLocale();
+  const section = getDoc(id);
+  const docsLabel = sectionMetadata(locale, "docs").title;
+  const items = [
+    { "@type": "ListItem", position: 1, name: "Named Routes", item: localizedUrl(locale) },
+    { "@type": "ListItem", position: 2, name: typeof docsLabel === "object" && docsLabel && "absolute" in docsLabel ? docsLabel.absolute : "Documentation", item: localizedUrl(locale, "/docs") },
+    ...(section ? [{ "@type": "ListItem", position: 3, name: section.title[locale], item: localizedUrl(locale, `/docs/${section.id}`) }] : []),
+  ];
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items }) }} />
+    <Documentation selectedId={id} changelog={readChangelog(await getLocale())} />
+  </>;
 }

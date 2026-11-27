@@ -1,24 +1,65 @@
 # Changelog
 
-## Unreleased
+## 2.2.0 - 2026-11-26
 
-- Split route helper and public asset documentation into dedicated multilingual pages, with focused examples for each existing API and independent CDN configuration.
+This release makes named URL generation more explicit, improves framework-aware deployment paths and endpoint discovery, expands the documentation, and brings AI-agent integration into the main package. It also hardens CLI execution and atomic file replacement on Windows.
 
 ### Added
 
+- `route.url(name, { params, query, ... })`: generate public URLs with the configured base path by default, using an explicit options object instead of positional placeholders. Route names and parameters remain typed.
+- Opt-in semantic naming with `naming.style: "semantic"`, including `index` and `show` conventions. Explicit `names` mappings remain available for stable, application-specific aliases.
+- Typed HTTP endpoint descriptors through `route.endpoint(name, method)` and the generated `api` export when `includeApi` is enabled and HTTP methods can be statically identified. Descriptors contain the HTTP method and URL; they do not execute handlers or send requests. Method discovery is framework-dependent.
+- Versioned `llms.txt`, `llms-full.txt`, agent conventions and Markdown references by framework and topic, synchronized with the documentation in English, Portuguese, Spanish and Japanese.
+- A read-only Model Context Protocol (MCP) server distributed directly in `@triooo/named-routes`, available through `named-routes mcp` and `named-routes-mcp`. No separate npm package is required. The server uses stdio and optional dependencies, keeping MCP code outside the browser runtime.
+- Six MCP tools: `get_agent_contract`, `search_docs`, `get_topic`, `get_framework_guide`, `list_routes` and `get_route`. Agents can consult the versioned documentation and inspect an existing generated route manifest without executing application code or modifying project files.
 
-- Added opt-in public asset discovery, strict generated asset path types, asset.has(), asset.paths() and asset.info().
-- Added asset content hashing and cache-busting URLs with asset(path, { version: true }); watched asset changes regenerate manifests.
-- Added route.withQuery() for query patches, repeated values and optional named schema validation.
-- Added route.canonical(), route.alternates() and isolated route.withDefaults() contexts for SEO, SSR and multi-tenant URLs.
-- Added read-only CLI audit with route and asset diagnostics, JSON output and strict CI mode.
-- Added multilingual advanced helper documentation, a real-runtime URL helpers playground, unit/type/generator tests and production asset-version E2E checks.
+### Changed
 
-- Added `asset()` / `route.asset()` and independent `defaults.assetBase` for public paths and CDN URLs; exported asset types and customizable generated asset exports. Added public-file browser checks in all nine example apps, regression tests for route/localize/match/parseQuery, and multilingual asset guides.
+- Generated helpers now include a configured navigation base automatically for Astro, SvelteKit and generator-based manual manifests. Next.js, Nuxt, Vue Router, React Router and TanStack Router retain internal paths by default for navigation handled by their native routers.
+- `route.url()` provides the public-path alternative across frameworks. Explicit `basePath: true` or `basePath: false` continues to control base inclusion in `route()`; direct `createRoutes()` retains its existing default behavior.
+- Generated manifests include relative source-file comments and use ordinary string-literal property keys where safe, rather than unnecessary computed keys. The `__proto__` key remains protected by computed-property syntax.
+- Replace the compiled CLI entry point in the npm `bin` mapping with a stable launcher that resolves the implementation relative to its own location, independently of the current working directory.
+- Expand the framework examples beyond static landing pages, with multi-page navigation, dynamic parameters and focused endpoint examples where supported.
+
+### Fixed
+
+- Explicitly expose the `asset` helper on `TypedNamedRoutes`, preventing missing-property type errors in generated TypeScript modules.
+- Improve CLI packaging and executable resolution for scoped npm invocations, including `npx @triooo/named-routes`, and report missing compiled files explicitly.
+- Retry transient `EPERM`, `EACCES` and `EBUSY` errors during atomic replacement of generated route manifests and framework snapshots. Retries use bounded progressive backoff, preserve the last valid file and propagate persistent or non-transient failures. This addresses the Windows failure observed during TanStack Router live route removal.
 
 ### Documentation
 
-- Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.
+- Reorganize the documentation into individually navigable topics, dedicated framework guides, focused API references, configuration options, CLI commands and practical recipes. Preserve existing topic IDs and legacy Markdown anchors.
+- Separate examples for deployments at the domain root and under a configured `base` or `basePath`, explaining when the native router applies the prefix and when a public URL is needed.
+- Update all four READMEs and generated Markdown pages; add related-topic navigation, improved documentation search, and shadcn/ui Accordion and Button components for the topic browser.
+- Add dedicated MCP guides covering installation, local project configuration, Claude Desktop and Claude Code, Cursor, Codex, VS Code and GitHub Copilot, Windows launcher usage, tool reference, example workflows, security boundaries and troubleshooting with MCP Inspector.
+- Keep the MCP catalog, AI-agent reference files, website documentation and READMEs synchronized from the shared documentation source.
+- Add fully localized changelogs in English, Portuguese, Spanish and Japanese, including a language-aware releases page and documentation version selector.
+
+### Website and SEO
+
+- Generate `sitemap.xml` from the documentation catalog and supported locales, and add `robots.txt` with sitemap discovery.
+- Add localized page titles and descriptions, canonical URLs, reciprocal `hreflang` alternates with `x-default`, Open Graph and Twitter Card metadata, and structured data for software and breadcrumbs.
+- Centralize the public origin and deployment base path for consistent SEO URLs. Add Google Search Console verification support and prevent preview deployments, parameterized demo pages and machine-readable documentation mirrors from being indexed as duplicate content.
+
+### Tests and release tooling
+
+- Extend regression and TypeScript contract coverage for public URLs, framework-specific base handling, semantic names, generated endpoint descriptors and typed assets.
+- Expand package smoke tests to cover stable CLI launchers, scoped npm execution and the integrated MCP entry points; add MCP catalog, manifest parsing and protocol tests.
+- Add bounded-retry regression tests for transient filesystem errors, persistent failures and preservation of the previous generated file.
+- Add documentation sample checks and SEO validation for sitemap URLs, canonical metadata, locale alternates and deployment paths.
+- Generate translated changelog Markdown files and a static website catalog from the English changelog and per-entry translations; CI rejects missing or stale translations.
+
+### Upgrade notes
+
+- Astro, SvelteKit and generator-based manual projects that previously prefixed the result of `route()` themselves should remove that extra prefix or explicitly request an internal path with `{ basePath: false }` in the third argument. Use `route.url()` for public URLs instead of manually concatenating a base path.
+- Semantic naming remains opt-in; existing automatic names are unchanged unless the new naming style or explicit aliases are configured.
+- After updating, regenerate the route module with `pnpm exec named-routes generate` or restart the framework integration. Do not edit the generated manifest manually.
+- The MCP is included in the main package. Use `npx @triooo/named-routes mcp` instead of installing a separate MCP package. Install the optional dependencies if MCP support was omitted during installation.
+
+## 2.1.0 - 2026-11-26
+
+Split route helper and public asset documentation into dedicated multilingual pages, with focused examples for each existing API and independent CDN configuration.
 
 ### Added
 
@@ -26,6 +67,13 @@
 - `namedRoutes({ routerBase })` accepts a router prefix or getter for SvelteKit, Vue Router, React Router/Remix and TanStack Router; `inheritViteBase` opts in when Vite's base is also the navigation base.
 - `route.localize(url, locale?, options?)` resolves translated aliases across configured languages, even without a locale prefix, preserves decoded route parameters and the original query/fragment, supports custom locale prefixes, base paths and configured domains, and returns `null` for ambiguous or unlocalized routes. Existing `route.match()` semantics remain unchanged.
 - `--base-path` for standalone generation, watch, check, list and doctor; framework integrations cache their last successful effective public base under `.named-routes/` so CLI regeneration does not discard it.
+- Added opt-in public asset discovery, strict generated asset path types, asset.has(), asset.paths() and asset.info().
+- Added asset content hashing and cache-busting URLs with asset(path, { version: true }); watched asset changes regenerate manifests.
+- Added route.withQuery() for query patches, repeated values and optional named schema validation.
+- Added route.canonical(), route.alternates() and isolated route.withDefaults() contexts for SEO, SSR and multi-tenant URLs.
+- Added read-only CLI audit with route and asset diagnostics, JSON output and strict CI mode.
+- Added multilingual advanced helper documentation, a real-runtime URL helpers playground, unit/type/generator tests and production asset-version E2E checks.
+- Added `asset()` / `route.asset()` and independent `defaults.assetBase` for public paths and CDN URLs; exported asset types and customizable generated asset exports. Added public-file browser checks in all nine example apps, regression tests for route/localize/match/parseQuery, and multilingual asset guides.
 
 ### Fixed
 
@@ -44,6 +92,10 @@
 - Improved generated TypeScript and JavaScript asset typecheck diagnostics.
 - Improved temporary fixture cleanup and subprocess error handling on Windows.
 - Updated browser-safety test expectations to include the new browser-safe asset and URL utility modules while preserving strict runtime dependency isolation.
+
+### Documentation
+
+- Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.
 
 ## 2.0.0 - 2026-11-25
 

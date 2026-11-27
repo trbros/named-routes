@@ -6,7 +6,10 @@
 		"dev": "next dev",
 		"build": "next build",
 		"typecheck": "next typegen && tsc --noEmit",
-		"check:i18n": "node scripts/check-messages.mjs"
+		"check:i18n": "node scripts/check-messages.mjs",
+		"test:seo": "node --test scripts/seo.test.mjs",
+		"check:seo": "node scripts/check-seo.mjs",
+		"test:changelog": "node --experimental-strip-types --test scripts/changelog.test.mjs"
 	},
 	"dependencies": {
 		"@triooo/named-routes": "link:..",

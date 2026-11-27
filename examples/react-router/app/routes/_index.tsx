@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { asset, route } from "../routes.generated";
 
 const links = [
+  { label: "Admin dashboard", href: route("admin.index") },
   { label: "users.$id", href: route("users.$id", { id: 42 }) },
   { label: "docs.$splat", href: route("docs.$splat", { splat: ["guide", "install"] }) },
   { label: "sobre (routes.ts)", href: route("sobre") },

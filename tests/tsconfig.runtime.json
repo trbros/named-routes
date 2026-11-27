@@ -9,5 +9,10 @@
 		"skipLibCheck": false,
 		"types": []
 	},
-	"files": ["types-hrefs.ts", "types-match.ts", "types-query-core.ts"]
+	"files": [
+		"types-hrefs.ts",
+		"types-match.ts",
+		"types-query-core.ts",
+		"patch-2.1.1.types.ts"
+	]
 }

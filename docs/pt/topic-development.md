@@ -1,0 +1,21 @@
+# Atualização automática em desenvolvimento
+
+[Documentação](index.md) / [CLI, CI e solução de problemas](guides.md)
+
+[English](../en/topic-development.md) · [Português](../pt/topic-development.md) · [Español](../es/topic-development.md) · [日本語](../ja/topic-development.md)
+
+<!-- Generated from docs/content.json, docs/groups.json, docs/legacy-groups.json and docs/locales.json; run pnpm run docs. -->
+
+<a id="development"></a>
+
+Next.js: o wrapper gera antes de o Next iniciar e depois mantém o módulo atualizado dentro do processo de desenvolvimento. Por padrão (watchMode: "auto"), ele reage a eventos de arquivo dos diretórios de rotas e da raiz do projeto, com debounce e execução serializada, mais uma varredura a cada 5 segundos para eventos que o sistema operacional perdeu. Ele percebe páginas criadas, removidas e renomeadas; o módulo só muda quando seu conteúdo muda. Nenhum hook de webpack ou Turbopack é alterado. Nunca escreve durante o next start (servidor de produção), então deploys somente leitura são seguros.
+
+Frameworks Vite: o plugin gera no buildStart, mais uma vez antes de o módulo ser carregado pela primeira vez (depois de o framework gravar sua tabela de rotas), e reage a eventos add/unlink do watcher do Vite, a mudanças no arquivo de configuração do named-routes e a regravações de typed-router.d.ts, routeTree.gen.ts ou app/routes.ts. Ele encontra a raiz do projeto subindo da raiz do Vite até o package.json. O módulo do Nuxt gera de novo a cada pages:resolved, que o Nuxt chama quando as páginas mudam.
+
+Os watchers não rodam em builds de produção e não mantêm o processo vivo sozinhos. Um erro de geração durante a edição preserva o último módulo válido e registra o erro. Mudanças em módulos importados pela configuração exigem reinício. O próprio arquivo de configuração só é reimportado quando o conteúdo muda; o Node.js não descarrega módulos ES, então cada versão distinta de uma configuração JavaScript ou TypeScript fica na memória (só o módulo da configuração, não o que ele importa) até o processo reiniciar. watch: false desativa apenas as atualizações contínuas, não a geração inicial.
+
+Onde eventos de arquivo não são confiáveis, o polling assume: caminhos do WSL em /mnt, WATCHPACK_POLLING ou CHOKIDAR_USEPOLLING definidos, NAMED_ROUTES_WATCH=poll ou quando o sistema operacional recusa watchers (por exemplo, EMFILE ou ENOSPC, informado uma vez). watchMode: "poll" restaura o comportamento da 1.0 (varredura completa a cada watchInterval). Em um benchmark reproduzível (pnpm bench:watch, Linux, Node 26) com 200 rotas, a CPU ociosa caiu de 36 para 6 ms por segundo e uma nova página chegou ao módulo em 90 ms em vez de 478 ms; com 2000 rotas, de 153 para 29 ms por segundo e 203 ms em vez de 582 ms.
+
+---
+
+← Anterior: [Casos especiais de descoberta](topic-discovery.md) · [Todos os tópicos](guides.md) · Próximo: [Erros e solução de problemas](topic-errors.md) →

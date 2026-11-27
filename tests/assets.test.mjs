@@ -139,11 +139,31 @@ test("all generator adapters serialize independent public and router bases", asy
 			const first = await generateRoutes(options);
 			const standard = await import(pathToFileURL(first.output).href);
 			assert.equal(standard.asset("logo.svg"), "/app/logo.svg");
-			assert.equal(standard.route("about"), "/about");
+			const automaticBase = ["astro", "sveltekit", "manual"].includes(
+				framework,
+			);
+
+			assert.equal(
+				standard.route("about"),
+				automaticBase ? "/app/about" : "/about",
+			);
 			assert.equal(
 				standard.route("about", {}, { basePath: true }),
 				"/app/about",
 			);
+
+			// Public URLs always include the configured base.
+			assert.equal(standard.route.url("about"), "/app/about");
+
+			// Explicitly disabling the base returns the internal path.
+			assert.equal(standard.route("about", {}, { basePath: false }), "/about");
+
+			// Explicitly enabling the base must not duplicate it.
+			assert.equal(
+				standard.route("about", {}, { basePath: true }),
+				"/app/about",
+			);
+
 			const second = await generateRoutes({
 				...options,
 				output: "cdn.mjs",

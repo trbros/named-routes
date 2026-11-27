@@ -28,6 +28,7 @@ const extensions = { ts: "ts", tsx: "tsx" };
 
 /** Every route name the samples call, with a pattern that has the same parameters. */
 const extraRoutes = {
+	"admin.alunos.edit": "/admin/alunos/[aluno]/edit",
 	about: "/about",
 	users: "/users",
 	"users.$user": "/users/[user]",
@@ -81,6 +82,7 @@ declare module "next/router" {
 	export function useRouter(): { push(href: string): Promise<boolean>; replace(href: string): Promise<boolean> };
 }
 declare module "react-router" {
+	export function useNavigate(): (href: string) => void;
 	export function Link(props: { to: string; children?: unknown }): JSX.Element;
 }
 declare module "vite" {
@@ -102,12 +104,21 @@ interface ImportMeta {
 	readonly env: { readonly BASE_URL: string };
 }
 declare module "vue-router" {
+	export function useRouter(): { push(href: string): Promise<unknown> };
 	export function createWebHistory(base?: string): unknown;
 	export function createRouter(options: { history: unknown; routes: unknown[] }): unknown;
 }
 declare module "vue-router/auto-routes" {
 	export const routes: unknown[];
 }
+declare module "@sveltejs/kit/vite" {
+	export function sveltekit(config?: { paths?: { base?: string } }): unknown;
+}
+declare module "$app/navigation" {
+	export function goto(href: string): Promise<void>;
+}
+declare function navigateTo(href: string): unknown;
+declare function defineEventHandler<T>(handler: () => T): unknown;
 declare module "@vitejs/plugin-react" {
 	export default function react(): unknown;
 }
@@ -183,9 +194,15 @@ export function toModule(code) {
 	return `${lines.join("\n")}\nexport {};\n`;
 }
 
-const samples = sections.filter(
-	(section) => extensions[section.language] && section.code.trim(),
-);
+const samples = sections
+	.flatMap((section) => [
+		section,
+		...(section.baseExamples ?? []).map((example) => ({
+			...example,
+			id: `${section.id}-${example.id}`,
+		})),
+	])
+	.filter((section) => extensions[section.language] && section.code.trim());
 const cache = join(root, "node_modules/.cache");
 await mkdir(cache, { recursive: true });
 const directory = await mkdtemp(join(cache, "docs-samples-"));
@@ -206,10 +223,22 @@ try {
 			"export default function Page() { return null; }\n",
 		);
 		await writeFile(join(project, "route-query.ts"), query);
+		await mkdir(join(project, "app/api/admin/alunos/[aluno]"), {
+			recursive: true,
+		});
+		await writeFile(
+			join(project, "app/api/admin/route.ts"),
+			"export function GET() {}\nexport function POST() {}\n",
+		);
+		await writeFile(
+			join(project, "app/api/admin/alunos/[aluno]/route.ts"),
+			"export function GET() {}\n",
+		);
 		await generateRoutes({
 			root: project,
 			framework: "next",
 			output: "routes.generated.ts",
+			includeApi: true,
 			extraRoutes,
 			query: "route-query.ts",
 			hrefs,

@@ -189,7 +189,7 @@ if (untranslated.length)
 	);
 if (check && problems.length) {
 	console.error(
-		`Locales out of sync:\n  ${problems.join("\n  ")}\nRun pnpm locales, translate the reported entries, then pnpm docs.`,
+		`Locales out of sync:\n  ${problems.join("\n  ")}\nRun pnpm locales, translate the reported entries, then pnpm run docs.`,
 	);
 	process.exit(1);
 }

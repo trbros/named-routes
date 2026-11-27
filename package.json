@@ -1,6 +1,6 @@
 {
 	"name": "@triooo/named-routes",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"description": "The type-safe toolkit for routes, URLs and assets in Next.js, Nuxt, Vue, SvelteKit, Astro, React Router and TanStack Router",
 	"keywords": [
 		"named-routes",
@@ -70,9 +70,11 @@
 		"./package.json": "./package.json"
 	},
 	"bin": {
-		"named-routes": "dist/cli.js"
+		"named-routes": "bin/named-routes.js",
+		"named-routes-mcp": "bin/named-routes-mcp.js"
 	},
 	"files": [
+		"bin",
 		"dist",
 		"src",
 		"README.md",
@@ -83,7 +85,17 @@
 		"CHANGELOG.md",
 		"LICENSE",
 		"SECURITY.md",
-		"assets"
+		"assets",
+		"llms.txt",
+		"llms-full.txt",
+		"llms-agent.md",
+		"mcp/README.md",
+		"mcp/bin",
+		"mcp/src",
+		"mcp/catalog.json",
+		"CHANGELOG.pt-BR.md",
+		"CHANGELOG.es.md",
+		"CHANGELOG.ja.md"
 	],
 	"scripts": {
 		"test": "npm run build && node --test tests/*.test.mjs",
@@ -91,22 +103,30 @@
 		"check": "npm run lint && npm test && npm run test:types",
 		"test:next": "node tests/next-smoke.mjs && node tests/next-typed-routes.mjs",
 		"build": "node scripts/clean.mjs && tsc -p tsconfig.json && node scripts/ensure-cli.mjs",
-		"prepack": "npm run build",
+		"prepack": "npm run build && node mcp/scripts/verify-pack.mjs",
 		"prepare": "npm run build",
 		"website": "npm run dev --prefix website",
 		"prepublishOnly": "npm test && npm run test:types && npm run test:package",
-		"test:package": "node tests/pack-smoke.mjs",
-		"release:check": "npm run check && npm run test:next && npm run test:vite && npm run test:package && npm run test:e2e",
+		"test:package": "npm run test:mcp && node tests/pack-smoke.mjs",
+		"release:check": "npm run check && npm run test:next && npm run test:vite && npm run test:package && npm run lockfiles:fix && npm run test:e2e",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test:vite": "node tests/vite-smoke.mjs",
-		"docs": "python3 scripts/sync-docs.py",
-		"docs:check": "python3 scripts/sync-docs.py --check",
+		"docs": "python3 scripts/sync-docs.py && python3 scripts/sync-changelog.py",
+		"docs:check": "python3 scripts/sync-docs.py --check && python3 scripts/sync-changelog.py --check",
 		"locales": "node scripts/sync-locales.mjs",
 		"locales:check": "node scripts/sync-locales.mjs --check",
 		"lint": "biome check .",
 		"format": "biome check --write .",
 		"test:e2e": "node tests/e2e/run.mjs",
-		"bench:watch": "node scripts/bench-watch.mjs"
+		"bench:watch": "node scripts/bench-watch.mjs",
+		"llms": "python3 scripts/sync-llms.py",
+		"llms:check": "python3 scripts/sync-llms.py --check",
+		"test:mcp": "node --test mcp/tests/*.test.mjs",
+		"changelog": "python3 scripts/sync-changelog.py",
+		"changelog:prepare": "python3 scripts/sync-changelog.py --prepare",
+		"changelog:check": "python3 scripts/sync-changelog.py --check",
+		"lockfiles:check": "python scripts/check-lockfiles.py",
+		"lockfiles:fix": "python scripts/check-lockfiles.py --fix"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "0.18.5",
@@ -116,11 +136,19 @@
 		"publint": "0.3.25",
 		"typescript": "^7.0.2",
 		"valibot": "^1.5.0",
-		"zod": "^4.6.7"
+		"@modelcontextprotocol/client": "^2.3.0"
 	},
 	"publishConfig": {
 		"access": "public",
 		"registry": "https://registry.npmjs.org/"
 	},
-	"packageManager": "pnpm@12.18.0"
+	"packageManager": "pnpm@12.18.0",
+	"dependencies": {
+		"@babel/parser": "^7.26.0"
+	},
+	"optionalDependencies": {
+		"@modelcontextprotocol/server": "^2.3.0",
+		"named-routes-mcp-typescript": "npm:typescript@^5.9.3",
+		"zod": "^4.6.7"
+	}
 }

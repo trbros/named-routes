@@ -3,7 +3,7 @@ import { plainText } from "./rich-text";
 import Link from "../i18n/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "../i18n/navigation";
-import { docSections, docHref } from "../lib/docs";
+import { docSections, docHref, docGroups, getBaseExamples } from "../lib/docs";
 import { useSiteLocale } from "./use-site-locale";
 import { Icon } from "./icon";
 const normalize = (value: string) =>
@@ -19,21 +19,16 @@ export function DocsSearch() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const results = useMemo(() => {
-    const needle = normalize(query.trim());
-    return docSections
-      .filter(
-        (section) =>
-          !needle ||
-          normalize(
-            section.title[locale] + " " + plainText(section.paragraphs[locale].join(" ")),
-          ).includes(needle),
-      )
-      .sort(
-        (a, b) =>
-          Number(normalize(b.title[locale]).includes(needle)) -
-          Number(normalize(a.title[locale]).includes(needle)),
-      )
-      .slice(0, 7);
+    const tokens = normalize(query.trim()).split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return docSections.slice(0, 7);
+    return docSections.map((section) => {
+      const group = docGroups.find((item) => item.items.some((id) => id === section.id));
+      const title = normalize(`${section.title[locale]} ${section.id} ${group?.title[locale] ?? ""}`);
+      const haystack = `${title} ${normalize(plainText(section.paragraphs[locale].join(" ")))} ${normalize(section.code)} ${normalize(getBaseExamples(section.id).map((example) => `${example.title[locale]} ${example.description[locale]} ${example.code}`).join(" "))}`;
+      const matches = tokens.every((token) => haystack.includes(token));
+      const score = tokens.reduce((total, token) => total + (title.includes(token) ? 2 : 0), 0);
+      return { section, matches, score };
+    }).filter((item) => item.matches).sort((a, b) => b.score - a.score).slice(0, 7).map((item) => item.section);
   }, [query, locale]);
   useEffect(() => {
     function key(event: KeyboardEvent) {

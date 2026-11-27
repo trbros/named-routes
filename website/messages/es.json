@@ -375,6 +375,11 @@
 		"helpers_group_assets": "Archivos públicos",
 		"helpers_group_i18n": "Idiomas y SEO",
 		"helpers_group_reverse": "Leyendo URLs",
-		"helpers_manifest_note": "Manifiesto de ejemplo: /about (pt: /sobre), /products, /users/[id] y dos archivos públicos."
+		"helpers_manifest_note": "Manifiesto de ejemplo: /about (pt: /sobre), /products, /users/[id] y dos archivos públicos.",
+		"doc_comparisons": "Comparación",
+		"doc_related_topics": "Temas relacionados",
+		"doc_choose_framework": "Elige tu framework",
+		"doc_browse_all": "Explora por tema",
+		"doc_index_description": "Aprende a generar rutas tipadas, construir URL públicas y usar los helpers con tu framework. Cada tema tiene un ejemplo."
 	}
 }

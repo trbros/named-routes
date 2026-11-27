@@ -15,6 +15,7 @@
 		"types-query.ts",
 		"types-query-core.ts",
 		"types-match.ts",
-		"types-assets.ts"
+		"types-assets.ts",
+		"patch-2.1.1.types.ts"
 	]
 }

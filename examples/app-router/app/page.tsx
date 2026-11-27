@@ -2,6 +2,7 @@ import Link from "next/link";
 import { asset, route } from "../src/routes.generated";
 
 const links = [
+  { label: "Admin dashboard", href: route("admin.index") },
   { label: "posts.$post", href: route("posts.$post", { post: 42 }) },
   { label: "posts.$post + query", href: route("posts.$post", { post: 7 }, { query: { tab: "comments" } }) },
   { label: "user.profile", href: route("user.profile") },

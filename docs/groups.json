@@ -3,81 +3,261 @@
 		"id": "start",
 		"page": "getting-started.md",
 		"title": {
-			"en": "Getting started",
+			"en": "Start here",
 			"pt": "Primeiros passos",
 			"es": "Primeros pasos",
 			"ja": "はじめに"
 		},
 		"items": [
 			"overview",
-			"comparison",
 			"installation",
+			"frameworks",
 			"quick-start",
-			"naming"
+			"naming",
+			"generated-source",
+			"comparison",
+			"architecture"
 		]
 	},
 	{
-		"id": "frameworks",
-		"page": "frameworks.md",
+		"id": "framework-nextjs",
+		"page": "framework-nextjs.md",
 		"title": {
-			"en": "Frameworks",
-			"pt": "Frameworks",
-			"es": "Frameworks",
-			"ja": "フレームワーク"
+			"en": "Next.js",
+			"pt": "Next.js",
+			"es": "Next.js",
+			"ja": "Next.js"
 		},
 		"items": [
-			"frameworks",
 			"nextjs",
+			"nextjs-conventions",
+			"nextjs-navigation",
+			"nextjs-deployment",
+			"nextjs-assets",
+			"nextjs-i18n",
+			"nextjs-endpoints",
+			"app-router",
+			"pages-router",
+			"typed-hrefs",
+			"nextjs-router-push",
+			"nextjs-redirect"
+		]
+	},
+	{
+		"id": "framework-nuxt",
+		"page": "framework-nuxt.md",
+		"title": {
+			"en": "Nuxt",
+			"pt": "Nuxt",
+			"es": "Nuxt",
+			"ja": "Nuxt"
+		},
+		"items": [
 			"nuxt",
+			"nuxt-conventions",
+			"nuxt-navigation",
+			"nuxt-programmatic",
+			"nuxt-deployment",
+			"nuxt-assets",
+			"nuxt-i18n",
+			"nuxt-endpoints"
+		]
+	},
+	{
+		"id": "framework-vue",
+		"page": "framework-vue.md",
+		"title": {
+			"en": "Vue Router",
+			"pt": "Vue Router",
+			"es": "Vue Router",
+			"ja": "Vue Router"
+		},
+		"items": [
 			"vue",
+			"vue-conventions",
+			"vue-navigation",
+			"vue-programmatic",
+			"vue-deployment",
+			"vue-assets",
+			"vue-i18n",
+			"vue-endpoints"
+		]
+	},
+	{
+		"id": "framework-sveltekit",
+		"page": "framework-sveltekit.md",
+		"title": {
+			"en": "SvelteKit",
+			"pt": "SvelteKit",
+			"es": "SvelteKit",
+			"ja": "SvelteKit"
+		},
+		"items": [
 			"sveltekit",
+			"sveltekit-conventions",
+			"sveltekit-navigation",
+			"sveltekit-programmatic",
+			"sveltekit-deployment",
+			"sveltekit-assets",
+			"sveltekit-i18n",
+			"sveltekit-endpoints"
+		]
+	},
+	{
+		"id": "framework-astro",
+		"page": "framework-astro.md",
+		"title": {
+			"en": "Astro",
+			"pt": "Astro",
+			"es": "Astro",
+			"ja": "Astro"
+		},
+		"items": [
 			"astro",
+			"astro-conventions",
+			"astro-navigation",
+			"astro-programmatic",
+			"astro-deployment",
+			"astro-assets",
+			"astro-i18n",
+			"astro-endpoints"
+		]
+	},
+	{
+		"id": "framework-react-router",
+		"page": "framework-react-router.md",
+		"title": {
+			"en": "React Router / Remix",
+			"pt": "React Router / Remix",
+			"es": "React Router / Remix",
+			"ja": "React Router / Remix"
+		},
+		"items": [
 			"react-router",
+			"react-router-conventions",
+			"react-router-navigation",
+			"react-router-programmatic",
+			"react-router-deployment",
+			"react-router-assets",
+			"react-router-i18n",
+			"react-router-endpoints"
+		]
+	},
+	{
+		"id": "framework-tanstack-router",
+		"page": "framework-tanstack-router.md",
+		"title": {
+			"en": "TanStack Router",
+			"pt": "TanStack Router",
+			"es": "TanStack Router",
+			"ja": "TanStack Router"
+		},
+		"items": [
 			"tanstack-router",
+			"tanstack-router-conventions",
+			"tanstack-router-navigation",
+			"tanstack-router-programmatic",
+			"tanstack-router-deployment",
+			"tanstack-router-assets",
+			"tanstack-router-i18n",
+			"tanstack-router-endpoints"
+		]
+	},
+	{
+		"id": "framework-manual",
+		"page": "framework-manual.md",
+		"title": {
+			"en": "Manual routing",
+			"pt": "Rotas manuais",
+			"es": "Rutas manuales",
+			"ja": "手動ルーティング"
+		},
+		"items": [
 			"manual-routes"
 		]
 	},
 	{
-		"id": "use",
+		"id": "routing",
 		"page": "build-with-routes.md",
 		"title": {
-			"en": "Build with routes",
-			"pt": "Desenvolva com rotas",
-			"es": "Construye con rutas",
-			"ja": "ルートで構築する"
+			"en": "Build URLs & name routes",
+			"pt": "Construção de URLs e nomes",
+			"es": "Construcción de URL y nombres",
+			"ja": "URL と名前の構築"
 		},
 		"items": [
-			"app-router",
-			"pages-router",
+			"helper-route",
+			"public-url",
 			"parameters",
+			"optional-parameters",
+			"catch-all-parameters",
+			"mixed-parameters",
 			"query-hash",
-			"typed-query",
-			"reverse-routing",
+			"hash-fragments",
 			"base-path",
-			"i18n",
-			"typescript",
-			"typed-hrefs"
+			"absolute-urls",
+			"trailing-slash",
+			"semantic-names",
+			"stable-names",
+			"typescript"
 		]
 	},
 	{
 		"id": "route-helpers",
 		"page": "route-helpers.md",
 		"title": {
-			"en": "Route helpers",
-			"pt": "Helpers de rotas",
-			"es": "Helpers de rutas",
-			"ja": "ルートヘルパー"
+			"en": "Route reference & inspection",
+			"pt": "Referência de rotas e inspeção",
+			"es": "Referencia de rutas e inspección",
+			"ja": "ルートリファレンスと検査"
 		},
 		"items": [
-			"helper-route",
-			"helper-localize",
+			"reverse-routing",
 			"helper-match",
-			"helper-parse-query",
 			"helper-is",
 			"helper-breadcrumbs",
 			"helper-has",
 			"helper-names",
 			"helper-pattern",
+			"helper-create-routes",
+			"helper-with-defaults",
+			"helper-parse-pattern",
+			"helper-format-pattern",
+			"helper-pattern-parameters"
+		]
+	},
+	{
+		"id": "queries",
+		"page": "queries.md",
+		"title": {
+			"en": "Typed queries & URL updates",
+			"pt": "Queries tipadas e atualização de URLs",
+			"es": "Consultas tipadas y actualización de URL",
+			"ja": "型付きクエリと URL 更新"
+		},
+		"items": [
+			"typed-query",
+			"query-schema-config",
+			"query-schema-use",
+			"helper-define-query",
+			"helper-define-query-type",
+			"helper-parse-query",
+			"helper-with-query"
+		]
+	},
+	{
+		"id": "i18n",
+		"page": "internationalization.md",
+		"title": {
+			"en": "Internationalization",
+			"pt": "Internacionalização",
+			"es": "Internacionalización",
+			"ja": "国際化"
+		},
+		"items": [
+			"i18n",
+			"localized-url",
+			"helper-localize",
 			"helper-locales",
 			"helper-for-locale"
 		]
@@ -86,85 +266,154 @@
 		"id": "public-assets",
 		"page": "public-assets.md",
 		"title": {
-			"en": "Public assets",
-			"pt": "Arquivos públicos",
-			"es": "Archivos públicos",
-			"ja": "公開アセット"
+			"en": "Assets & CDN",
+			"pt": "Assets e CDN",
+			"es": "Assets y CDN",
+			"ja": "アセットと CDN"
 		},
 		"items": [
 			"assets",
-			"asset-base"
+			"helper-route-asset",
+			"asset-base",
+			"asset-absolute",
+			"typed-assets",
+			"asset-metadata",
+			"asset-has",
+			"asset-paths",
+			"asset-info",
+			"asset-versioning"
+		]
+	},
+	{
+		"id": "seo",
+		"page": "seo.md",
+		"title": {
+			"en": "SEO & metadata",
+			"pt": "SEO e metadados",
+			"es": "SEO y metadatos",
+			"ja": "SEO とメタデータ"
+		},
+		"items": [
+			"helper-canonical",
+			"helper-alternates"
+		]
+	},
+	{
+		"id": "endpoints",
+		"page": "http-endpoints.md",
+		"title": {
+			"en": "HTTP endpoints",
+			"pt": "Endpoints HTTP",
+			"es": "Endpoints HTTP",
+			"ja": "HTTP エンドポイント"
+		},
+		"items": [
+			"endpoint-methods",
+			"helper-endpoint",
+			"endpoint-dynamic"
 		]
 	},
 	{
 		"id": "reference",
 		"page": "api-reference.md",
 		"title": {
-			"en": "API reference",
-			"pt": "Referência da API",
-			"es": "Referencia de la API",
-			"ja": "API リファレンス"
+			"en": "Configuration & runtime reference",
+			"pt": "Configuração e referência do runtime",
+			"es": "Configuración y referencia del runtime",
+			"ja": "設定とランタイムリファレンス"
 		},
 		"items": [
 			"runtime-api",
 			"configuration",
-			"stable-names",
-			"generator-api"
+			"config-discovery",
+			"config-output",
+			"config-naming",
+			"config-defaults",
+			"config-extra-routes",
+			"config-api",
+			"config-watch"
+		]
+	},
+	{
+		"id": "generator",
+		"page": "generator.md",
+		"title": {
+			"en": "Generator & tooling API",
+			"pt": "Gerador e API de ferramentas",
+			"es": "Generador y API de herramientas",
+			"ja": "ジェネレーターとツール API"
+		},
+		"items": [
+			"generator-api",
+			"generator-discover",
+			"generator-generate",
+			"generator-validate"
 		]
 	},
 	{
 		"id": "advanced",
 		"page": "guides.md",
 		"title": {
-			"en": "Guides",
-			"pt": "Guias",
-			"es": "Guías",
-			"ja": "ガイド"
+			"en": "CLI, CI & troubleshooting",
+			"pt": "CLI, CI e solução de problemas",
+			"es": "CLI, CI y resolución de problemas",
+			"ja": "CLI、CI、トラブルシューティング"
 		},
 		"items": [
+			"cli",
+			"cli-init",
+			"cli-generate",
+			"cli-list",
+			"cli-check",
+			"cli-watch",
+			"doctor",
+			"audit",
+			"cli-migrate",
 			"discovery",
 			"development",
-			"cli",
-			"doctor",
 			"errors",
 			"boundaries"
+		]
+	},
+	{
+		"id": "ai-mcp",
+		"page": "ai-mcp.md",
+		"title": {
+			"en": "AI agents & MCP",
+			"pt": "Agentes de IA e MCP",
+			"es": "Agentes de IA y MCP",
+			"ja": "AI エージェントと MCP"
+		},
+		"items": [
+			"ai-agents",
+			"mcp-installation",
+			"mcp-project",
+			"mcp-claude",
+			"mcp-cursor",
+			"mcp-codex",
+			"mcp-vscode",
+			"mcp-windows",
+			"mcp-tools",
+			"mcp-workflow",
+			"mcp-security",
+			"mcp-troubleshooting"
 		]
 	},
 	{
 		"id": "project",
 		"page": "project.md",
 		"title": {
-			"en": "Project",
-			"pt": "Projeto",
-			"es": "Proyecto",
-			"ja": "プロジェクト"
+			"en": "Project & releases",
+			"pt": "Projeto e versões",
+			"es": "Proyecto y versiones",
+			"ja": "プロジェクトとリリース"
 		},
 		"items": [
 			"website",
 			"demos",
 			"contributing",
 			"versioning",
-			"migration"
-		]
-	},
-	{
-		"id": "advanced-helpers",
-		"page": "advanced-helpers.md",
-		"title": {
-			"en": "Advanced URL helpers",
-			"pt": "Helpers avançados de URL",
-			"es": "Helpers avanzados de URL",
-			"ja": "高度な URL ヘルパー"
-		},
-		"items": [
-			"typed-assets",
-			"asset-metadata",
-			"asset-versioning",
-			"helper-with-query",
-			"helper-alternates",
-			"helper-canonical",
-			"helper-with-defaults",
-			"audit",
+			"migration",
 			"helpers-playground"
 		]
 	}

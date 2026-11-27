@@ -1,8 +1,8 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import catalog from "../../docs/changelog.json";
 import { type ChangelogVersion, parseChangelog } from "./changelog";
+import type { Locale } from "./locales";
 
-/** Server-only: the changelog lives at the repository root, next to the package it describes. */
-export function readChangelog(): ChangelogVersion[] {
-  return parseChangelog(readFileSync(path.join(process.cwd(), "..", "CHANGELOG.md"), "utf8"));
+/** Static catalog is bundled with the site, including on Vercel. */
+export function readChangelog(locale: Locale): ChangelogVersion[] {
+  return parseChangelog(catalog[locale]);
 }

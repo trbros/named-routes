@@ -23,7 +23,7 @@ import {
 	watchModes,
 } from "./watch.js";
 
-const help = `Usage: named-routes [generate|check|list|watch|init|doctor|audit|migrate] [options]
+const help = `Usage: named-routes [generate|check|list|watch|init|doctor|audit|migrate|mcp] [options]
 
 Commands:
   generate            Write the typed route module (default)
@@ -34,6 +34,7 @@ Commands:
   doctor              Diagnose configuration, discovery, output and integration
                       (read-only; exit 1 on errors, or on warnings with --strict)
   audit               Audit literal route and public asset references (read-only)
+  mcp                 Start the read-only MCP stdio server (mcp --help for options)
   migrate --to 2      Pin 1.x behavior in the named-routes config where 2.0
                       changes the generated module (dry run; --write applies)
 
@@ -70,6 +71,12 @@ async function version() {
 }
 
 async function main() {
+	// Also support direct invocation of dist/cli.js (the stable bin handles MCP first).
+	if (process.argv[2] === "mcp") {
+		process.argv.splice(2, 1);
+		await import(new URL("../bin/named-routes-mcp.js", import.meta.url).href);
+		return;
+	}
 	const { values, positionals } = parseArgs({
 		allowPositionals: true,
 		options: {

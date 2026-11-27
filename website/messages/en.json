@@ -375,6 +375,11 @@
 		"helpers_group_assets": "Public assets",
 		"helpers_group_i18n": "Locales and SEO",
 		"helpers_group_reverse": "Reading URLs",
-		"helpers_manifest_note": "Sample manifest: /about (pt: /sobre), /products, /users/[id] and two public files."
+		"helpers_manifest_note": "Sample manifest: /about (pt: /sobre), /products, /users/[id] and two public files.",
+		"doc_comparisons": "Comparison",
+		"doc_related_topics": "Related topics",
+		"doc_choose_framework": "Choose your framework",
+		"doc_browse_all": "Browse by topic",
+		"doc_index_description": "Learn to generate typed routes, build public URLs and use the helpers alongside your own framework. Each topic has a focused example."
 	}
 }

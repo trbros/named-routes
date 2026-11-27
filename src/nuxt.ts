@@ -5,12 +5,13 @@
  * neither Nuxt nor @nuxt/kit is a dependency.
  */
 import { randomUUID } from "node:crypto";
-import { mkdir, rename, unlink, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { withFrameworkBase, writeFrameworkBase } from "./base-path.js";
 import { configFiles, resolveOptions } from "./config.js";
 import type { GeneratorOptions } from "./generator.js";
 import { generateRoutes } from "./generator.js";
+import { renameWithRetry } from "./rename-retry.js";
 import {
 	flattenNuxtPages,
 	NUXT_SNAPSHOT,
@@ -59,7 +60,7 @@ async function writeAtomic(path: string, content: string) {
 	const temporary = `${path}.${randomUUID()}.tmp`;
 	try {
 		await writeFile(temporary, content, { encoding: "utf8", flag: "wx" });
-		await rename(temporary, path);
+		await renameWithRetry(temporary, path);
 	} finally {
 		await unlink(temporary).catch(() => {});
 	}
@@ -75,6 +76,7 @@ const setup = async (
 	const artifact = relative(root, snapshotPath).split(sep).join("/");
 	let latest: NuxtSnapshot | undefined;
 	let publicDirectory: string | undefined;
+	let watchEndpoints = false;
 	let warned = false;
 	let running: Promise<void> = Promise.resolve();
 	const generate = () => {
@@ -100,6 +102,7 @@ const setup = async (
 				);
 				await writeFrameworkBase(result.root, "nuxt", result.defaults.basePath);
 				publicDirectory = result.assetDirectory;
+				watchEndpoints = resolved.includeApi === true;
 			} catch (caught) {
 				// Keep `nuxt dev` running with the last valid module; fail builds.
 				if (!nuxt.options.dev) throw caught;
@@ -127,6 +130,11 @@ const setup = async (
 	nuxt.hook("builder:watch", (_event, path) => {
 		const absolute = isAbsolute(path) ? path : resolve(root, path);
 		if (configs.has(absolute)) return generate();
+		if (
+			watchEndpoints &&
+			/^server[\\/](api|routes)[\\/]/.test(relative(root, absolute))
+		)
+			return generate();
 		if (publicDirectory) {
 			const offset = relative(publicDirectory, absolute);
 			if (

@@ -326,6 +326,36 @@ async function navigate(browser, base, example) {
 				);
 				await bodyIncludes(page, link.text);
 			});
+		if (example.name !== "react")
+			await step("admin multi-page flow", async () => {
+				const prefix = example.home.replace(/\/$/, "");
+				await page.goto(`${base}${example.home}`, { waitUntil: "load" });
+				await page.locator(`a[href="${prefix}/admin"]`).first().click();
+				await bodyIncludes(page, "Admin dashboard");
+				await page.getByRole("link", { name: "Browse students" }).click();
+				await bodyIncludes(page, "Students directory");
+				await page.getByRole("link", { name: "Ana · #42" }).click();
+				await bodyIncludes(page, "Student profile");
+				await bodyIncludes(page, "42");
+				await page.getByRole("link", { name: "Back to students" }).click();
+				await page.getByRole("link", { name: "New student" }).click();
+				await bodyIncludes(page, "New student");
+				await page.getByRole("textbox", { name: "Student name" }).fill("Demo");
+				await page
+					.getByRole("button", { name: "Preview in directory" })
+					.click();
+				await bodyIncludes(page, "Students directory");
+				assert.equal(new URL(page.url()).searchParams.get("draft"), "Demo");
+				if (["app-router", "nuxt"].includes(example.name)) {
+					const response = await fetch(`${base}${prefix}/api/admin`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ name: "Demo" }),
+					});
+					assert.ok(response.ok);
+					assert.equal((await response.json()).persisted, false);
+				}
+			});
 		// Direct loads of the same URLs (SSR / static output / SPA fallback).
 		for (const link of example.links)
 			await step(`load ${link.href} → "${link.text}"`, async () => {
@@ -344,7 +374,7 @@ async function navigate(browser, base, example) {
 
 async function hasName(root, example, name) {
 	return (await readFile(join(root, example.output), "utf8")).includes(
-		`[${JSON.stringify(name)}]`,
+		JSON.stringify(name),
 	);
 }
 

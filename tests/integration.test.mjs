@@ -132,11 +132,9 @@ test("watch discovers added and removed pages and terminates cleanly", async (t)
 	await waitFor(() => output.includes("Generated"));
 	const file = join(root, "generated/routes.ts");
 	await writeFile(join(root, "pages/new.view.tsx"), "");
-	await waitFor(async () => (await readFile(file, "utf8")).includes('["new"]'));
+	await waitFor(async () => (await readFile(file, "utf8")).includes('"new"'));
 	await rm(join(root, "pages/new.view.tsx"));
-	await waitFor(
-		async () => !(await readFile(file, "utf8")).includes('["new"]'),
-	);
+	await waitFor(async () => !(await readFile(file, "utf8")).includes('"new"'));
 	child.kill("SIGTERM");
 	// Windows has no catchable SIGTERM: kill() terminates the process, so a
 	// clean exit code can only be asserted on POSIX systems.
@@ -172,10 +170,10 @@ test("next dev discovers page creation and removal automatically without naming 
 	await mkdir(join(root, "pages/user"), { recursive: true });
 	await writeFile(join(root, "pages/user/profile.view.tsx"), "");
 	await waitFor(async () =>
-		(await readFile(output, "utf8")).includes('["user.profile"]'),
+		(await readFile(output, "utf8")).includes('"user.profile"'),
 	);
 	await rm(join(root, "pages/user/profile.view.tsx"));
 	await waitFor(
-		async () => !(await readFile(output, "utf8")).includes('["user.profile"]'),
+		async () => !(await readFile(output, "utf8")).includes('"user.profile"'),
 	);
 });

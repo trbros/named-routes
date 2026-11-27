@@ -2,5 +2,11 @@
 	"assets": {
 		"enabled": true,
 		"strict": true
+	},
+	"names": {
+		"/admin": "admin.index",
+		"/admin/alunos": "admin.alunos.index",
+		"/admin/alunos/novo": "admin.alunos.create",
+		"/admin/alunos/[aluno]": "admin.alunos.show"
 	}
 }

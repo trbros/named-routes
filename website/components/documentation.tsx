@@ -2,10 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "../i18n/navigation";
 import { release } from "../lib/release";
-import { docGroups, docSections, docHref, getDoc } from "../lib/docs";
+import { docGroups, docSections, docHref, getDoc, relatedTopics, getBaseExamples } from "../lib/docs";
 import { route } from "../src/routes.generated";
 import { useSiteLocale } from "./use-site-locale";
 import { DocsCode } from "./docs-code";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
+import { Button } from "./ui/button";
 import { CopyButton } from "./copy-button";
 import { Icon } from "./icon";
 import { RichText } from "./rich-text";
@@ -17,26 +19,29 @@ import type { ChangelogVersion } from "../lib/changelog";
 export function Documentation({ selectedId, changelog }: { selectedId?: string; changelog: ChangelogVersion[] }) {
   const { locale, t } = useSiteLocale();
   const selected = getDoc(selectedId);
+  const related = relatedTopics(selectedId);
+  const baseExamples = getBaseExamples(selectedId);
   const side = useRef<HTMLElement>(null);
   const [active, setActive] = useState("introduction");
   const [pageLink, setPageLink] = useState<string>(docHref(selectedId));
   const [mobileNav, setMobileNav] = useState(false);
-  const index = docSections.findIndex((section) => section.id === selectedId);
-  const previous = index > 0 ? docSections[index - 1] : undefined;
-  const next = index >= 0 ? docSections[index + 1] : docSections[0];
-  const group = docGroups.find((item) =>
-    item.items.some((id) => id === selectedId),
-  );
+  const group = docGroups.find((item) => item.items.some((id) => id === selectedId));
+  const items = group?.items ?? [];
+  const index = items.findIndex((id) => id === selectedId);
+  const previous = index > 0 ? getDoc(items[index - 1]) : undefined;
+  const next = index >= 0 ? getDoc(items[index + 1]) : docSections[0];
   const anchors = selected
     ? [
         { id: "introduction", label: t("overview_0efc2e") },
-        { id: "version-changes", label: t("changelog_title") },
+        ...("tables" in selected && Array.isArray(selected.tables) ? [{ id: "comparison-tables", label: t("doc_comparisons") }] : []),
+        ...(related.length ? [{ id: "related-topics", label: t("doc_related_topics") }] : []),
         ...(lines.some((line) => line.docId === selected.id)
           ? [{ id: "journey", label: t("how_this_url_was_built_4d2a9c") }]
           : []),
         ...(selected.code
           ? [{ id: "usage", label: t("usage_example_3439e8") }]
           : []),
+        ...baseExamples.map((example) => ({ id: example.id, label: example.title[locale] })),
         ...(selected.paragraphs[locale].length > 1
           ? [{ id: "details", label: t("details_dc3dec") }]
           : []),
@@ -46,6 +51,8 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
         { id: "introduction", label: t("documentation_9e9cf3") },
         { id: "version-changes", label: t("changelog_title") },
         { id: "start-here", label: t("start_here_54acc2") },
+        { id: "framework-index", label: t("doc_choose_framework") },
+        { id: "topic-index", label: t("doc_browse_all") },
         {
           id: "explore-guides",
           label: t("guides_reference_db7058"),
@@ -123,7 +130,7 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
           aria-label={t("documentation_topics_8079fc")}
         >
           {docGroups.map((category) => (
-            <details open key={category.id} data-doc-group={category.id}>
+            <details open={selected ? category.items.some((id) => id === selectedId) : category.id === "start"} key={category.id} data-doc-group={category.id}>
               <summary>
                 {category.title[locale]}
                 <Icon name="chevron" size={13} />
@@ -185,12 +192,10 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
           <p className="doc-lead">
             {selected
               ? <RichText text={selected.paragraphs[locale][0]} />
-              : t(
-                  "everything_you_need_to_turn_next_js_pages_into_typed_na_5739f1",
-                )}
+              : t("doc_index_description")}
           </p>
         </section>
-        <VersionChanges changelog={changelog} />
+        {!selected && <VersionChanges changelog={changelog} />}
         {selected ? (
           <>
             {lines.some((line) => line.docId === selected.id) && (
@@ -242,6 +247,23 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
                 ))}
               </section>
             )}
+            {selected.paragraphs[locale].length > 1 && (
+              <section id="details" data-doc-anchor>
+                <h2>{t("details_dc3dec")}</h2>
+                {selected.paragraphs[locale].slice(1).map((paragraph, i) => (
+                  <p key={i}>
+                    <RichText text={paragraph} />
+                  </p>
+                ))}
+              </section>
+            )}
+            {baseExamples.map((example) => (
+              <section key={example.id} id={example.id} data-doc-anchor>
+                <h2>{example.title[locale]}</h2>
+                <p><RichText text={example.description[locale]} /></p>
+                <DocsCode code={example.code} language={example.language} label={example.title[locale]} />
+              </section>
+            ))}
             {selected.code && (
               <section id="usage" data-doc-anchor>
                 <div className="doc-section-title">
@@ -255,31 +277,8 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
                 />
               </section>
             )}
-            {selected.paragraphs[locale].length > 1 && (
-              <section id="details" data-doc-anchor>
-                <h2>{t("details_dc3dec")}</h2>
-                {selected.paragraphs[locale].slice(1).map((paragraph, i) => (
-                  <p key={i}>
-                    <RichText text={paragraph} />
-                  </p>
-                ))}
-              </section>
-            )}
-            <div className="doc-tip">
-              <Icon name="book" size={21} />
-              <div>
-                <h3>{t("keep_this_in_mind_d3a4d7")}</h3>
-                <p>
-                  {t(
-                    "explore_the_generated_names_edit_parameters_and_follow__7b4641",
-                  )}
-                </p>
-                <Link href={route("playground")}>
-                  {t("try_the_live_example_26c48b")}
-                </Link>
-              </div>
-            </div>
-          </>
+
+</>
         ) : (
           <>
             <section id="start-here" data-doc-anchor>
@@ -344,6 +343,43 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
                 ))}
               </div>
             </section>
+            <section id="framework-index" data-doc-anchor>
+              <h2>{t("doc_choose_framework")}</h2>
+              <div className="doc-reference-links">
+                {docGroups.filter((item) => item.id.startsWith("framework-")).map((item) => (
+                  <Link key={item.id} href={docHref(item.items[0])}>
+                    <Icon name="book" size={16} />
+                    {item.title[locale]}
+                    <Icon name="arrow" size={14} />
+                  </Link>
+                ))}
+              </div>
+            </section>
+            <section id="topic-index" data-doc-anchor>
+              <h2>{t("doc_browse_all")}</h2>
+              <Accordion type="multiple" className="w-full rounded-lg border border-border bg-background px-4">
+                {docGroups.filter((item) => !item.id.startsWith("framework-")).map((item) => (
+                  <AccordionItem key={item.id} value={item.id}>
+                    <AccordionTrigger className="text-base">{item.title[locale]}</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid min-w-0 gap-1 sm:grid-cols-2">
+                        {item.items.map((id) => {
+                          const topic = getDoc(id);
+                          return topic ? (
+                            <Button key={id} variant="ghost" asChild className="h-auto min-h-9 w-full justify-between whitespace-normal px-2 py-2 text-left font-normal">
+                              <Link href={docHref(id)}>
+                                <span className="min-w-0 break-words">{topic.title[locale]}</span>
+                                <Icon name="arrow" size={14} />
+                              </Link>
+                            </Button>
+                          ) : null;
+                        })}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </section>
             <section id="explore-guides" data-doc-anchor>
               <h2>{t("go_a_little_deeper_b67cab")}</h2>
               <p>
@@ -396,6 +432,18 @@ export function Documentation({ selectedId, changelog }: { selectedId?: string; 
               </div>
             </section>
           </>
+        )}
+        {selected && related.length > 0 && (
+          <section id="related-topics" data-doc-anchor>
+            <h2>{t("doc_related_topics")}</h2>
+            <div className="doc-reference-links">
+              {related.map((topic) => (
+                <Link key={topic.id} href={docHref(topic.id)}>
+                  <Icon name="book" size={16} />{topic.title[locale]}<Icon name="arrow" size={14} />
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
         <section id="next-steps" className="doc-next-steps" data-doc-anchor>
           <h2>{t("next_steps_11fc14")}</h2>

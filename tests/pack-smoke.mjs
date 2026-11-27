@@ -61,7 +61,7 @@ try {
 	);
 	assert.equal(manifest.publishConfig.access, "public");
 	assert.equal(manifest.publishConfig.registry, "https://registry.npmjs.org/");
-	assert.deepEqual(manifest.dependencies ?? {}, {});
+	assert.deepEqual(manifest.dependencies ?? {}, { "@babel/parser": "^7.26.0" });
 	// npm's own report of the archive contents instead of the platform tar,
 	// whose listing did not match on Windows. Build output may precede it.
 	const packed = run("npm", [
@@ -157,6 +157,18 @@ try {
 	);
 	assert.ok(files.some((file) => file === "package/dist/index.js"));
 	assert.ok(files.some((file) => file === "package/dist/cli.js"));
+	assert.ok(files.includes("package/bin/named-routes.js"));
+	for (const file of [
+		"package/bin/named-routes-mcp.js",
+		"package/mcp/bin/named-routes-mcp.js",
+		"package/mcp/src/catalog.mjs",
+		"package/mcp/src/manifest.mjs",
+		"package/mcp/catalog.json",
+		"package/mcp/README.md",
+	])
+		assert.ok(files.includes(file), `missing ${file}`);
+	assert.ok(!files.includes("package/mcp/package.json"));
+	assert.ok(!files.some((file) => file.startsWith("package/mcp/tests/")));
 	assert.ok(files.some((file) => file === "package/README.pt-BR.md"));
 	assert.ok(files.some((file) => file === "package/assets/logo.svg"));
 	for (const entry of [
@@ -226,7 +238,54 @@ try {
 	const installedManifest = JSON.parse(
 		await readFile(join(installed, "package.json"), "utf8"),
 	);
+	assert.equal(installedManifest.bin["named-routes"], "bin/named-routes.js");
 	const installedCli = join(installed, installedManifest.bin["named-routes"]);
+	assert.equal(
+		installedManifest.bin["named-routes-mcp"],
+		"bin/named-routes-mcp.js",
+	);
+	const installedMcp = join(
+		installed,
+		installedManifest.bin["named-routes-mcp"],
+	);
+	assert.match(
+		run(process.execPath, [installedMcp, "--help"], consumer),
+		/--manifest/,
+	);
+	assert.match(
+		run(
+			"npm",
+			["exec", "--offline", "--", "@triooo/named-routes", "mcp", "--help"],
+			consumer,
+		),
+		/--manifest/,
+	);
+	assert.match(
+		run(
+			"npm",
+			[
+				"exec",
+				"--offline",
+				"--package=@triooo/named-routes",
+				"--",
+				"named-routes-mcp",
+				"--help",
+			],
+			consumer,
+		),
+		/--manifest/,
+	);
+	const protocol = spawnSync(
+		process.execPath,
+		["--test", join(root, "mcp/tests/protocol.test.mjs")],
+		{
+			cwd: consumer,
+			encoding: "utf8",
+			timeout: 120000,
+			env: { ...inherited, NAMED_ROUTES_MCP_TEST_PACKAGE: installed },
+		},
+	);
+	assert.equal(protocol.status, 0, `${protocol.stdout}\n${protocol.stderr}`);
 	const shims = await readdir(join(consumer, "node_modules/.bin"));
 	assert.ok(
 		shims.some(
@@ -241,6 +300,37 @@ try {
 		manifest.version,
 	);
 	run("npm", ["exec", "--", "named-routes", "generate"], consumer);
+	// npx @triooo/named-routes list uses npm exec's scoped-package inference.
+	// Offline forces the test to use the locally installed tarball, not registry code.
+	for (const args of [
+		["exec", "--offline", "--", "@triooo/named-routes", "list"],
+		[
+			"exec",
+			"--offline",
+			"--package=@triooo/named-routes",
+			"--",
+			"named-routes",
+			"list",
+		],
+	]) {
+		const listed = JSON.parse(run("npm", args, consumer));
+		assert.deepEqual(
+			listed.map((entry) => entry.name),
+			["user.profile"],
+		);
+	}
+	// Bypass command shims using the installed package's own bin metadata.
+	const resolved = JSON.parse(
+		run(
+			process.execPath,
+			[installedCli, "list", "--root", consumer],
+			temporary,
+		),
+	);
+	assert.deepEqual(
+		resolved.map((entry) => entry.name),
+		["user.profile"],
+	);
 	// npx uses npm exec: install the packed tarball into npm's isolated cache.
 	const standalone = join(temporary, "standalone");
 	await mkdir(standalone);

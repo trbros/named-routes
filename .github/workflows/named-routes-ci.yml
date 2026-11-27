@@ -96,6 +96,7 @@ jobs:
       - run: node scripts/sync-locales.mjs --check
       # README.*.md and docs/<code>/*.md match docs/content.json and docs/groups.json.
       - run: python scripts/sync-docs.py --check
+      - run: python scripts/sync-changelog.py --check
 
   frameworks:
     name: Real Next.js and Vite
@@ -136,6 +137,8 @@ jobs:
       - run: pnpm build
       - run: pnpm --dir website install --frozen-lockfile --ignore-scripts
       - run: pnpm --dir website run check:i18n
+      - run: pnpm --dir website run test:changelog
+      - run: pnpm --dir website run test:seo
       - run: pnpm --dir website run typecheck
       - run: pnpm --dir website run build
         env:

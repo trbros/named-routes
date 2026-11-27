@@ -67,6 +67,8 @@ export interface RouteOptions<Locale extends string = string> {
 	locale?: Locale;
 }
 export interface RouteDefaults<Locale extends string = string> {
+	/** Include the configured navigation prefix in route() by default. */
+	includeBasePath?: boolean;
 	basePath?: string;
 	/** Public asset prefix or HTTP(S) CDN URL; defaults to basePath. */
 	assetBase?: string;
@@ -254,6 +256,32 @@ type Args<
 			options: Options,
 		]
 	: ArgsWith<Path, Options>;
+/** Structured options avoid ambiguity with route parameters named query, locale, etc. */
+type UrlInput<Path extends string, Options> = Options &
+	(Empty extends Collect<Path>
+		? { params?: RouteParams<Path> }
+		: { params: RouteParams<Path> });
+type UrlArgs<
+	Path extends string,
+	Options,
+	Required extends boolean,
+> = Required extends true
+	? [options: UrlInput<Path, Options>]
+	: Empty extends Collect<Path>
+		? [options?: UrlInput<Path, Options>]
+		: [options: UrlInput<Path, Options>];
+export type EndpointMethod =
+	| "GET"
+	| "HEAD"
+	| "POST"
+	| "PUT"
+	| "PATCH"
+	| "DELETE"
+	| "OPTIONS"
+	| "CONNECT"
+	| "TRACE";
+export type EndpointRequest<Method extends EndpointMethod = EndpointMethod> =
+	Readonly<{ method: Method; url: string }>;
 // ------------------------------------------------------- reverse routing
 type MatchMixed<S extends string> =
 	S extends `${string}[${infer K}]${infer Rest}`
@@ -316,7 +344,7 @@ export interface LocalizeOptions<Locale extends string = string>
 /** Request-local URL defaults; locale rules and query schemas remain unchanged. */
 export type RouteContextDefaults = Pick<
 	RouteDefaults,
-	"basePath" | "assetBase" | "origin" | "trailingSlash"
+	"basePath" | "assetBase" | "origin" | "trailingSlash" | "includeBasePath"
 >;
 /** Methods shared by every route helper. */
 export interface RouteHelpers<
@@ -326,6 +354,26 @@ export interface RouteHelpers<
 > {
 	/** Resolve a public asset independently of the current locale. */
 	asset: AssetHelper;
+	/** Public URL by default, including the configured base. Does not navigate. */
+	url<Name extends keyof Routes & string>(
+		name: Name,
+		...args: UrlArgs<
+			Routes[Name],
+			OptionsFor<Queries, Name, Locale>,
+			QueryRequired<Queries, Name>
+		>
+	): string;
+	/** Bind a declared HTTP method; returns a request descriptor, never sends a request. */
+	endpoint<Name extends keyof Routes & string, Method extends EndpointMethod>(
+		name: Name,
+		method: Method,
+	): (
+		...args: UrlArgs<
+			Routes[Name],
+			OptionsFor<Queries, Name, Locale>,
+			QueryRequired<Queries, Name>
+		>
+	) => EndpointRequest<Method>;
 	/** Update an existing URL; undefined keeps a key, null removes it. */
 	withQuery(
 		url: string | URL,
@@ -518,6 +566,8 @@ export interface TypedNamedRoutes<
 	TrailingSlash extends boolean = false,
 	Queries = Empty,
 > extends RouteHelpers<Routes, Locale, Queries> {
+	/** Public asset helper is available on typed-href and string helpers. */
+	asset: AssetHelper;
 	<Name extends keyof Routes & string>(
 		// Failing on the name (not on the argument count) makes TypeScript
 		// report `QueryIsRequired<Name>` instead of "Expected 3 arguments".
@@ -895,7 +945,8 @@ export function createRoutes<
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults: RouteDefaults<Locale> & { hrefs: "string" },
+	defaults: RouteDefaults<Locale> &
+		({ hrefs: "string" } | { includeBasePath: true }),
 	extensions?: RouteExtensions<Queries>,
 ): NamedRoutes<Routes, Locale, Queries>;
 export function createRoutes<
@@ -904,7 +955,11 @@ export function createRoutes<
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults: RouteDefaults<Locale> & { hrefs?: "typed"; trailingSlash: true },
+	defaults: RouteDefaults<Locale> & {
+		hrefs?: "typed";
+		trailingSlash: true;
+		includeBasePath?: false;
+	},
 	extensions?: RouteExtensions<Queries>,
 ): TypedNamedRoutes<Routes, Locale, true, Queries>;
 export function createRoutes<
@@ -913,7 +968,11 @@ export function createRoutes<
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults?: RouteDefaults<Locale> & { hrefs?: "typed"; trailingSlash?: false },
+	defaults?: RouteDefaults<Locale> & {
+		hrefs?: "typed";
+		trailingSlash?: false;
+		includeBasePath?: false;
+	},
 	extensions?: RouteExtensions<Queries>,
 ): TypedNamedRoutes<Routes, Locale, false, Queries>;
 export function createRoutes<
@@ -922,7 +981,10 @@ export function createRoutes<
 	const Queries extends TP<Routes, Queries> = Empty,
 >(
 	manifest: Routes,
-	defaults: RouteDefaults<Locale> & { hrefs?: "typed" },
+	defaults: RouteDefaults<Locale> & {
+		hrefs?: "typed";
+		includeBasePath?: false;
+	},
 	extensions?: RouteExtensions<Queries>,
 ): TypedNamedRoutes<Routes, Locale, boolean, Queries>;
 export function createRoutes<
@@ -959,6 +1021,12 @@ export function createRoutes(
 		defaults.basePath === undefined || defaults.basePath === ""
 			? ""
 			: staticPrefix(defaults.basePath, "basePath", "INVALID_BASE_PATH");
+	if (
+		defaults.includeBasePath !== undefined &&
+		typeof defaults.includeBasePath !== "boolean"
+	)
+		fail("INVALID_OPTIONS", "includeBasePath must be a boolean");
+	const includeBasePath = defaults.includeBasePath === true;
 	const origin = originOf(defaults.origin);
 	// Snapshot the public asset base together with the other defaults.
 	const asset = compileAsset(
@@ -1165,7 +1233,9 @@ export function createRoutes(
 			return item.map((part) => encode(part, segment.name));
 		});
 		let path =
-			(options.basePath || options.absolute ? prefix : "") +
+			((options.basePath ?? includeBasePath) || options.absolute
+				? prefix
+				: "") +
 			localePath +
 			(parts.length ? `/${parts.join("/")}` : "");
 		if (!path) path = "/";
@@ -1356,7 +1426,7 @@ export function createRoutes(
 		}
 		let pathname = url.pathname;
 		let base = "";
-		if (options.basePath && prefix) {
+		if ((options.basePath ?? includeBasePath) && prefix) {
 			if (pathname !== prefix && !pathname.startsWith(`${prefix}/`))
 				return undefined;
 			pathname = pathname.slice(prefix.length) || "/";
@@ -1564,7 +1634,8 @@ export function createRoutes(
 			winner.params,
 			{
 				locale: target,
-				basePath: (options.includeBasePath ?? options.basePath) === true,
+				basePath:
+					options.includeBasePath ?? options.basePath ?? includeBasePath,
 				absolute: options.absolute === true,
 			},
 			false,
@@ -1670,6 +1741,7 @@ export function createRoutes(
 	);
 	const contextDefaults: RouteDefaults = {
 		basePath: prefix,
+		includeBasePath,
 		origin,
 		assetBase: defaults.assetBase,
 		trailingSlash,
@@ -1718,9 +1790,41 @@ export function createRoutes(
 			params?: Record<string, unknown>,
 			options?: RouteOptions<string>,
 		) => build(bound, name, params, options);
+		const url = (
+			name: string,
+			input: RouteOptions<string> & { params?: Record<string, unknown> } = {},
+		) => {
+			if (!isObject(input as unknown))
+				fail("INVALID_OPTIONS", "route.url options must be an object");
+			const { params, ...options } = input;
+			return build(bound, name, params, {
+				...options,
+				basePath: options.basePath ?? true,
+			});
+		};
 		return Object.freeze(
 			Object.assign(named, {
 				asset,
+				url,
+				endpoint: (name: string, method: EndpointMethod) => {
+					get(name);
+					if (
+						![
+							"GET",
+							"HEAD",
+							"POST",
+							"PUT",
+							"PATCH",
+							"DELETE",
+							"OPTIONS",
+							"CONNECT",
+							"TRACE",
+						].includes(method)
+					)
+						fail("INVALID_OPTIONS", `Unsupported HTTP method: ${method}`);
+					return (input?: Parameters<typeof url>[1]) =>
+						Object.freeze({ method, url: url(name, input) });
+				},
 				withQuery: (
 					url: string | URL,
 					patch: QueryPatch,
@@ -1732,7 +1836,7 @@ export function createRoutes(
 					const match =
 						matchUrl(url, options) ??
 						(options.basePath === undefined && prefix
-							? matchUrl(url, { basePath: true })
+							? matchUrl(url, { basePath: !includeBasePath })
 							: null);
 					const name =
 						typeof options.name === "string" ? options.name : match?.name;
@@ -1793,14 +1897,18 @@ export function createRoutes(
 						!isObject(overrides) ||
 						Object.keys(overrides).some(
 							(key) =>
-								!["basePath", "assetBase", "origin", "trailingSlash"].includes(
-									key,
-								),
+								![
+									"basePath",
+									"assetBase",
+									"origin",
+									"trailingSlash",
+									"includeBasePath",
+								].includes(key),
 						)
 					)
 						fail(
 							"INVALID_OPTIONS",
-							"withDefaults accepts only basePath, assetBase, origin and trailingSlash",
+							"withDefaults accepts only basePath, assetBase, origin, trailingSlash and includeBasePath",
 						);
 					const scoped = createRoutes(
 						contextManifest,

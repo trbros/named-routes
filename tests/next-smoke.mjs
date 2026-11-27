@@ -150,9 +150,7 @@ for (const example of ["app-router", "pages-router"]) {
 			const updateDeadline = Date.now() + 15000;
 			let updated = false;
 			while (Date.now() < updateDeadline) {
-				if (
-					(await readFile(manifest, "utf8")).includes('["account.settings"]')
-				) {
+				if ((await readFile(manifest, "utf8")).includes('"account.settings"')) {
 					updated = true;
 					break;
 				}
@@ -172,7 +170,7 @@ for (const example of ["app-router", "pages-router"]) {
 			let removed = false;
 			while (Date.now() < removeDeadline) {
 				if (
-					!(await readFile(manifest, "utf8")).includes('["account.settings"]')
+					!(await readFile(manifest, "utf8")).includes('"account.settings"')
 				) {
 					removed = true;
 					break;

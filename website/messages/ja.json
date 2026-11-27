@@ -375,6 +375,11 @@
 		"helpers_group_assets": "公開アセット",
 		"helpers_group_i18n": "言語と SEO",
 		"helpers_group_reverse": "URL の読み取り",
-		"helpers_manifest_note": "サンプルマニフェスト: /about（pt: /sobre）、/products、/users/[id] と 2 つの公開ファイル。"
+		"helpers_manifest_note": "サンプルマニフェスト: /about（pt: /sobre）、/products、/users/[id] と 2 つの公開ファイル。",
+		"doc_comparisons": "比較",
+		"doc_related_topics": "関連トピック",
+		"doc_choose_framework": "フレームワークを選ぶ",
+		"doc_browse_all": "トピック別に読む",
+		"doc_index_description": "型付きルート、公開 URL、各ヘルパーをフレームワークとともに使う方法を学びます。各トピックに例があります。"
 	}
 }

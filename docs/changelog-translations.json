@@ -1,0 +1,547 @@
+{
+	"This release makes named URL generation more explicit, improves framework-aware deployment paths and endpoint discovery, expands the documentation, and brings AI-agent integration into the main package. It also hardens CLI execution and atomic file replacement on Windows.": {
+		"pt": "Esta versão torna a geração de URLs nomeadas mais explícita, melhora os caminhos de deploy conforme o framework e a descoberta de endpoints, amplia a documentação e integra agentes de IA ao pacote principal. Também reforça a execução da CLI e a substituição atômica de arquivos no Windows.",
+		"es": "Esta versión hace más explícita la generación de URL con nombre, mejora las rutas de despliegue según el framework y el descubrimiento de endpoints, amplía la documentación e integra agentes de IA en el paquete principal. También refuerza la ejecución de la CLI y el reemplazo atómico de archivos en Windows.",
+		"ja": "このリリースでは名前付き URL の生成を明確にし、フレームワークに応じたデプロイパスとエンドポイント検出を改善し、ドキュメントを拡充して AI エージェント連携をメインパッケージに統合します。Windows での CLI 実行とアトミックなファイル置換も強化します。"
+	},
+	"`route.url(name, { params, query, ... })`: generate public URLs with the configured base path by default, using an explicit options object instead of positional placeholders. Route names and parameters remain typed.": {
+		"pt": "`route.url(name, { params, query, ... })`: gera URLs públicas com a base configurada por padrão, usando um objeto de opções explícito em vez de argumentos posicionais vazios. Os nomes e parâmetros continuam tipados.",
+		"es": "`route.url(name, { params, query, ... })`: genera URL públicas con la base configurada por defecto mediante un objeto de opciones explícito, sin argumentos posicionales vacíos. Los nombres y parámetros siguen tipados.",
+		"ja": "`route.url(name, { params, query, ... })`：位置引数の空欄の代わりに明示的なオプションオブジェクトを使い、設定済みのベースパスを既定で含む公開 URL を生成します。ルート名とパラメーターの型付けは維持されます。"
+	},
+	"Opt-in semantic naming with `naming.style: \"semantic\"`, including `index` and `show` conventions. Explicit `names` mappings remain available for stable, application-specific aliases.": {
+		"pt": "Nomenclatura semântica opcional com `naming.style: \"semantic\"`, incluindo as convenções `index` e `show`. Os mapeamentos explícitos `names` continuam disponíveis para aliases estáveis específicos da aplicação.",
+		"es": "Nombres semánticos opcionales con `naming.style: \"semantic\"`, incluidas las convenciones `index` y `show`. Los mapeos explícitos `names` siguen disponibles para alias estables propios de la aplicación.",
+		"ja": "`naming.style: \"semantic\"` によるオプトインの意味的命名。`index` と `show` の規則を含みます。アプリ固有の安定した別名には引き続き明示的な `names` マッピングを使用できます。"
+	},
+	"Typed HTTP endpoint descriptors through `route.endpoint(name, method)` and the generated `api` export when `includeApi` is enabled and HTTP methods can be statically identified. Descriptors contain the HTTP method and URL; they do not execute handlers or send requests. Method discovery is framework-dependent.": {
+		"pt": "Descritores HTTP tipados via `route.endpoint(name, method)` e exportação gerada `api` quando `includeApi` está habilitado e os métodos podem ser identificados estaticamente. Os descritores contêm método e URL; não executam handlers nem enviam requisições. A descoberta de métodos depende do framework.",
+		"es": "Descriptores HTTP tipados mediante `route.endpoint(name, method)` y el export generado `api` cuando `includeApi` está habilitado y los métodos pueden identificarse estáticamente. Contienen método y URL; no ejecutan handlers ni envían solicitudes. El descubrimiento depende del framework.",
+		"ja": "`includeApi` が有効で HTTP メソッドを静的に識別できる場合、`route.endpoint(name, method)` と生成される `api` エクスポートで型付き HTTP エンドポイント記述子を提供します。メソッドと URL を保持し、ハンドラーの実行やリクエスト送信は行いません。検出はフレームワークに依存します。"
+	},
+	"Versioned `llms.txt`, `llms-full.txt`, agent conventions and Markdown references by framework and topic, synchronized with the documentation in English, Portuguese, Spanish and Japanese.": {
+		"pt": "`llms.txt`, `llms-full.txt`, convenções para agentes e referências Markdown versionadas por framework e tópico, sincronizadas com a documentação em inglês, português, espanhol e japonês.",
+		"es": "`llms.txt`, `llms-full.txt`, convenciones para agentes y referencias Markdown versionadas por framework y tema, sincronizadas con la documentación en inglés, portugués, español y japonés.",
+		"ja": "バージョン管理された `llms.txt`、`llms-full.txt`、エージェント向け規則、フレームワーク・トピック別 Markdown リファレンスを英語、ポルトガル語、スペイン語、日本語のドキュメントと同期します。"
+	},
+	"A read-only Model Context Protocol (MCP) server distributed directly in `@triooo/named-routes`, available through `named-routes mcp` and `named-routes-mcp`. No separate npm package is required. The server uses stdio and optional dependencies, keeping MCP code outside the browser runtime.": {
+		"pt": "Servidor Model Context Protocol (MCP) somente leitura distribuído diretamente em `@triooo/named-routes`, disponível via `named-routes mcp` e `named-routes-mcp`. Não é necessário outro pacote npm. Usa stdio e dependências opcionais, mantendo o MCP fora do runtime do navegador.",
+		"es": "Servidor Model Context Protocol (MCP) de solo lectura distribuido directamente en `@triooo/named-routes`, disponible mediante `named-routes mcp` y `named-routes-mcp`. No requiere otro paquete npm. Usa stdio y dependencias opcionales, manteniendo MCP fuera del runtime del navegador.",
+		"ja": "読み取り専用の Model Context Protocol (MCP) サーバーを `@triooo/named-routes` に同梱し、`named-routes mcp` と `named-routes-mcp` で利用可能にします。別の npm パッケージは不要です。stdio とオプション依存関係を使用し、ブラウザーランタイムから分離します。"
+	},
+	"Six MCP tools: `get_agent_contract`, `search_docs`, `get_topic`, `get_framework_guide`, `list_routes` and `get_route`. Agents can consult the versioned documentation and inspect an existing generated route manifest without executing application code or modifying project files.": {
+		"pt": "Seis ferramentas MCP: `get_agent_contract`, `search_docs`, `get_topic`, `get_framework_guide`, `list_routes` e `get_route`. Agentes podem consultar a documentação versionada e inspecionar um manifesto já gerado sem executar código da aplicação ou modificar arquivos.",
+		"es": "Seis herramientas MCP: `get_agent_contract`, `search_docs`, `get_topic`, `get_framework_guide`, `list_routes` y `get_route`. Los agentes consultan documentación versionada e inspeccionan un manifiesto generado existente sin ejecutar código de la aplicación ni modificar archivos.",
+		"ja": "6 つの MCP ツール：`get_agent_contract`、`search_docs`、`get_topic`、`get_framework_guide`、`list_routes`、`get_route`。アプリコードの実行やファイル変更なしで、バージョン付きドキュメントと既存の生成済みルートマニフェストを参照できます。"
+	},
+	"Added opt-in public asset discovery, strict generated asset path types, asset.has(), asset.paths() and asset.info().": {
+		"pt": "Descoberta opcional de assets públicos, tipos estritos de caminhos gerados, asset.has(), asset.paths() e asset.info().",
+		"es": "Descubrimiento opcional de assets públicos, tipos estrictos de rutas generadas, asset.has(), asset.paths() y asset.info().",
+		"ja": "オプトインの公開アセット検出、厳密な生成アセットパス型、asset.has()、asset.paths()、asset.info() を追加しました。"
+	},
+	"Added asset content hashing and cache-busting URLs with asset(path, { version: true }); watched asset changes regenerate manifests.": {
+		"pt": "Hash de conteúdo de assets e URLs para invalidação de cache com asset(path, { version: true }); alterações observadas de assets regeneram os manifestos.",
+		"es": "Hash de contenido de assets y URL de invalidación de caché con asset(path, { version: true }); los cambios observados regeneran manifiestos.",
+		"ja": "アセット内容のハッシュ化と asset(path, { version: true }) によるキャッシュ無効化 URL を追加しました。監視対象の変更でマニフェストを再生成します。"
+	},
+	"Added route.withQuery() for query patches, repeated values and optional named schema validation.": {
+		"pt": "route.withQuery() para alterações de query, valores repetidos e validação opcional por schema nomeado.",
+		"es": "route.withQuery() para cambios de query, valores repetidos y validación opcional por schema nombrado.",
+		"ja": "クエリの変更、複数値、オプションの名前付きスキーマ検証向けに route.withQuery() を追加しました。"
+	},
+	"Added route.canonical(), route.alternates() and isolated route.withDefaults() contexts for SEO, SSR and multi-tenant URLs.": {
+		"pt": "route.canonical(), route.alternates() e contextos isolados route.withDefaults() para SEO, SSR e URLs multi-tenant.",
+		"es": "route.canonical(), route.alternates() y contextos aislados route.withDefaults() para SEO, SSR y URL multi-tenant.",
+		"ja": "SEO、SSR、マルチテナント URL 向けに route.canonical()、route.alternates()、分離された route.withDefaults() コンテキストを追加しました。"
+	},
+	"Added read-only CLI audit with route and asset diagnostics, JSON output and strict CI mode.": {
+		"pt": "Comando CLI audit somente leitura com diagnóstico de rotas e assets, saída JSON e modo estrito para CI.",
+		"es": "CLI audit de solo lectura con diagnóstico de rutas y assets, salida JSON y modo estricto para CI.",
+		"ja": "ルートとアセットの診断、JSON 出力、CI 用 strict モードを備えた読み取り専用 CLI audit を追加しました。"
+	},
+	"Added `asset()` / `route.asset()` and independent `defaults.assetBase` for public paths and CDN URLs; exported asset types and customizable generated asset exports. Added public-file browser checks in all nine example apps, regression tests for route/localize/match/parseQuery, and multilingual asset guides.": {
+		"pt": "`asset()` / `route.asset()` e `defaults.assetBase` independente para caminhos públicos e CDN; tipos de assets exportados e exports gerados personalizáveis. Verificações de arquivos públicos no navegador nos nove exemplos, regressões para route/localize/match/parseQuery e guias multilíngues de assets.",
+		"es": "`asset()` / `route.asset()` y `defaults.assetBase` independiente para rutas públicas y CDN; tipos de assets exportados y exports generados personalizables. Comprobaciones de archivos públicos en navegador en nueve ejemplos, regresiones route/localize/match/parseQuery y guías multilingües de assets.",
+		"ja": "公開パス・CDN URL 用の `asset()` / `route.asset()` と独立した `defaults.assetBase`、アセット型のエクスポートと生成エクスポート名のカスタマイズを追加しました。9 サンプルすべての公開ファイルのブラウザー検証、route/localize/match/parseQuery の回帰テスト、多言語アセットガイドを追加しました。"
+	},
+	"`@triooo/named-routes/astro`: native integration inheriting the final Astro `base` independently of the Vite asset base.": {
+		"pt": "`@triooo/named-routes/astro`: integração nativa que herda o `base` final do Astro independentemente da base de assets do Vite.",
+		"es": "`@triooo/named-routes/astro`: integración nativa que hereda el `base` final de Astro independientemente de la base de assets Vite.",
+		"ja": "`@triooo/named-routes/astro`：Vite のアセットベースとは独立して Astro の最終 `base` を継承するネイティブ連携。"
+	},
+	"`namedRoutes({ routerBase })` accepts a router prefix or getter for SvelteKit, Vue Router, React Router/Remix and TanStack Router; `inheritViteBase` opts in when Vite's base is also the navigation base.": {
+		"pt": "`namedRoutes({ routerBase })` aceita um prefixo ou getter para SvelteKit, Vue Router, React Router/Remix e TanStack Router; `inheritViteBase` permite usar a base do Vite quando também for a de navegação.",
+		"es": "`namedRoutes({ routerBase })` acepta prefijo o getter para SvelteKit, Vue Router, React Router/Remix y TanStack Router; `inheritViteBase` permite usar la base Vite si también es la de navegación.",
+		"ja": "`namedRoutes({ routerBase })` は SvelteKit、Vue Router、React Router/Remix、TanStack Router のルータープレフィックスまたは getter を受け取ります。Vite のベースがナビゲーションベースでもある場合は `inheritViteBase` で有効化します。"
+	},
+	"`route.localize(url, locale?, options?)` resolves translated aliases across configured languages, even without a locale prefix, preserves decoded route parameters and the original query/fragment, supports custom locale prefixes, base paths and configured domains, and returns `null` for ambiguous or unlocalized routes. Existing `route.match()` semantics remain unchanged.": {
+		"pt": "`route.localize(url, locale?, options?)` resolve aliases traduzidos entre idiomas mesmo sem prefixo de locale, preserva parâmetros decodificados e query/fragmento originais, suporta prefixos personalizados, bases e domínios configurados e retorna `null` para rotas ambíguas ou não localizadas. `route.match()` mantém a semântica anterior.",
+		"es": "`route.localize(url, locale?, options?)` resuelve alias traducidos entre idiomas incluso sin prefijo de locale, conserva parámetros decodificados y query/fragmento originales, admite prefijos personalizados, bases y dominios configurados, y devuelve `null` para rutas ambiguas o no localizadas. `route.match()` conserva su semántica.",
+		"ja": "`route.localize(url, locale?, options?)` はロケールプレフィックスがなくても設定言語の翻訳済み別名を解決し、デコード済みパラメーターと元のクエリ・フラグメントを保持します。カスタムプレフィックス、ベースパス、設定ドメインに対応し、曖昧または非ローカライズルートは `null` を返します。既存の `route.match()` の意味は不変です。"
+	},
+	"`--base-path` for standalone generation, watch, check, list and doctor; framework integrations cache their last successful effective public base under `.named-routes/` so CLI regeneration does not discard it.": {
+		"pt": "`--base-path` para geração independente, watch, check, list e doctor; integrações armazenam a última base pública efetiva bem-sucedida em `.named-routes/` para que a regeneração pela CLI não a descarte.",
+		"es": "`--base-path` para generación independiente, watch, check, list y doctor; integraciones guardan la última base pública efectiva correcta en `.named-routes/` para que la CLI no la descarte al regenerar.",
+		"ja": "単独の generate、watch、check、list、doctor に `--base-path` を追加しました。フレームワーク連携は最後に成功した有効な公開ベースを `.named-routes/` にキャッシュし、CLI 再生成で失われないようにします。"
+	},
+	"Generated helpers now include a configured navigation base automatically for Astro, SvelteKit and generator-based manual manifests. Next.js, Nuxt, Vue Router, React Router and TanStack Router retain internal paths by default for navigation handled by their native routers.": {
+		"pt": "Helpers gerados passam a incluir automaticamente a base de navegação configurada em Astro, SvelteKit e manifestos manuais gerados. Next.js, Nuxt, Vue Router, React Router e TanStack Router mantêm caminhos internos por padrão para a navegação realizada pelos roteadores nativos.",
+		"es": "Los helpers generados incluyen automáticamente la base de navegación configurada para Astro, SvelteKit y manifiestos manuales generados. Next.js, Nuxt, Vue Router, React Router y TanStack Router conservan rutas internas por defecto para la navegación de sus routers nativos.",
+		"ja": "Astro、SvelteKit、ジェネレーターによる手動マニフェストでは設定済みナビゲーションベースを自動付与します。Next.js、Nuxt、Vue Router、React Router、TanStack Router はネイティブルーターが処理するナビゲーション用に既定で内部パスを維持します。"
+	},
+	"`route.url()` provides the public-path alternative across frameworks. Explicit `basePath: true` or `basePath: false` continues to control base inclusion in `route()`; direct `createRoutes()` retains its existing default behavior.": {
+		"pt": "`route.url()` oferece a alternativa de caminho público entre frameworks. `basePath: true` ou `basePath: false` explícitos continuam controlando a inclusão da base em `route()`; `createRoutes()` direto mantém seu comportamento padrão anterior.",
+		"es": "`route.url()` ofrece la alternativa de ruta pública entre frameworks. `basePath: true` o `basePath: false` explícitos controlan la inclusión de la base en `route()`; `createRoutes()` directo conserva su comportamiento anterior.",
+		"ja": "`route.url()` は各フレームワークで公開パスを生成する選択肢です。明示的な `basePath: true` または `basePath: false` で `route()` のベース付与を制御でき、直接の `createRoutes()` は従来の既定動作を維持します。"
+	},
+	"Generated manifests include relative source-file comments and use ordinary string-literal property keys where safe, rather than unnecessary computed keys. The `__proto__` key remains protected by computed-property syntax.": {
+		"pt": "Manifestos gerados incluem comentários com caminhos relativos dos arquivos de origem e usam chaves literais de string comuns quando seguro, em vez de chaves computadas desnecessárias. A chave `__proto__` continua protegida pela sintaxe computada.",
+		"es": "Los manifiestos generados incluyen comentarios con rutas relativas de origen y claves literales de cadena normales cuando es seguro, en lugar de claves calculadas innecesarias. La clave `__proto__` sigue protegida mediante sintaxis calculada.",
+		"ja": "生成マニフェストに相対ソースファイルパスのコメントを追加し、安全な場合は不要な計算プロパティではなく通常の文字列リテラルキーを使います。`__proto__` キーは計算プロパティ構文で保護します。"
+	},
+	"Replace the compiled CLI entry point in the npm `bin` mapping with a stable launcher that resolves the implementation relative to its own location, independently of the current working directory.": {
+		"pt": "Substituição do entry point compilado da CLI no mapeamento npm `bin` por um launcher estável que resolve a implementação relativamente à própria localização, independentemente do diretório atual.",
+		"es": "Se reemplaza el punto de entrada compilado de la CLI en el mapeo npm `bin` por un launcher estable que resuelve la implementación respecto de su propia ubicación, independientemente del directorio actual.",
+		"ja": "npm の `bin` マッピングでコンパイル済み CLI の直接指定を安定したランチャーに置き換えます。カレントディレクトリによらず自身の位置から実装を解決します。"
+	},
+	"Expand the framework examples beyond static landing pages, with multi-page navigation, dynamic parameters and focused endpoint examples where supported.": {
+		"pt": "Exemplos dos frameworks ampliados para além de páginas estáticas, com navegação entre páginas, parâmetros dinâmicos e exemplos específicos de endpoints quando suportados.",
+		"es": "Ejemplos de frameworks ampliados más allá de páginas estáticas, con navegación multipágina, parámetros dinámicos y ejemplos específicos de endpoints cuando se admiten.",
+		"ja": "フレームワークのサンプルを静的ページから複数ページのナビゲーション、動的パラメーター、対応する場合のエンドポイント例へ拡張します。"
+	},
+	"Explicitly expose the `asset` helper on `TypedNamedRoutes`, preventing missing-property type errors in generated TypeScript modules.": {
+		"pt": "Exposição explícita do helper `asset` em `TypedNamedRoutes`, evitando erros de propriedade ausente nos módulos TypeScript gerados.",
+		"es": "Exposición explícita del helper `asset` en `TypedNamedRoutes` para evitar errores de propiedad ausente en módulos TypeScript generados.",
+		"ja": "`TypedNamedRoutes` に `asset` ヘルパーを明示的に公開し、生成 TypeScript モジュールでのプロパティ欠落エラーを防ぎます。"
+	},
+	"Improve CLI packaging and executable resolution for scoped npm invocations, including `npx @triooo/named-routes`, and report missing compiled files explicitly.": {
+		"pt": "Melhoria do empacotamento da CLI e da resolução do executável em chamadas npm com escopo, incluindo `npx @triooo/named-routes`, com diagnóstico explícito de arquivos compilados ausentes.",
+		"es": "Mejor empaquetado y resolución de ejecutables CLI para invocaciones npm con ámbito, incluidas `npx @triooo/named-routes`, y diagnóstico explícito de archivos compilados ausentes.",
+		"ja": "`npx @triooo/named-routes` を含むスコープ付き npm 呼び出しで CLI のパッケージングと実行ファイル解決を改善し、コンパイル済みファイルの欠落を明示的に報告します。"
+	},
+	"Retry transient `EPERM`, `EACCES` and `EBUSY` errors during atomic replacement of generated route manifests and framework snapshots. Retries use bounded progressive backoff, preserve the last valid file and propagate persistent or non-transient failures. This addresses the Windows failure observed during TanStack Router live route removal.": {
+		"pt": "Novas tentativas para erros transitórios `EPERM`, `EACCES` e `EBUSY` durante a substituição atômica dos manifestos e snapshots de frameworks. O backoff progressivo limitado preserva o último arquivo válido e propaga falhas persistentes ou não transitórias. Trata a falha observada no Windows durante a remoção de rotas em tempo real no TanStack Router.",
+		"es": "Reintentos ante errores transitorios `EPERM`, `EACCES` y `EBUSY` al reemplazar atómicamente manifiestos y snapshots de frameworks. El backoff progresivo acotado preserva el último archivo válido y propaga fallos persistentes o no transitorios. Aborda el fallo de Windows observado al eliminar rutas en vivo en TanStack Router.",
+		"ja": "ルートマニフェストとフレームワークスナップショットのアトミック置換時に一時的な `EPERM`、`EACCES`、`EBUSY` を再試行します。上限付きの段階的バックオフで直前の有効なファイルを保持し、永続的・非一時的エラーは伝播します。Windows の TanStack Router で開発中にルートを削除した際の障害に対応します。"
+	},
+	"Nuxt now inherits `app.baseURL`; Next.js keeps the existing automatic `basePath` behavior and synchronizes the CLI snapshot when the base changes or is removed.": {
+		"pt": "Nuxt herda `app.baseURL`; Next.js mantém a inclusão automática de `basePath` existente e sincroniza o snapshot da CLI quando a base muda ou é removida.",
+		"es": "Nuxt hereda `app.baseURL`; Next.js mantiene el comportamiento automático de `basePath` y sincroniza el snapshot CLI cuando la base cambia o se elimina.",
+		"ja": "Nuxt は `app.baseURL` を継承するようになりました。Next.js は従来の自動 `basePath` 動作を維持し、ベースの変更・削除時に CLI スナップショットを同期します。"
+	},
+	"Vite ignores atomic generated-module and base snapshot writes, avoiding redundant watcher runs. Canonical route names remain independent of deployment prefixes; framework links do not get a double prefix.": {
+		"pt": "Vite ignora escritas atômicas do módulo e snapshots de base, evitando execuções redundantes do watcher. Nomes canônicos independem dos prefixos de deploy; links dos frameworks não recebem prefixo duplicado.",
+		"es": "Vite ignora escrituras atómicas del módulo y snapshots de base, evitando ejecuciones redundantes del watcher. Los nombres canónicos no dependen del prefijo de despliegue; los enlaces no reciben doble prefijo.",
+		"ja": "Vite は生成モジュールとベーススナップショットのアトミック書き込みを無視し、不要な監視処理を防ぎます。canonical ルート名はデプロイプレフィックスから独立し、リンクに二重プレフィックスを付けません。"
+	},
+	"Prevent concurrent route tree reads during TanStack Router generation by waiting for framework artifact updates.": {
+		"pt": "Prevenção de leituras simultâneas da árvore de rotas durante a geração do TanStack Router, aguardando a atualização dos artefatos do framework.",
+		"es": "Evita lecturas simultáneas del árbol de rutas durante la generación TanStack Router esperando actualizaciones del artefacto del framework.",
+		"ja": "フレームワーク生成物の更新を待つことで TanStack Router の生成中にルートツリーを同時読み取りするのを防ぎます。"
+	},
+	"Ignore TanStack temporary generator files in the Vite watcher, reducing unnecessary regenerations and filesystem contention on Windows.": {
+		"pt": "O watcher do Vite ignora arquivos temporários do gerador TanStack, reduzindo regenerações desnecessárias e contenção de filesystem no Windows.",
+		"es": "El watcher Vite ignora archivos temporales del generador TanStack, reduciendo regeneraciones y contención del sistema de archivos en Windows.",
+		"ja": "Vite ウォッチャーは TanStack の一時生成ファイルを無視し、不要な再生成と Windows のファイルシステム競合を減らします。"
+	},
+	"Fixed TypeScript control-flow narrowing when validating route defaults, asset manifests, i18n configuration and query schema extensions.": {
+		"pt": "Correção do narrowing por fluxo de controle TypeScript ao validar defaults de rotas, manifestos de assets, configuração i18n e extensões de schemas de query.",
+		"es": "Corrección del narrowing por flujo de control TypeScript al validar defaults de rutas, manifiestos de assets, configuración i18n y extensiones de schemas de query.",
+		"ja": "ルート既定値、アセットマニフェスト、i18n 設定、クエリスキーマ拡張の検証時の TypeScript 制御フロー型絞り込みを修正しました。"
+	},
+	"Preserved strongly typed options in canonical(), alternates(), withQuery() and withDefaults() without removing runtime validation.": {
+		"pt": "Opções fortemente tipadas preservadas em canonical(), alternates(), withQuery() e withDefaults(), sem remover validação em runtime.",
+		"es": "Opciones fuertemente tipadas conservadas en canonical(), alternates(), withQuery() y withDefaults() sin quitar validación en runtime.",
+		"ja": "canonical()、alternates()、withQuery()、withDefaults() の強い型付けをランタイム検証を削除せずに維持します。"
+	},
+	"Fixed Biome suppression placement in URL query validation.": {
+		"pt": "Correção da posição da supressão Biome na validação de query de URL.",
+		"es": "Corrección de ubicación de supresión Biome en validación de query URL.",
+		"ja": "URL クエリ検証の Biome 抑制コメントの位置を修正しました。"
+	},
+	"Reorganize the documentation into individually navigable topics, dedicated framework guides, focused API references, configuration options, CLI commands and practical recipes. Preserve existing topic IDs and legacy Markdown anchors.": {
+		"pt": "Documentação reorganizada em tópicos navegáveis individualmente, guias por framework, referências de API específicas, opções de configuração, comandos CLI e receitas práticas. Os IDs e âncoras Markdown anteriores são preservados.",
+		"es": "Documentación reorganizada en temas navegables, guías por framework, referencias API específicas, configuración, comandos CLI y recetas prácticas. Conserva los ID de temas y anclas Markdown anteriores.",
+		"ja": "個別に移動可能なトピック、フレームワーク専用ガイド、用途別 API リファレンス、設定、CLI コマンド、実践レシピに再構成します。既存のトピック ID と Markdown アンカーを維持します。"
+	},
+	"Separate examples for deployments at the domain root and under a configured `base` or `basePath`, explaining when the native router applies the prefix and when a public URL is needed.": {
+		"pt": "Exemplos separados para deploy na raiz do domínio e sob `base` ou `basePath`, explicando quando o roteador nativo aplica o prefixo e quando é necessária uma URL pública.",
+		"es": "Ejemplos separados para despliegues en la raíz del dominio y bajo `base` o `basePath`, explicando cuándo el router nativo aplica el prefijo y cuándo se necesita una URL pública.",
+		"ja": "ドメインルートへのデプロイと `base` または `basePath` 配下へのデプロイの例を分離し、ネイティブルーターがプレフィックスを付与する場合と公開 URL が必要な場合を説明します。"
+	},
+	"Update all four READMEs and generated Markdown pages; add related-topic navigation, improved documentation search, and shadcn/ui Accordion and Button components for the topic browser.": {
+		"pt": "Atualização dos quatro READMEs e das páginas Markdown geradas; navegação entre tópicos relacionados, busca aprimorada e componentes Accordion e Button do shadcn/ui no índice de tópicos.",
+		"es": "Actualización de los cuatro README y páginas Markdown generadas; navegación por temas relacionados, búsqueda mejorada y componentes Accordion y Button de shadcn/ui en el índice temático.",
+		"ja": "4 言語の README と生成 Markdown を更新し、関連トピックへの移動、検索改善、トピック一覧の shadcn/ui Accordion と Button を追加します。"
+	},
+	"Add dedicated MCP guides covering installation, local project configuration, Claude Desktop and Claude Code, Cursor, Codex, VS Code and GitHub Copilot, Windows launcher usage, tool reference, example workflows, security boundaries and troubleshooting with MCP Inspector.": {
+		"pt": "Guias MCP dedicados a instalação, configuração de projeto local, Claude Desktop e Claude Code, Cursor, Codex, VS Code e GitHub Copilot, launcher no Windows, referência de ferramentas, fluxos de exemplo, limites de segurança e diagnóstico com MCP Inspector.",
+		"es": "Guías MCP de instalación, configuración de proyectos locales, Claude Desktop y Claude Code, Cursor, Codex, VS Code y GitHub Copilot, launcher Windows, referencia de herramientas, flujos de ejemplo, límites de seguridad y diagnóstico con MCP Inspector.",
+		"ja": "MCP 専用ガイド：インストール、ローカルプロジェクト設定、Claude Desktop と Claude Code、Cursor、Codex、VS Code と GitHub Copilot、Windows ランチャー、ツール一覧、利用例、安全性の境界、MCP Inspector によるトラブルシューティング。"
+	},
+	"Keep the MCP catalog, AI-agent reference files, website documentation and READMEs synchronized from the shared documentation source.": {
+		"pt": "Catálogo MCP, referências para agentes de IA, documentação do site e READMEs sincronizados a partir da fonte compartilhada.",
+		"es": "Catálogo MCP, referencias para agentes, documentación web y README sincronizados desde la fuente de documentación compartida.",
+		"ja": "共有ドキュメントソースから MCP カタログ、AI エージェント向けリファレンス、サイトドキュメント、README を同期します。"
+	},
+	"Split route helper and public asset documentation into dedicated multilingual pages, with focused examples for each existing API and independent CDN configuration.": {
+		"pt": "Documentação de helpers de rotas e assets públicos dividida em páginas multilíngues específicas, com exemplos focados em cada API existente e configuração independente de CDN.",
+		"es": "Documentación de helpers de rutas y assets públicos dividida en páginas multilingües específicas, con ejemplos por API y configuración CDN independiente.",
+		"ja": "ルートヘルパーと公開アセットのドキュメントを個別の多言語ページに分割し、既存 API ごとの例と独立した CDN 設定を提供します。"
+	},
+	"Updated multilingual framework guides and website code samples for native Astro integration, deployment base paths, CLI overrides and localized URLs.": {
+		"pt": "Guias de frameworks e exemplos do site atualizados para integração nativa Astro, bases de deploy, overrides CLI e URLs localizadas.",
+		"es": "Guías por framework y ejemplos web actualizados para integración nativa Astro, bases de despliegue, overrides CLI y URL localizadas.",
+		"ja": "フレームワークガイドとサイトのコード例を、Astro ネイティブ連携、デプロイベース、CLI 上書き、ローカライズ URL に対応させました。"
+	},
+	"Add fully localized changelogs in English, Portuguese, Spanish and Japanese, including a language-aware releases page and documentation version selector.": {
+		"pt": "Adiciona changelogs totalmente localizados em inglês, português, espanhol e japonês, incluindo a página de releases e o seletor de versões da documentação no idioma ativo.",
+		"es": "Añade historiales de cambios completamente localizados en inglés, portugués, español y japonés, incluida la página de versiones y el selector de versiones de la documentación en el idioma activo.",
+		"ja": "英語、ポルトガル語、スペイン語、日本語の完全にローカライズされた変更履歴を追加し、リリースページとドキュメントのバージョン選択を現在の言語に対応させる。"
+	},
+	"Generate `sitemap.xml` from the documentation catalog and supported locales, and add `robots.txt` with sitemap discovery.": {
+		"pt": "Geração de `sitemap.xml` a partir do catálogo de documentação e idiomas suportados, além de `robots.txt` com descoberta do sitemap.",
+		"es": "Generación de `sitemap.xml` a partir del catálogo e idiomas compatibles, y `robots.txt` para descubrir el sitemap.",
+		"ja": "ドキュメントカタログと対応言語から `sitemap.xml` を生成し、サイトマップを通知する `robots.txt` を追加します。"
+	},
+	"Add localized page titles and descriptions, canonical URLs, reciprocal `hreflang` alternates with `x-default`, Open Graph and Twitter Card metadata, and structured data for software and breadcrumbs.": {
+		"pt": "Títulos e descrições localizados, URLs canônicas, alternates `hreflang` recíprocos com `x-default`, metadados Open Graph e Twitter Card e dados estruturados de software e breadcrumbs.",
+		"es": "Títulos y descripciones localizados, URL canónicas, alternates `hreflang` recíprocos con `x-default`, metadatos Open Graph y Twitter Card, y datos estructurados de software y breadcrumbs.",
+		"ja": "ページタイトル・説明のローカライズ、canonical URL、`x-default` を含む相互 `hreflang`、Open Graph と Twitter Card メタデータ、ソフトウェアとパンくずリストの構造化データを追加します。"
+	},
+	"Centralize the public origin and deployment base path for consistent SEO URLs. Add Google Search Console verification support and prevent preview deployments, parameterized demo pages and machine-readable documentation mirrors from being indexed as duplicate content.": {
+		"pt": "Centralização da origem pública e base de deploy para URLs SEO consistentes. Suporte à verificação do Google Search Console e exclusão de previews, páginas de demonstração parametrizadas e espelhos de documentação legíveis por máquinas da indexação como conteúdo duplicado.",
+		"es": "Origen público y base de despliegue centralizados para URL SEO coherentes. Verificación de Google Search Console y exclusión de previews, páginas de demostración parametrizadas y copias de documentación legibles por máquinas de la indexación como contenido duplicado.",
+		"ja": "公開オリジンとデプロイベースを一元化して SEO URL を統一します。Google Search Console の確認に対応し、プレビュー、パラメーター付きデモ、機械可読ドキュメントミラーを重複コンテンツとしてインデックスされないようにします。"
+	},
+	"Extend regression and TypeScript contract coverage for public URLs, framework-specific base handling, semantic names, generated endpoint descriptors and typed assets.": {
+		"pt": "Ampliação da cobertura de regressão e contratos TypeScript para URLs públicas, bases por framework, nomes semânticos, descritores gerados de endpoints e assets tipados.",
+		"es": "Más cobertura de regresión y contratos TypeScript para URL públicas, bases por framework, nombres semánticos, descriptores de endpoints generados y assets tipados.",
+		"ja": "公開 URL、フレームワーク別ベース処理、意味的命名、生成エンドポイント記述子、型付きアセットの回帰テストと TypeScript 契約テストを拡充します。"
+	},
+	"Expand package smoke tests to cover stable CLI launchers, scoped npm execution and the integrated MCP entry points; add MCP catalog, manifest parsing and protocol tests.": {
+		"pt": "Ampliação dos testes de empacotamento para launchers estáveis, execução npm com escopo e entry points MCP integrados; testes de catálogo, parsing de manifestos e protocolo MCP.",
+		"es": "Pruebas de empaquetado ampliadas para launchers estables, ejecución npm con ámbito y puntos de entrada MCP integrados; pruebas de catálogo, parsing de manifiestos y protocolo MCP.",
+		"ja": "安定した CLI ランチャー、スコープ付き npm 実行、統合 MCP エントリーポイントのパッケージスモークテストを拡充し、MCP カタログ・マニフェスト解析・プロトコルのテストを追加します。"
+	},
+	"Add bounded-retry regression tests for transient filesystem errors, persistent failures and preservation of the previous generated file.": {
+		"pt": "Testes de regressão de tentativas limitadas para erros transitórios de filesystem, falhas persistentes e preservação do arquivo gerado anterior.",
+		"es": "Pruebas de regresión de reintentos acotados ante errores transitorios del sistema de archivos, fallos persistentes y conservación del archivo generado anterior.",
+		"ja": "一時的なファイルシステムエラー、永続的エラー、以前の生成ファイルの保持について上限付き再試行の回帰テストを追加します。"
+	},
+	"Add documentation sample checks and SEO validation for sitemap URLs, canonical metadata, locale alternates and deployment paths.": {
+		"pt": "Verificação de exemplos da documentação e validação SEO de URLs do sitemap, metadados canônicos, alternates por idioma e caminhos de deploy.",
+		"es": "Comprobación de ejemplos de documentación y validación SEO de URL del sitemap, metadatos canónicos, alternates por idioma y rutas de despliegue.",
+		"ja": "ドキュメントのコード例検証と、サイトマップ URL、canonical メタデータ、言語別 alternates、デプロイパスの SEO 検証を追加します。"
+	},
+	"Added multilingual advanced helper documentation, a real-runtime URL helpers playground, unit/type/generator tests and production asset-version E2E checks.": {
+		"pt": "Documentação multilíngue de helpers avançados, playground de URLs com runtime real, testes unitários/de tipos/do gerador e verificações E2E de versionamento de assets em produção.",
+		"es": "Documentación multilingüe de helpers avanzados, playground URL con runtime real, pruebas unitarias/de tipos/del generador y comprobaciones E2E de versiones de assets en producción.",
+		"ja": "高度なヘルパーの多言語ドキュメント、実ランタイムの URL プレイグラウンド、単体・型・ジェネレーターテスト、実運用ビルドのアセットバージョン E2E 検証を追加しました。"
+	},
+	"Builds validate the CLI shebang and executable mode; package smoke tests now exercise npm executable resolution with and without a local installation. Standalone CLI documentation uses `npx @triooo/named-routes` to avoid the unrelated unscoped package.": {
+		"pt": "Builds validam shebang e permissão executável da CLI; testes do pacote exercitam a resolução npm com e sem instalação local. A documentação usa `npx @triooo/named-routes` para evitar o pacote sem escopo não relacionado.",
+		"es": "Builds validan shebang y permisos ejecutables CLI; pruebas del paquete ejercitan resolución npm con y sin instalación local. La documentación usa `npx @triooo/named-routes` para evitar el paquete sin ámbito no relacionado.",
+		"ja": "ビルドで CLI の shebang と実行権限を確認し、パッケージスモークテストでローカルインストールの有無両方の npm 実行ファイル解決を検証します。CLI ドキュメントでは無関係な非スコープパッケージを避けるため `npx @triooo/named-routes` を使用します。"
+	},
+	"Regression tests cover framework integration hooks, base overrides and translated path resolution, including ambiguity, query/fragment preservation and dynamic segments.": {
+		"pt": "Testes de regressão cobrem hooks dos frameworks, overrides de base e resolução de caminhos traduzidos, incluindo ambiguidade, preservação de query/fragmento e segmentos dinâmicos.",
+		"es": "Regresiones cubren hooks de integración, overrides de base y resolución de rutas traducidas, con ambigüedad, preservación de query/fragmento y segmentos dinámicos.",
+		"ja": "フレームワーク連携フック、ベースの上書き、翻訳パスの解決（曖昧性、クエリ・フラグメント保持、動的セグメントを含む）の回帰テストを追加しました。"
+	},
+	"Improved static asset E2E verification across all supported frameworks, including image decoding, intrinsic dimensions, HTTP status, MIME type and SVG content.": {
+		"pt": "Verificação E2E de assets estáticos aprimorada em todos os frameworks suportados, incluindo decodificação de imagem, dimensões intrínsecas, status HTTP, tipo MIME e conteúdo SVG.",
+		"es": "Mejor comprobación E2E de assets estáticos en todos los frameworks compatibles: decodificación, dimensiones intrínsecas, estado HTTP, tipo MIME y contenido SVG.",
+		"ja": "全対応フレームワークの静的アセット E2E 検証を改善しました。画像デコード、固有寸法、HTTP ステータス、MIME タイプ、SVG 内容を確認します。"
+	},
+	"Fixed static file response handling in the E2E test server with explicit Content-Length headers, HEAD request support and improved streaming error handling.": {
+		"pt": "Correção das respostas de arquivos estáticos no servidor de testes E2E com cabeçalhos Content-Length explícitos, suporte a HEAD e melhor tratamento de erros de streaming.",
+		"es": "Corrección de respuestas estáticas en servidor E2E con encabezados Content-Length explícitos, soporte HEAD y mejor tratamiento de errores de streaming.",
+		"ja": "E2E テストサーバーの静的ファイル応答を修正しました。明示的な Content-Length ヘッダー、HEAD リクエスト対応、ストリーミングエラー処理の改善を含みます。"
+	},
+	"Fixed TypeScript compiler resolution in asset manifest tests using the package manifest instead of a restricted package subpath.": {
+		"pt": "Correção da resolução do compilador TypeScript nos testes de manifestos de assets, usando o manifesto do pacote em vez de um subpath restrito.",
+		"es": "Corrección de resolución del compilador TypeScript en pruebas de manifiestos de assets mediante manifiesto del paquete en vez de subruta restringida.",
+		"ja": "アセットマニフェストテストで制限付きパッケージサブパスではなくパッケージマニフェストを使い、TypeScript コンパイラーの解決を修正しました。"
+	},
+	"Improved generated TypeScript and JavaScript asset typecheck diagnostics.": {
+		"pt": "Melhoria dos diagnósticos de typecheck de assets gerados em TypeScript e JavaScript.",
+		"es": "Mejores diagnósticos de typecheck de assets generados TypeScript y JavaScript.",
+		"ja": "生成 TypeScript・JavaScript アセットの型チェック診断を改善しました。"
+	},
+	"Improved temporary fixture cleanup and subprocess error handling on Windows.": {
+		"pt": "Melhoria da limpeza de fixtures temporárias e do tratamento de erros de subprocessos no Windows.",
+		"es": "Mejor limpieza de fixtures temporales y manejo de errores de subprocesos en Windows.",
+		"ja": "Windows の一時フィクスチャの削除とサブプロセスのエラー処理を改善しました。"
+	},
+	"Updated browser-safety test expectations to include the new browser-safe asset and URL utility modules while preserving strict runtime dependency isolation.": {
+		"pt": "Expectativas dos testes browser-safety atualizadas para incluir os novos módulos de assets e utilitários de URL seguros para navegador, mantendo o isolamento estrito das dependências do runtime.",
+		"es": "Expectativas browser-safety actualizadas para incluir nuevos módulos de assets y utilidades URL seguros para navegador, preservando aislamiento estricto de dependencias del runtime.",
+		"ja": "ブラウザーで安全な新しいアセット・URL ユーティリティモジュールを browser-safety テストの期待値に追加し、ランタイム依存関係の厳密な分離を維持しました。"
+	},
+	"Generate translated changelog Markdown files and a static website catalog from the English changelog and per-entry translations; CI rejects missing or stale translations.": {
+		"pt": "Gera os arquivos Markdown traduzidos do changelog e um catálogo estático do website a partir do changelog em inglês e das traduções por entrada; o CI rejeita traduções ausentes ou desatualizadas.",
+		"es": "Genera los archivos Markdown traducidos del historial de cambios y un catálogo estático del sitio web a partir del historial en inglés y las traducciones por entrada; CI rechaza las traducciones ausentes o desactualizadas.",
+		"ja": "英語の変更履歴と各項目の翻訳から翻訳済み Markdown ファイルとウェブサイト用の静的カタログを生成する。CI は欠落または古い翻訳を拒否する。"
+	},
+	"Astro, SvelteKit and generator-based manual projects that previously prefixed the result of `route()` themselves should remove that extra prefix or explicitly request an internal path with `{ basePath: false }` in the third argument. Use `route.url()` for public URLs instead of manually concatenating a base path.": {
+		"pt": "Projetos Astro, SvelteKit e manuais gerados que antes prefixavam o resultado de `route()` devem remover o prefixo adicional ou solicitar explicitamente um caminho interno com `{ basePath: false }` no terceiro argumento. Use `route.url()` para URLs públicas em vez de concatenar a base manualmente.",
+		"es": "Los proyectos Astro, SvelteKit y manuales generados que antes añadían el prefijo a `route()` deben quitarlo o solicitar una ruta interna explícitamente con `{ basePath: false }` en el tercer argumento. Use `route.url()` para URL públicas en vez de concatenar la base.",
+		"ja": "以前 `route()` の結果に手動でプレフィックスを付けていた Astro、SvelteKit、ジェネレーターによる手動プロジェクトでは追加プレフィックスを削除するか、第 3 引数に `{ basePath: false }` を指定してください。公開 URL には手動連結ではなく `route.url()` を使用してください。"
+	},
+	"Semantic naming remains opt-in; existing automatic names are unchanged unless the new naming style or explicit aliases are configured.": {
+		"pt": "Nomes semânticos continuam opcionais; os nomes automáticos existentes não mudam, exceto se o novo estilo ou aliases explícitos forem configurados.",
+		"es": "Los nombres semánticos siguen siendo opcionales; los nombres automáticos existentes no cambian salvo que se configure el nuevo estilo o alias explícitos.",
+		"ja": "意味的命名はオプトインのままです。新しい命名スタイルや明示的な別名を設定しない限り既存の自動命名は変わりません。"
+	},
+	"After updating, regenerate the route module with `pnpm exec named-routes generate` or restart the framework integration. Do not edit the generated manifest manually.": {
+		"pt": "Após atualizar, regenere o módulo de rotas com `pnpm exec named-routes generate` ou reinicie a integração do framework. Não edite manualmente o manifesto gerado.",
+		"es": "Tras actualizar, regenere el módulo con `pnpm exec named-routes generate` o reinicie la integración. No edite manualmente el manifiesto generado.",
+		"ja": "更新後は `pnpm exec named-routes generate` でルートモジュールを再生成するか、フレームワーク連携を再起動してください。生成マニフェストを手動で編集しないでください。"
+	},
+	"The MCP is included in the main package. Use `npx @triooo/named-routes mcp` instead of installing a separate MCP package. Install the optional dependencies if MCP support was omitted during installation.": {
+		"pt": "O MCP está incluído no pacote principal. Use `npx @triooo/named-routes mcp` em vez de instalar outro pacote MCP. Instale as dependências opcionais se o suporte MCP tiver sido omitido.",
+		"es": "MCP incluido en el paquete principal. Use `npx @triooo/named-routes mcp` en lugar de instalar otro paquete MCP. Instale las dependencias opcionales si omitió el soporte MCP.",
+		"ja": "MCP はメインパッケージに含まれます。別の MCP パッケージではなく `npx @triooo/named-routes mcp` を使用してください。インストール時に MCP サポートを省略した場合はオプション依存関係をインストールしてください。"
+	},
+	"Breaking changes only where they pay off, each with a migration: run `npx named-routes doctor --v2` to see what applies, and `npx named-routes migrate --to 2 --write` to pin the 1.x behavior where the generated module would change. It also contains the fixes planned for 1.1.1, which was not released separately.": {
+		"pt": "Mudanças incompatíveis apenas onde compensam, cada uma com migração: execute `npx named-routes doctor --v2` para identificar o que se aplica e `npx named-routes migrate --to 2 --write` para fixar o comportamento 1.x quando o módulo gerado mudaria. Inclui também as correções previstas para 1.1.1, não lançada separadamente.",
+		"es": "Cambios incompatibles solo cuando compensan, cada uno con migración: ejecute `npx named-routes doctor --v2` para saber qué aplica y `npx named-routes migrate --to 2 --write` para fijar el comportamiento 1.x cuando cambiaría el módulo. Incluye correcciones previstas para 1.1.1, no publicada por separado.",
+		"ja": "必要な場合にのみ破壊的変更を行い、それぞれに移行手順を用意しました。`npx named-routes doctor --v2` で該当項目を確認し、生成モジュールが変わる場合は `npx named-routes migrate --to 2 --write` で 1.x の動作を固定します。単独リリースされなかった 1.1.1 の予定修正も含みます。"
+	},
+	"Node.js 22.12+ is required (Node.js 20 is end-of-life since April 2026): `require()` of ES modules and native recursive file watching everywhere. CI tests 22.12, 22, 24 and 26.": {
+		"pt": "Node.js 22.12+ obrigatório (Node.js 20 está em fim de vida desde abril de 2026): `require()` de módulos ES e observação recursiva nativa em todas as plataformas. CI testa 22.12, 22, 24 e 26.",
+		"es": "Node.js 22.12+ obligatorio (Node.js 20 terminó soporte en abril de 2026): `require()` de módulos ES y observación recursiva nativa en todas las plataformas. CI prueba 22.12, 22, 24 y 26.",
+		"ja": "Node.js 22.12+ が必須です（Node.js 20 は 2026 年 4 月に EOL）。ES モジュールの `require()` と全環境でのネイティブ再帰監視に対応します。CI は 22.12、22、24、26 をテストします。"
+	},
+	"TypeScript 5.4+ is required for the exported types (also the minimum of Zod 4 and Valibot 1). CI tests 5.4, 5.9, 6 and 7.": {
+		"pt": "TypeScript 5.4+ obrigatório para os tipos exportados (também o mínimo de Zod 4 e Valibot 1). CI testa 5.4, 5.9, 6 e 7.",
+		"es": "TypeScript 5.4+ obligatorio para tipos exportados (también mínimo de Zod 4 y Valibot 1). CI prueba 5.4, 5.9, 6 y 7.",
+		"ja": "エクスポート型に TypeScript 5.4+ が必須です（Zod 4 と Valibot 1 の最小要件でもあります）。CI は 5.4、5.9、6、7 をテストします。"
+	},
+	"`hrefs: \"typed\"` is the default, in generated modules and in `createRoutes()`: `route()` returns template literal types such as `` `/users/${string}` `` that Next.js `typedRoutes` accepts without casts. A variable that stores `route()` and is reassigned to another string no longer compiles; annotate it as `string`, or set `hrefs: \"string\"` (the generated module then serializes `\"hrefs\": \"string\"`). `withNamedRoutes()` and `doctor` now warn when `typedRoutes` meets `hrefs: \"string\"`.": {
+		"pt": "`hrefs: \"typed\"` é o padrão em módulos gerados e em `createRoutes()`: `route()` retorna tipos template literal como `` `/users/${string}` `` que `typedRoutes` do Next.js aceita sem casts. Uma variável que guarda `route()` e recebe outra string deixa de compilar; anote como `string` ou configure `hrefs: \"string\"` (o módulo serializa `\"hrefs\": \"string\"`). `withNamedRoutes()` e `doctor` agora avisam quando `typedRoutes` encontra `hrefs: \"string\"`.",
+		"es": "`hrefs: \"typed\"` es el valor predeterminado en módulos generados y `createRoutes()`: `route()` devuelve tipos template literal como `` `/users/${string}` `` que `typedRoutes` de Next.js acepta sin casts. Una variable con `route()` reasignada a otra cadena ya no compila; anótela `string` o configure `hrefs: \"string\"` (serializa `\"hrefs\": \"string\"`). `withNamedRoutes()` y `doctor` advierten si `typedRoutes` coincide con `hrefs: \"string\"`.",
+		"ja": "生成モジュールと `createRoutes()` で `hrefs: \"typed\"` が既定となり、`route()` は Next.js の `typedRoutes` がキャストなしで受け入れる `` `/users/${string}` `` などのテンプレートリテラル型を返します。`route()` の結果を格納する変数に別の文字列を再代入できない場合は `string` 型注釈を付けるか、`hrefs: \"string\"` を設定します（生成モジュールに `\"hrefs\": \"string\"` が出力されます）。`withNamedRoutes()` と `doctor` は `typedRoutes` と `hrefs: \"string\"` の併用を警告します。"
+	},
+	"Framework discovery is the default (`discovery: \"framework\"`): where the framework publishes its final route table, names come from it, so paths declared in code are included. Nuxt: the new `@triooo/named-routes/nuxt` module reads `pages:resolved` (`definePageMeta({ path, alias })`, pages added by modules; aliases get their own names) and stores the table in `.nuxt/named-routes/pages.json` for the CLI. Vue Router 5: the `typed-router.d.ts` it generates (`definePage({ path })`). React Router: `react-router routes --json` (`route()`, `index()`, `layout()`, `prefix()` in `app/routes.ts`). TanStack Router: `routeTree.gen.ts`. Until the table exists, the files are scanned and the CLI says why. `discovery: \"files\"` keeps the 1.x scanner; Next.js, SvelteKit and Astro are unchanged.": {
+		"pt": "Descoberta pelo framework é o padrão (`discovery: \"framework\"`): quando ele publica a tabela final, os nomes vêm dela, incluindo caminhos declarados em código. Nuxt: o novo módulo `@triooo/named-routes/nuxt` lê `pages:resolved` (`definePageMeta({ path, alias })`, páginas de outros módulos; aliases têm nomes próprios) e grava `.nuxt/named-routes/pages.json` para a CLI. Vue Router 5: gera `typed-router.d.ts` (`definePage({ path })`). React Router: `react-router routes --json` (`route()`, `index()`, `layout()`, `prefix()` em `app/routes.ts`). TanStack Router: `routeTree.gen.ts`. Até existir a tabela, os arquivos são escaneados e a CLI explica o motivo. `discovery: \"files\"` mantém o scanner 1.x; Next.js, SvelteKit e Astro não mudam.",
+		"es": "Descubrimiento por framework por defecto (`discovery: \"framework\"`): si publica la tabla final, los nombres provienen de ella, incluyendo rutas declaradas en código. Nuxt: nuevo módulo `@triooo/named-routes/nuxt` lee `pages:resolved` (`definePageMeta({ path, alias })`, páginas de módulos; alias con nombres propios) y guarda `.nuxt/named-routes/pages.json` para CLI. Vue Router 5: `typed-router.d.ts` generado (`definePage({ path })`). React Router: `react-router routes --json` (`route()`, `index()`, `layout()`, `prefix()` en `app/routes.ts`). TanStack Router: `routeTree.gen.ts`. Hasta existir la tabla se escanean archivos y la CLI explica el motivo. `discovery: \"files\"` conserva scanner 1.x; Next.js, SvelteKit y Astro no cambian.",
+		"ja": "フレームワーク検出が既定（`discovery: \"framework\"`）です。最終ルートテーブルが公開される場合はそこから命名し、コード宣言のパスも対象にします。Nuxt：新モジュール `@triooo/named-routes/nuxt` が `pages:resolved`（`definePageMeta({ path, alias })`、他モジュールのページ、別名には独自の名前）を読み取り、CLI 用に `.nuxt/named-routes/pages.json` を保存。Vue Router 5：生成 `typed-router.d.ts`（`definePage({ path })`）。React Router：`react-router routes --json`（`app/routes.ts` の `route()`、`index()`、`layout()`、`prefix()`）。TanStack Router：`routeTree.gen.ts`。テーブルができるまではファイルを走査し、CLI が理由を報告します。`discovery: \"files\"` は 1.x スキャナーを維持します。Next.js、SvelteKit、Astro は変更ありません。"
+	},
+	"One error code per error class: invalid `router`, `pageExtensions` and `output` values (including an output inside a routes directory) raise `INVALID_CONFIG` instead of `GENERATION_ERROR`. Messages are unchanged.": {
+		"pt": "Um código por classe de erro: valores inválidos de `router`, `pageExtensions` e `output` (incluindo saída dentro de uma pasta de rotas) lançam `INVALID_CONFIG` em vez de `GENERATION_ERROR`. Mensagens inalteradas.",
+		"es": "Un código por clase de error: valores inválidos de `router`, `pageExtensions` y `output` (incluida salida dentro de carpeta de rutas) lanzan `INVALID_CONFIG` en vez de `GENERATION_ERROR`. Mensajes sin cambios.",
+		"ja": "エラー種別ごとに単一のコードを使用します。不正な `router`、`pageExtensions`、`output`（ルートディレクトリ内の出力も含む）は `GENERATION_ERROR` ではなく `INVALID_CONFIG` を発生させます。メッセージは不変です。"
+	},
+	"`typesVersions` was removed; types are published through `exports` only, so `moduleResolution` must be `bundler`, `node16` or `nodenext`.": {
+		"pt": "`typesVersions` foi removido; os tipos são publicados apenas por `exports`, portanto `moduleResolution` deve ser `bundler`, `node16` ou `nodenext`.",
+		"es": "Se eliminó `typesVersions`; tipos publicados solo mediante `exports`, por lo que `moduleResolution` debe ser `bundler`, `node16` o `nodenext`.",
+		"ja": "`typesVersions` を削除しました。型は `exports` でのみ公開するため、`moduleResolution` は `bundler`、`node16`、`nodenext` のいずれかが必要です。"
+	},
+	"Generated modules that import query schemas as types only (no `validateQuery`) use `TypeOnlyQueries<typeof schemas>`, so `route.parseQuery()` is typed as returning the raw query there, which is what it returns.": {
+		"pt": "Módulos gerados que importam schemas de query apenas como tipos (sem `validateQuery`) usam `TypeOnlyQueries<typeof schemas>`, portanto `route.parseQuery()` é tipado como retornando a query bruta, conforme seu comportamento real.",
+		"es": "Módulos generados que importan schemas de query solo como tipos (sin `validateQuery`) usan `TypeOnlyQueries<typeof schemas>`, así `route.parseQuery()` se tipa como devolviendo la query cruda, que es su resultado real.",
+		"ja": "クエリスキーマを型のみとしてインポートする生成モジュール（`validateQuery` なし）は `TypeOnlyQueries<typeof schemas>` を使用し、`route.parseQuery()` が実際の動作どおり生のクエリを返す型になります。"
+	},
+	"`route.parseQuery(name, input)`: reads a URL's query (a URL, query string, `URLSearchParams` or `route.match().query`) with the route's schema when it exists at runtime, returning `{ ok: true, value }` with the schema's output type or `{ ok: false, issues }`. For keys the schema rejects as strings, numbers and `true`/`false` written by `route()` are converted back and single values become arrays. Routes without a runtime schema return the raw query. New `QueryOutput`, `QueryParseResult`, `QueryParseInput`, `TypeOnlyQuery` and `TypeOnlyQueries` types.": {
+		"pt": "`route.parseQuery(name, input)`: lê a query de uma URL (URL, string de query, `URLSearchParams` ou `route.match().query`) com o schema da rota quando presente em runtime, retornando `{ ok: true, value }` com o tipo de saída do schema ou `{ ok: false, issues }`. Para chaves que o schema rejeita como strings, números e `true`/`false` escritos por `route()` são reconvertidos e valores únicos tornam-se arrays. Sem schema em runtime, retorna a query bruta. Novos tipos `QueryOutput`, `QueryParseResult`, `QueryParseInput`, `TypeOnlyQuery` e `TypeOnlyQueries`.",
+		"es": "`route.parseQuery(name, input)`: lee la query de URL (URL, cadena, `URLSearchParams` o `route.match().query`) con el schema de ruta si existe en runtime, devuelve `{ ok: true, value }` con tipo de salida o `{ ok: false, issues }`. Para claves rechazadas como cadenas se reconvierten números y `true`/`false` escritos por `route()`, y valores únicos pasan a arrays. Sin schema runtime devuelve query cruda. Nuevos tipos `QueryOutput`, `QueryParseResult`, `QueryParseInput`, `TypeOnlyQuery` y `TypeOnlyQueries`.",
+		"ja": "`route.parseQuery(name, input)`：URL、クエリ文字列、`URLSearchParams`、`route.match().query` のクエリを、実行時スキーマがあればそれで読み取り、スキーマ出力型の `{ ok: true, value }` または `{ ok: false, issues }` を返します。文字列として拒否されるキーは `route()` が書いた数値や `true`/`false` を再変換し、単一値を配列にします。実行時スキーマがなければ生のクエリを返します。新しい型 `QueryOutput`、`QueryParseResult`、`QueryParseInput`、`TypeOnlyQuery`、`TypeOnlyQueries`。"
+	},
+	"`named-routes doctor` reports where the routes came from (the framework's table or the files, and why), every route that exists only in the framework's table or only in the file view, and whether Nuxt uses the module. `doctor --v2` lists what a 1.x project must change: typed hrefs, routes that framework discovery changes, a `moduleResolution` that cannot read `exports`, and code comparing error codes with `GENERATION_ERROR` (text check).": {
+		"pt": "`named-routes doctor` informa a origem das rotas (tabela do framework ou arquivos e motivo), rotas exclusivas de cada visão e se Nuxt usa o módulo. `doctor --v2` lista mudanças para 1.x: hrefs tipados, rotas alteradas pela descoberta do framework, `moduleResolution` incapaz de ler `exports` e código que compara `GENERATION_ERROR` (verificação textual).",
+		"es": "`named-routes doctor` informa el origen de rutas (tabla del framework o archivos y motivo), rutas exclusivas de cada vista y si Nuxt usa el módulo. `doctor --v2` lista cambios para 1.x: hrefs tipados, rutas cambiadas por descubrimiento, `moduleResolution` que no lee `exports` y código que compara `GENERATION_ERROR` (verificación textual).",
+		"ja": "`named-routes doctor` はルートの出所（フレームワークテーブルまたはファイルと理由）、各方式だけに存在するルート、Nuxt モジュールの使用有無を報告します。`doctor --v2` は 1.x からの変更点（型付き href、検出方式によるルート変更、`exports` を読めない `moduleResolution`、`GENERATION_ERROR` を比較するコードのテキスト検査）を表示します。"
+	},
+	"`named-routes migrate --to 2` (dry run; `--write` applies): pins `hrefs: \"string\"` and, where the routes differ, `discovery: \"files\"` in the named-routes config (creating `named-routes.config.mjs` when there is none). It never edits framework configs or application code.": {
+		"pt": "`named-routes migrate --to 2` (simulação; `--write` aplica): fixa `hrefs: \"string\"` e, quando as rotas diferem, `discovery: \"files\"` na configuração (cria `named-routes.config.mjs` se ausente). Não edita configurações de frameworks nem código da aplicação.",
+		"es": "`named-routes migrate --to 2` (simulación; `--write` aplica): fija `hrefs: \"string\"` y, si las rutas difieren, `discovery: \"files\"` en la configuración (crea `named-routes.config.mjs` si falta). No modifica configuraciones de frameworks ni código de aplicación.",
+		"ja": "`named-routes migrate --to 2`（ドライラン、`--write` で適用）：`hrefs: \"string\"` と、ルートが異なる場合の `discovery: \"files\"` を設定に固定します（なければ `named-routes.config.mjs` を作成）。フレームワーク設定やアプリコードは変更しません。"
+	},
+	"The Vite plugin regenerates when the framework rewrites its route table, and once more before the module is first loaded in a build, after every plugin's `buildStart`. `named-routes watch` also watches the framework's artifact. The CLI summary names the source: `(5 routes, nuxt, from .nuxt/named-routes/pages.json)`.": {
+		"pt": "O plugin Vite regenera quando o framework reescreve sua tabela e novamente antes da primeira leitura do módulo no build, após `buildStart` de todos os plugins. `named-routes watch` também observa o artefato do framework. O resumo da CLI indica a origem: `(5 routes, nuxt, from .nuxt/named-routes/pages.json)`.",
+		"es": "Plugin Vite regenera cuando el framework reescribe su tabla y antes de la primera carga del módulo en build, tras `buildStart` de todos los plugins. `named-routes watch` observa también el artefacto. Resumen CLI indica origen: `(5 routes, nuxt, from .nuxt/named-routes/pages.json)`.",
+		"ja": "Vite プラグインはフレームワークがルートテーブルを書き換えた時と、全プラグインの `buildStart` 後にビルドで初めてモジュールを読む前に再生成します。`named-routes watch` も生成物を監視します。CLI の要約は出所を示します：`(5 routes, nuxt, from .nuxt/named-routes/pages.json)`。"
+	},
+	"Examples: Nuxt uses the module with a `definePageMeta({ path, alias })` page, Vue a `definePage({ path })` page and React Router a `route()` in `app/routes.ts`; the E2E harness navigates to each in a real browser.": {
+		"pt": "Exemplos: Nuxt usa o módulo com página `definePageMeta({ path, alias })`, Vue uma página `definePage({ path })` e React Router uma `route()` em `app/routes.ts`; o E2E navega em cada uma no navegador real.",
+		"es": "Ejemplos: Nuxt usa módulo con página `definePageMeta({ path, alias })`, Vue una `definePage({ path })` y React Router una `route()` en `app/routes.ts`; E2E navega a cada una en navegador real.",
+		"ja": "サンプル：Nuxt はモジュールと `definePageMeta({ path, alias })` ページ、Vue は `definePage({ path })` ページ、React Router は `app/routes.ts` の `route()` を使用し、E2E で実ブラウザーから移動します。"
+	},
+	"`pnpm test:package` checks the packed tarball with [attw](https://github.com/arethetypeswrong/arethetypeswrong.github.io) (node16 and bundler resolution) and [publint](https://publint.dev) (strict).": {
+		"pt": "`pnpm test:package` verifica o tarball com [attw](https://github.com/arethetypeswrong/arethetypeswrong.github.io) (resolução node16 e bundler) e [publint](https://publint.dev) (estrito).",
+		"es": "`pnpm test:package` comprueba tarball con [attw](https://github.com/arethetypeswrong/arethetypeswrong.github.io) (resolución node16 y bundler) y [publint](https://publint.dev) (estricto).",
+		"ja": "`pnpm test:package` は [attw](https://github.com/arethetypeswrong/arethetypeswrong.github.io)（node16 と bundler 解決）と [publint](https://publint.dev)（strict）で tarball を検証します。"
+	},
+	"`pnpm test:types` (and so `pnpm check` and CI) type-checks the TypeScript samples of the documentation against a module generated with every route name they use, with `hrefs: \"string\"` and `\"typed\"`; lines documented as a type error must fail.": {
+		"pt": "`pnpm test:types` (e portanto `pnpm check` e CI) verifica os exemplos TypeScript da documentação com um módulo gerado contendo todos os nomes usados, com `hrefs: \"string\"` e `\"typed\"`; linhas documentadas como erro de tipo devem falhar.",
+		"es": "`pnpm test:types` (y por tanto `pnpm check` y CI) verifica muestras TypeScript con módulo generado que contiene todos los nombres usados, con `hrefs: \"string\"` y `\"typed\"`; líneas documentadas como error de tipo deben fallar.",
+		"ja": "`pnpm test:types`（および `pnpm check` と CI）は、全サンプルのルート名を含む生成モジュールを使って TypeScript 例を `hrefs: \"string\"` と `\"typed\"` で型チェックします。型エラーと記載された行は失敗する必要があります。"
+	},
+	"Documentation: \"Upgrading from 1.x\" in the four languages, and every framework page describes its route source.": {
+		"pt": "Documentação: guia de atualização da 1.x nos quatro idiomas, e cada página de framework descreve a origem das rotas.",
+		"es": "Documentación: actualización desde 1.x en cuatro idiomas, y cada página de framework describe el origen de sus rutas.",
+		"ja": "4 言語で 1.x からの移行ガイドを追加し、各フレームワークページでルートの出所を説明します。"
+	},
+	"Config files are re-imported only when their content changes (a hash of the file instead of its modification time). Saving or touching `named-routes.config.*` without changes during `watch`, `next dev` or Vite no longer leaves another module instance in memory. Node.js cannot unload ES modules, so each distinct version of a config still stays loaded until the process restarts; the documentation now says so.": {
+		"pt": "Arquivos de configuração só são reimportados quando o conteúdo muda (hash em vez da data de modificação). Salvar ou tocar `named-routes.config.*` sem alterações durante `watch`, `next dev` ou Vite não deixa outra instância em memória. Node.js não descarrega módulos ES, então cada versão distinta da configuração permanece carregada até reiniciar o processo; isso foi documentado.",
+		"es": "Configuraciones se reimportan solo al cambiar contenido (hash en vez de fecha de modificación). Guardar o tocar `named-routes.config.*` sin cambios durante `watch`, `next dev` o Vite ya no deja otra instancia en memoria. Node.js no descarga módulos ES, por lo que cada versión distinta sigue cargada hasta reiniciar; se documenta.",
+		"ja": "設定ファイルは内容変更時のみ再インポートされます（更新時刻ではなくハッシュ）。`watch`、`next dev`、Vite 中に内容を変えず `named-routes.config.*` を保存・touch してもメモリーに別インスタンスが残りません。Node.js は ES モジュールをアンロードできないため、異なる設定バージョンはプロセス再起動まで残ります。この制約を文書化しました。"
+	},
+	"Typed hrefs: calling a route whose query has required keys without `options.query` reports `Argument of type '\"search\"' is not assignable to parameter of type '\"search\" & QueryIsRequired<\"search\">'` instead of `Expected 3 arguments, but got 1`.": {
+		"pt": "Href tipado: chamar rota com chaves obrigatórias na query sem `options.query` informa `Argument of type '\"search\"' is not assignable to parameter of type '\"search\" & QueryIsRequired<\"search\">'` em vez de `Expected 3 arguments, but got 1`.",
+		"es": "Href tipado: llamar ruta con claves query obligatorias sin `options.query` informa `Argument of type '\"search\"' is not assignable to parameter of type '\"search\" & QueryIsRequired<\"search\">'` en vez de `Expected 3 arguments, but got 1`.",
+		"ja": "型付き href：必須クエリキーのあるルートを `options.query` なしで呼ぶと `Expected 3 arguments, but got 1` の代わりに `Argument of type '\"search\"' is not assignable to parameter of type '\"search\" & QueryIsRequired<\"search\">'` を報告します。"
+	},
+	"`pnpm test:package` no longer fails between a release and the next version bump: `npm publish --dry-run` refuses a version that is already on npm, after it has packed and normalized `package.json`, which is what the test checks.": {
+		"pt": "`pnpm test:package` não falha mais entre releases: `npm publish --dry-run` recusa uma versão já no npm após empacotar e normalizar `package.json`, que é o que o teste verifica.",
+		"es": "`pnpm test:package` ya no falla entre releases: `npm publish --dry-run` rechaza una versión ya publicada tras empaquetar y normalizar `package.json`, que es lo que comprueba la prueba.",
+		"ja": "`pnpm test:package` はリリースと次のバージョン更新の間も失敗しなくなりました。`npm publish --dry-run` はパッケージングと `package.json` の正規化後に既存バージョンを拒否し、テストはそこまでを検証します。"
+	},
+	"Backward compatible with 1.0: new behavior is opt-in or additive, and error codes and messages are unchanged.": {
+		"pt": "Compatível com 1.0: novos comportamentos são opcionais ou aditivos, e códigos e mensagens de erro permanecem iguais.",
+		"es": "Compatible con 1.0: nuevos comportamientos opcionales o aditivos; códigos y mensajes de error sin cambios.",
+		"ja": "1.0 と後方互換性があります。新しい動作はオプトインまたは追加機能で、エラーコードとメッセージは不変です。"
+	},
+	"`hrefs: \"typed\"` (config, `withNamedRoutes()`, Vite plugin or `createRoutes`): `route()` returns template literal types such as `` `/users/${string}` `` that Next.js `typedRoutes` accepts in `<Link>`, `router.push()`, `replace()` and `prefetch()` without casts. Type-only; URLs are identical. New `RouteHref`, `RouteHrefWithSuffix` and `TypedNamedRoutes` types. `withNamedRoutes()` prints a hint when `typedRoutes` is enabled without it.": {
+		"pt": "`hrefs: \"typed\"` (configuração, `withNamedRoutes()`, plugin Vite ou `createRoutes`): `route()` retorna tipos template literal como `` `/users/${string}` `` aceitos por `typedRoutes` do Next.js em `<Link>`, `router.push()`, `replace()` e `prefetch()` sem casts. Apenas tipos; URLs idênticas. Novos tipos `RouteHref`, `RouteHrefWithSuffix` e `TypedNamedRoutes`. `withNamedRoutes()` emite dica quando `typedRoutes` é habilitado sem essa opção.",
+		"es": "`hrefs: \"typed\"` (configuración, `withNamedRoutes()`, plugin Vite o `createRoutes`): `route()` devuelve tipos template literal como `` `/users/${string}` `` aceptados por `typedRoutes` de Next.js en `<Link>`, `router.push()`, `replace()` y `prefetch()` sin casts. Solo tipos; URL idénticas. Nuevos tipos `RouteHref`, `RouteHrefWithSuffix` y `TypedNamedRoutes`. `withNamedRoutes()` sugiere la opción si `typedRoutes` está habilitado sin ella.",
+		"ja": "`hrefs: \"typed\"`（設定、`withNamedRoutes()`、Vite プラグイン、`createRoutes`）：`route()` は `` `/users/${string}` `` などのテンプレートリテラル型を返し、Next.js の `typedRoutes` が `<Link>`、`router.push()`、`replace()`、`prefetch()` でキャストなしで受け入れます。型のみの変更で URL は同じです。新型 `RouteHref`、`RouteHrefWithSuffix`、`TypedNamedRoutes`。`typedRoutes` 有効時に設定がなければ `withNamedRoutes()` が案内します。"
+	},
+	"Typed query per route: `defineQuery({...})` with Standard Schema validators (Zod 3.24+, Valibot 1+, ArkType…) or `defineQuery.type<T>()`, configured with the `query` option. Unknown keys and incompatible values are type errors; required keys make the query required. Imported as types only by default; `validateQuery: true` bundles the schemas and throws `INVALID_QUERY` on invalid values. No schema library is a dependency.": {
+		"pt": "Query tipada por rota: `defineQuery({...})` com validadores Standard Schema (Zod 3.24+, Valibot 1+, ArkType…) ou `defineQuery.type<T>()`, configurada com `query`. Chaves desconhecidas e valores incompatíveis são erros de tipo; chaves obrigatórias tornam a query obrigatória. Importação apenas como tipos por padrão; `validateQuery: true` inclui os schemas e lança `INVALID_QUERY` para valores inválidos. Nenhuma biblioteca de schemas é dependência.",
+		"es": "Query tipada por ruta: `defineQuery({...})` con validadores Standard Schema (Zod 3.24+, Valibot 1+, ArkType…) o `defineQuery.type<T>()`, configurada con `query`. Claves desconocidas y valores incompatibles son errores de tipo; claves obligatorias hacen obligatoria la query. Importación solo de tipos por defecto; `validateQuery: true` empaqueta schemas y lanza `INVALID_QUERY` para valores inválidos. Ninguna biblioteca schema es dependencia.",
+		"ja": "ルート別の型付きクエリ：Standard Schema バリデーター（Zod 3.24+、Valibot 1+、ArkType…）を使う `defineQuery({...})` または `defineQuery.type<T>()` を `query` オプションで指定します。不明キーと不適合値は型エラー、必須キーがあればクエリも必須です。既定は型のみインポート、`validateQuery: true` はスキーマをバンドルし無効値に `INVALID_QUERY` を発生させます。スキーマライブラリへの依存はありません。"
+	},
+	"Reverse routing: `route.match(url)`, `route.is(name, url, { exact })` and `route.breadcrumbs(url)`, with deterministic precedence (static before dynamic, then declaration order), safe decoding, `basePath`, trailing slash, locale prefixes, localized pathnames and i18n domains. Unmatched or malformed URLs return `null`; non-string input throws `INVALID_URL`.": {
+		"pt": "Reverse routing: `route.match(url)`, `route.is(name, url, { exact })` e `route.breadcrumbs(url)`, com precedência determinística (estático antes de dinâmico, depois ordem de declaração), decodificação segura, `basePath`, barra final, prefixos de locale, caminhos localizados e domínios i18n. URLs sem correspondência ou malformadas retornam `null`; entrada não string lança `INVALID_URL`.",
+		"es": "Reverse routing: `route.match(url)`, `route.is(name, url, { exact })` y `route.breadcrumbs(url)`, precedencia determinista (estático antes de dinámico, luego orden de declaración), decodificación segura, `basePath`, barra final, prefijos de locale, rutas localizadas y dominios i18n. URL sin coincidencia o inválidas devuelven `null`; entrada no string lanza `INVALID_URL`.",
+		"ja": "逆引きルーティング：`route.match(url)`、`route.is(name, url, { exact })`、`route.breadcrumbs(url)`。決定的な優先順位（静的→動的→宣言順）、安全なデコード、`basePath`、末尾スラッシュ、ロケールプレフィックス、ローカライズパス、i18n ドメインに対応します。不一致・不正 URL は `null`、文字列以外の入力は `INVALID_URL` エラーをスローします。"
+	},
+	"`named-routes doctor`: read-only diagnostics of Node.js/TypeScript versions, configuration, framework, routes, conflicts, stale output, Next.js/Vite integration, typedRoutes without typed hrefs, i18n and code-declared routes the scanner cannot see. `--json`, `--strict` and `--no-color`; exit code 1 on errors.": {
+		"pt": "`named-routes doctor`: diagnósticos somente leitura de versões Node.js/TypeScript, configuração, framework, rotas, conflitos, saída desatualizada, integração Next.js/Vite, typedRoutes sem hrefs tipados, i18n e rotas declaradas em código invisíveis ao scanner. `--json`, `--strict` e `--no-color`; código de saída 1 em erros.",
+		"es": "`named-routes doctor`: diagnóstico de solo lectura de versiones Node.js/TypeScript, configuración, framework, rutas, conflictos, salida obsoleta, integración Next.js/Vite, typedRoutes sin hrefs tipados, i18n y rutas declaradas en código invisibles al scanner. `--json`, `--strict` y `--no-color`; salida 1 en errores.",
+		"ja": "`named-routes doctor`：Node.js/TypeScript バージョン、設定、フレームワーク、ルート、競合、古い出力、Next.js/Vite 連携、型付き href なしの typedRoutes、i18n、スキャナーが検出できないコード宣言ルートの読み取り専用診断。`--json`、`--strict`、`--no-color`、エラー時終了コード 1。"
+	},
+	"`NamedRouteError.details` (`file`, `files`, `route`, `pattern`, `option`, `hint`) with \"did you mean\" suggestions for route names, options and `names` keys. The CLI prints them.": {
+		"pt": "`NamedRouteError.details` (`file`, `files`, `route`, `pattern`, `option`, `hint`) com sugestões de nomes, opções e chaves `names`. A CLI as imprime.",
+		"es": "`NamedRouteError.details` (`file`, `files`, `route`, `pattern`, `option`, `hint`) con sugerencias de nombres, opciones y claves `names`. La CLI las muestra.",
+		"ja": "`NamedRouteError.details`（`file`、`files`、`route`、`pattern`、`option`、`hint`）でルート名、オプション、`names` キーの候補を提示し、CLI に表示します。"
+	},
+	"Watcher modes: `watchMode` (`auto`, `native`, `poll`) for `withNamedRoutes()` and `--watch-mode` for `named-routes watch`.": {
+		"pt": "Modos do watcher: `watchMode` (`auto`, `native`, `poll`) para `withNamedRoutes()` e `--watch-mode` para `named-routes watch`.",
+		"es": "Modos watcher: `watchMode` (`auto`, `native`, `poll`) para `withNamedRoutes()` y `--watch-mode` para `named-routes watch`.",
+		"ja": "監視モード：`withNamedRoutes()` の `watchMode`（`auto`、`native`、`poll`）と `named-routes watch` の `--watch-mode`。"
+	},
+	"Real-framework E2E harness (`pnpm test:e2e`): every example installs the packed tarball, type-checks, builds, serves the production build, is driven in Chromium through the generated links, and has a page created, renamed and removed while its dev server runs. Runs in CI for all examples on Linux and for Next.js App Router and Vue on Windows and macOS, and gates publishing.": {
+		"pt": "E2E em frameworks reais (`pnpm test:e2e`): cada exemplo instala o tarball, verifica tipos, compila, serve o build de produção e navega no Chromium pelos links gerados; uma página é criada, renomeada e removida durante o dev server. CI roda todos no Linux, e Next.js App Router e Vue no Windows e macOS, condicionando a publicação.",
+		"es": "E2E con frameworks reales (`pnpm test:e2e`): cada ejemplo instala tarball, verifica tipos, compila, sirve build de producción, navega en Chromium mediante enlaces generados y crea, renombra y elimina una página con dev server activo. CI ejecuta todos en Linux y Next.js App Router y Vue en Windows/macOS; condiciona publicación.",
+		"ja": "実フレームワーク E2E（`pnpm test:e2e`）：各サンプルで tarball インストール、型チェック、ビルド、実運用ビルド配信、Chromium の生成リンク操作を行い、開発サーバー中にページ作成・改名・削除を検証します。CI は Linux で全例、Windows/macOS で Next.js App Router と Vue を実行し、公開の条件とします。"
+	},
+	"Real Next.js `typedRoutes` contract test (`next typegen` + `tsc`), `next build` + `next start` in the Next.js smoke test, a browser-safety test for the runtime, TypeScript 5.0/5.4/5.9/6/7 type-contract matrix, Biome lint/format (`pnpm lint`, `pnpm format`) and a watcher benchmark (`pnpm bench:watch`).": {
+		"pt": "Teste real do contrato Next.js `typedRoutes` (`next typegen` + `tsc`), `next build` + `next start` no smoke test Next.js, teste browser-safety do runtime, matriz de contratos TypeScript 5.0/5.4/5.9/6/7, lint/formatação Biome (`pnpm lint`, `pnpm format`) e benchmark do watcher (`pnpm bench:watch`).",
+		"es": "Prueba real Next.js `typedRoutes` (`next typegen` + `tsc`), `next build` + `next start` en smoke test Next.js, prueba browser-safety del runtime, matriz TypeScript 5.0/5.4/5.9/6/7, lint/formato Biome (`pnpm lint`, `pnpm format`) y benchmark watcher (`pnpm bench:watch`).",
+		"ja": "実 Next.js `typedRoutes` 契約テスト（`next typegen` + `tsc`）、Next.js スモークの `next build` + `next start`、ランタイムの browser-safety テスト、TypeScript 5.0/5.4/5.9/6/7 型契約マトリックス、Biome lint/format（`pnpm lint`、`pnpm format`）、監視ベンチマーク（`pnpm bench:watch`）。"
+	},
+	"Website: the playground shows `route.match()` and `route.breadcrumbs()` on the site's own routes; documentation for typed hrefs, typed query, reverse routing and doctor in English, Portuguese, Spanish and Japanese.": {
+		"pt": "Website: playground mostra `route.match()` e `route.breadcrumbs()` nas rotas do próprio site; documentação de hrefs tipados, query tipada, reverse routing e doctor em inglês, português, espanhol e japonês.",
+		"es": "Web: playground muestra `route.match()` y `route.breadcrumbs()` en rutas propias; documentación de hrefs y query tipados, reverse routing y doctor en inglés, portugués, español y japonés.",
+		"ja": "サイト：プレイグラウンドで自身のルートに対する `route.match()` と `route.breadcrumbs()` を表示し、型付き href、型付きクエリ、逆引きルーティング、doctor を英語、ポルトガル語、スペイン語、日本語で文書化します。"
+	},
+	"Next.js dev and `named-routes watch` react to file events (debounced, serialized) with a 5 s reconciliation rescan instead of rescanning every 750 ms. Polling is used automatically in WSL Windows drives, with `WATCHPACK_POLLING`/`CHOKIDAR_USEPOLLING`/`NAMED_ROUTES_WATCH=poll`, or when the OS refuses watchers. Measured with `pnpm bench:watch` (Linux, Node 26, median of 3): 200 routes, idle CPU 36 → 6 ms/s and add → module 478 → 90 ms; 2000 routes, 153 → 29 ms/s and 582 → 203 ms. `watchMode: \"poll\"` restores 1.0 behavior.": {
+		"pt": "Next.js dev e `named-routes watch` reagem a eventos de arquivos (debounce e serialização) com rescan de reconciliação de 5 s em vez de varredura a cada 750 ms. Polling automático em discos Windows no WSL, com `WATCHPACK_POLLING`/`CHOKIDAR_USEPOLLING`/`NAMED_ROUTES_WATCH=poll`, ou quando o sistema recusa watchers. Medições `pnpm bench:watch` (Linux, Node 26, mediana de 3): 200 rotas, CPU ociosa 36 → 6 ms/s e adição → módulo 478 → 90 ms; 2000 rotas, 153 → 29 ms/s e 582 → 203 ms. `watchMode: \"poll\"` restaura o comportamento 1.0.",
+		"es": "Next.js dev y `named-routes watch` reaccionan a eventos de archivos (debounce, serialización) con escaneo de reconciliación de 5 s en vez de cada 750 ms. Polling automático en discos Windows WSL, con `WATCHPACK_POLLING`/`CHOKIDAR_USEPOLLING`/`NAMED_ROUTES_WATCH=poll` o si el sistema rechaza watchers. Medidas `pnpm bench:watch` (Linux, Node 26, mediana de 3): 200 rutas, CPU inactiva 36 → 6 ms/s y adición → módulo 478 → 90 ms; 2000 rutas, 153 → 29 ms/s y 582 → 203 ms. `watchMode: \"poll\"` restaura comportamiento 1.0.",
+		"ja": "Next.js dev と `named-routes watch` は 750 ms ごとの走査に代わり、ファイルイベント（デバウンス、直列化）と 5 秒の整合性再走査を使います。WSL の Windows ドライブ、`WATCHPACK_POLLING`/`CHOKIDAR_USEPOLLING`/`NAMED_ROUTES_WATCH=poll`、OS が監視を拒否した場合は自動ポーリング。`pnpm bench:watch` の測定（Linux、Node 26、3 回の中央値）：200 ルートでアイドル CPU 36 → 6 ms/s、追加→モジュール 478 → 90 ms、2000 ルートで 153 → 29 ms/s、582 → 203 ms。`watchMode: \"poll\"` で 1.0 の動作に戻ります。"
+	},
+	"Examples: Next.js App Router uses `typedRoutes` with typed hrefs and a query link; Pages Router uses i18n, a `pt` locale link and a query link; both have a catch-all docs page. The Vue example uses Vue Router 5 (`vue-router/vite`) with a `_parent.vue` layout. Example lockfiles are in sync with their package.json again.": {
+		"pt": "Exemplos: Next.js App Router usa `typedRoutes` com hrefs tipados e link com query; Pages Router usa i18n, link em `pt` e link com query; ambos têm página docs catch-all. Vue usa Vue Router 5 (`vue-router/vite`) com layout `_parent.vue`. Lockfiles novamente sincronizados com package.json.",
+		"es": "Ejemplos: Next.js App Router usa `typedRoutes` con hrefs tipados y enlace query; Pages Router usa i18n, enlace `pt` y query; ambos tienen página docs catch-all. Vue usa Vue Router 5 (`vue-router/vite`) con layout `_parent.vue`. Lockfiles sincronizados nuevamente con package.json.",
+		"ja": "サンプル：Next.js App Router は `typedRoutes` と型付き href、クエリリンクを使用し、Pages Router は i18n、`pt` リンク、クエリリンクを使用します。両方に catch-all ドキュメントページがあります。Vue は Vue Router 5（`vue-router/vite`）と `_parent.vue` レイアウトを使用し、lockfile は package.json と再同期しました。"
+	},
+	"CI: package tests on Windows and macOS, type contracts across TypeScript versions, and the E2E workflow (replacing the build-only demos workflow); Dependabot also updates npm tooling, examples and the website.": {
+		"pt": "CI: testes de pacote em Windows e macOS, contratos em várias versões TypeScript e workflow E2E (substitui demos apenas com build); Dependabot também atualiza ferramentas npm, exemplos e site.",
+		"es": "CI: pruebas de paquetes en Windows/macOS, contratos en varias versiones TypeScript y workflow E2E (sustituye demos solo build); Dependabot actualiza herramientas npm, ejemplos y web.",
+		"ja": "CI：Windows/macOS のパッケージテスト、複数 TypeScript バージョンの型契約、ビルドのみのデモに代わる E2E ワークフロー。Dependabot は npm ツール、サンプル、サイトも更新します。"
+	},
+	"Vue Router 5 file-based routing: `_parent.vue` is a non-matchable parent and no longer produces a phantom route such as `users._parent`.": {
+		"pt": "Vue Router 5 file-based: `_parent.vue` é um pai não navegável e não gera mais rota fantasma como `users._parent`.",
+		"es": "Vue Router 5 file-based: `_parent.vue` es padre no navegable y ya no produce ruta fantasma como `users._parent`.",
+		"ja": "Vue Router 5 のファイルベースルーティングで `_parent.vue` はマッチ不可の親となり、`users._parent` のような架空ルートを生成しません。"
+	},
+	"The watcher ignores the temporary file of the generated module's atomic write, so writing the module no longer triggers an extra regeneration.": {
+		"pt": "O watcher ignora o arquivo temporário da escrita atômica do módulo gerado, evitando regeneração extra.",
+		"es": "Watcher ignora archivo temporal de escritura atómica del módulo generado, evitando regeneración extra.",
+		"ja": "監視が生成モジュールのアトミック書き込みの一時ファイルを無視し、追加の再生成を防ぎます。"
+	},
+	"Modules generated by the former `@triooo/next-named-routes` package are recognized as generated and replaced instead of failing with \"Refusing to overwrite\".": {
+		"pt": "Módulos do antigo pacote `@triooo/next-named-routes` são reconhecidos como gerados e substituídos em vez de falhar com \"Refusing to overwrite\".",
+		"es": "Módulos del antiguo `@triooo/next-named-routes` se reconocen como generados y reemplazan en lugar de fallar con \"Refusing to overwrite\".",
+		"ja": "旧 `@triooo/next-named-routes` が生成したモジュールを生成済みとして認識し、\"Refusing to overwrite\" で失敗せず置換します。"
+	},
+	"CLI help and documentation no longer describe `named-routes` as an alias of itself; React Router 8 and Vue Router 5 are named where the demos use them; SPEC marks 1.0.0 as published.": {
+		"pt": "Ajuda da CLI e documentação não descrevem mais `named-routes` como alias de si mesmo; React Router 8 e Vue Router 5 são nomeados nas demos correspondentes; SPEC marca 1.0.0 como publicada.",
+		"es": "Ayuda CLI y documentación ya no describen `named-routes` como alias de sí mismo; React Router 8 y Vue Router 5 se nombran en sus demos; SPEC marca 1.0.0 como publicada.",
+		"ja": "CLI ヘルプとドキュメントで `named-routes` を自身の別名とする記述を削除し、デモに合わせ React Router 8 と Vue Router 5 を明記しました。SPEC で 1.0.0 を公開済みとしました。"
+	},
+	"Stable v1 contract for automatic names, URL generation, typed parameters, CLI commands, the Next config wrapper and the Vite plugin.": {
+		"pt": "Contrato v1 estável para nomes automáticos, geração de URLs, parâmetros tipados, comandos CLI, wrapper de config Next e plugin Vite.",
+		"es": "Contrato v1 estable para nombres automáticos, generación URL, parámetros tipados, CLI, wrapper config Next y plugin Vite.",
+		"ja": "自動命名、URL 生成、型付きパラメーター、CLI コマンド、Next 設定ラッパー、Vite プラグインの安定した v1 契約。"
+	},
+	"Framework adapters: Next.js (App Router and Pages Router), Nuxt (pages and Nitro server routes), Vue Router file-based routing, SvelteKit, Astro, React Router / Remix flat routes and TanStack Router, plus a `manual` mode for routes declared in code. The framework is detected from package.json.": {
+		"pt": "Adapters: Next.js (App Router e Pages Router), Nuxt (páginas e rotas Nitro), Vue Router file-based, SvelteKit, Astro, React Router / Remix flat routes e TanStack Router, além de modo `manual` para rotas declaradas em código. Framework detectado pelo package.json.",
+		"es": "Adaptadores: Next.js (App Router y Pages Router), Nuxt (páginas y rutas Nitro), Vue Router file-based, SvelteKit, Astro, React Router / Remix flat routes y TanStack Router, más modo `manual` para rutas declaradas en código. Framework detectado desde package.json.",
+		"ja": "アダプター：Next.js（App Router と Pages Router）、Nuxt（ページと Nitro サーバールート）、Vue Router ファイルベース、SvelteKit、Astro、React Router / Remix flat routes、TanStack Router、およびコード宣言ルート用 `manual` モード。package.json からフレームワークを検出します。"
+	},
+	"`@triooo/named-routes/vite`: `namedRoutes()` generates on start/build and follows file additions and removals through Vite's watcher.": {
+		"pt": "`@triooo/named-routes/vite`: `namedRoutes()` gera ao iniciar/compilar e acompanha adição/remoção de arquivos via watcher Vite.",
+		"es": "`@triooo/named-routes/vite`: `namedRoutes()` genera al iniciar/compilar y sigue adición/eliminación de archivos mediante watcher Vite.",
+		"ja": "`@triooo/named-routes/vite`：`namedRoutes()` が開始・ビルド時に生成し、Vite ウォッチャーでファイル追加・削除を追跡します。"
+	},
+	"i18n from v1: `locale` option, `forLocale()`, `locales()`, `localePrefix` (always, as-needed, never, custom prefixes), localized `pathnames`, locale `domains`, automatic `[locale]`/`[lang]` folder stripping, physical locale folders, unlocalized endpoints and a typed `RouteLocale`. The options mirror next-intl's `defineRouting()`; Next.js Pages Router `i18n` is inherited automatically.": {
+		"pt": "i18n desde v1: opção `locale`, `forLocale()`, `locales()`, `localePrefix` (always, as-needed, never, prefixos personalizados), `pathnames` localizados, `domains`, remoção automática de pastas `[locale]`/`[lang]`, pastas físicas de idiomas, endpoints não localizados e `RouteLocale` tipado. Opções espelham `defineRouting()` do next-intl; `i18n` do Pages Router Next.js herdado automaticamente.",
+		"es": "i18n desde v1: opción `locale`, `forLocale()`, `locales()`, `localePrefix` (always, as-needed, never, prefijos personalizados), `pathnames` localizados, `domains`, eliminación automática de carpetas `[locale]`/`[lang]`, carpetas físicas de idioma, endpoints no localizados y `RouteLocale` tipado. Opciones reflejan `defineRouting()` de next-intl; `i18n` de Next.js Pages Router se hereda automáticamente.",
+		"ja": "v1 からの i18n：`locale` オプション、`forLocale()`、`locales()`、`localePrefix`（always、as-needed、never、カスタムプレフィックス）、ローカライズ `pathnames`、`domains`、`[locale]`/`[lang]` フォルダーの自動除去、物理ロケールフォルダー、非ローカライズエンドポイント、型付き `RouteLocale`。next-intl の `defineRouting()` と同じ形式で、Next.js Pages Router の `i18n` は自動継承します。"
+	},
+	"New pattern features: optional single parameters `[[id]]`, mixed segments such as `v[major]-[minor]` and catch-all segments before static segments.": {
+		"pt": "Novos padrões: parâmetros únicos opcionais `[[id]]`, segmentos mistos como `v[major]-[minor]` e catch-all antes de segmentos estáticos.",
+		"es": "Nuevos patrones: parámetros individuales opcionales `[[id]]`, segmentos mixtos como `v[major]-[minor]` y catch-all antes de segmentos estáticos.",
+		"ja": "新しいパターン：省略可能な単一パラメーター `[[id]]`、`v[major]-[minor]` のような混合セグメント、静的セグメントの前の catch-all。"
+	},
+	"Configuration: `named-routes.config.ts/.mts/.mjs/.js/.cjs/.json`, `defineConfig`, `routesDir`, `appDir`/`pagesDir`, `exclude` globs, `naming` (separator, parameter prefix, home name, transform), `importSource`, `exportNames` and `.ts/.mts/.js/.mjs` outputs. Unknown options fail with `INVALID_CONFIG`.": {
+		"pt": "Configuração: `named-routes.config.ts/.mts/.mjs/.js/.cjs/.json`, `defineConfig`, `routesDir`, `appDir`/`pagesDir`, globs `exclude`, `naming` (separador, prefixo de parâmetro, nome home, transform), `importSource`, `exportNames` e saídas `.ts/.mts/.js/.mjs`. Opções desconhecidas lançam `INVALID_CONFIG`.",
+		"es": "Configuración: `named-routes.config.ts/.mts/.mjs/.js/.cjs/.json`, `defineConfig`, `routesDir`, `appDir`/`pagesDir`, globs `exclude`, `naming` (separador, prefijo parámetro, nombre home, transform), `importSource`, `exportNames` y salidas `.ts/.mts/.js/.mjs`. Opciones desconocidas lanzan `INVALID_CONFIG`.",
+		"ja": "設定：`named-routes.config.ts/.mts/.mjs/.js/.cjs/.json`、`defineConfig`、`routesDir`、`appDir`/`pagesDir`、`exclude` グロブ、`naming`（区切り、パラメータープレフィックス、home 名、transform）、`importSource`、`exportNames`、`.ts/.mts/.js/.mjs` 出力。不明なオプションは `INVALID_CONFIG`。"
+	},
+	"CLI binary `named-routes` (alias `named-routes`) with `init`, `--framework`, `--routes-dir`, `--watch-interval` and `--version`.": {
+		"pt": "Binário CLI `named-routes` (alias `named-routes`) com `init`, `--framework`, `--routes-dir`, `--watch-interval` e `--version`.",
+		"es": "Binario CLI `named-routes` (alias `named-routes`) con `init`, `--framework`, `--routes-dir`, `--watch-interval` y `--version`.",
+		"ja": "CLI バイナリ `named-routes`（別名 `named-routes`）：`init`、`--framework`、`--routes-dir`、`--watch-interval`、`--version`。"
+	},
+	"Safety: `next start` never writes the manifest (read-only deployments); only public `basePath`, `trailingSlash`, `origin` and i18n settings are serialized into the generated module; temporary files are created exclusively; `importSource` and export names are validated before being written into code.": {
+		"pt": "Segurança: `next start` nunca escreve o manifesto (deploy somente leitura); apenas `basePath`, `trailingSlash`, `origin` e i18n públicos são serializados; temporários criados exclusivamente; `importSource` e nomes de exports validados antes de escrever código.",
+		"es": "Seguridad: `next start` nunca escribe el manifiesto (despliegues solo lectura); solo `basePath`, `trailingSlash`, `origin` e i18n públicos se serializan; temporales creados exclusivamente; `importSource` y nombres de exports se validan antes de escribir código.",
+		"ja": "安全性：`next start` はマニフェストを書きません（読み取り専用デプロイ）。公開の `basePath`、`trailingSlash`、`origin`、i18n 設定のみシリアライズします。一時ファイルは排他的に作成し、`importSource` とエクスポート名はコード書き込み前に検証します。"
+	},
+	"Release verification installs the actual tarball into a clean consumer and checks its runtime, CLI, exports, packlist and TypeScript contracts; real Next.js and Vite smoke tests run in CI.": {
+		"pt": "Verificação de releases instala o tarball real num consumidor limpo e verifica runtime, CLI, exports, packlist e contratos TypeScript; smoke tests reais Next.js e Vite em CI.",
+		"es": "Verificación de releases instala tarball real en consumidor limpio y comprueba runtime, CLI, exports, packlist y contratos TypeScript; smoke tests reales Next.js y Vite en CI.",
+		"ja": "リリース検証では実 tarball をクリーンな利用プロジェクトにインストールし、ランタイム、CLI、エクスポート、packlist、TypeScript 契約を検証します。CI で実 Next.js と Vite のスモークテストを実行します。"
+	},
+	"Documentation and website in English, Portuguese, Spanish and Japanese (`docs/locales.json`), with `scripts/sync-locales.mjs` (`pnpm locales`, `pnpm locales:check`) keeping every language in sync in CI and one README per language.": {
+		"pt": "Documentação e website em inglês, português, espanhol e japonês (`docs/locales.json`), com `scripts/sync-locales.mjs` (`pnpm locales`, `pnpm locales:check`) mantendo idiomas sincronizados em CI e um README por idioma.",
+		"es": "Documentación y web en inglés, portugués, español y japonés (`docs/locales.json`), con `scripts/sync-locales.mjs` (`pnpm locales`, `pnpm locales:check`) sincronizando idiomas en CI y un README por idioma.",
+		"ja": "英語、ポルトガル語、スペイン語、日本語のドキュメントとサイト（`docs/locales.json`）。`scripts/sync-locales.mjs`（`pnpm locales`、`pnpm locales:check`）で CI の全言語を同期し、言語別 README を提供します。"
+	},
+	"Comparison page with alternative packages and framework-native typed routing, based on their published documentation and npm data.": {
+		"pt": "Página de comparação com pacotes alternativos e roteamento tipado nativo, baseada nas respectivas documentações publicadas e dados npm.",
+		"es": "Página comparativa con paquetes alternativos y routing tipado nativo, basada en documentación publicada y datos npm.",
+		"ja": "公開ドキュメントと npm データに基づく代替パッケージおよびフレームワークネイティブ型付きルーティングとの比較ページ。"
+	},
+	"Documentation website (`website/`, deployable to Vercel) redesigned around a transit metaphor: departure board, interactive network map, honest compatibility table and animated pages; new route-line \"N\" logo. Runnable demos for every supported framework live in `examples/`.": {
+		"pt": "Site de documentação (`website/`, publicável na Vercel) redesenhado com metáfora de transporte: painel de partidas, mapa interativo, tabela de compatibilidade transparente e páginas animadas; novo logo N de linha de rota. Demos executáveis para todos os frameworks suportados em `examples/`.",
+		"es": "Web de documentación (`website/`, desplegable en Vercel) rediseñada con metáfora de transporte: panel de salidas, mapa interactivo, tabla de compatibilidad transparente y páginas animadas; nuevo logo N de línea de ruta. Demos ejecutables para todos los frameworks compatibles en `examples/`.",
+		"ja": "ドキュメントサイト（`website/`、Vercel にデプロイ可能）を交通路線のメタファーで刷新しました。発車案内板、インタラクティブ路線図、正確な互換性表、アニメーションページ、新しい路線 N ロゴを提供します。全対応フレームワークの実行可能なデモは `examples/` にあります。"
+	}
+}

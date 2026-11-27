@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "../i18n/navigation";
 import { type ChangelogVersion, versionAnchor } from "../lib/changelog";
+import { htmlLang, type Locale } from "../lib/locales";
 import { route } from "../src/routes.generated";
 import { Icon } from "./icon";
 import { RichText } from "./rich-text";
@@ -17,14 +18,20 @@ const sectionKeys: Record<string, string> = {
   documentation: "changelog_section_documentation",
 };
 
+const extraTitles: Record<string, Record<Locale, string>> = {
+  "website and seo": { en: "Website and SEO", pt: "Website e SEO", es: "Sitio web y SEO", ja: "ウェブサイトと SEO" },
+  "tests and release tooling": { en: "Tests and release tooling", pt: "Testes e ferramentas de release", es: "Pruebas y herramientas de publicación", ja: "テストとリリースツール" },
+  "upgrade notes": { en: "Upgrade notes", pt: "Notas de atualização", es: "Notas de actualización", ja: "アップグレード時の注意事項" },
+};
+
 export const changeCount = (entry: ChangelogVersion) =>
   entry.sections.reduce((total, section) => total + section.items.length, 0);
 
-/** One version of CHANGELOG.md. Entries stay in English (lang="en"); headings are translated. */
+/** One version of CHANGELOG.md. Entries and headings use the active locale. */
 export function ChangelogEntry({ entry }: { entry: ChangelogVersion }) {
-  const { t } = useSiteLocale();
+  const { locale, t } = useSiteLocale();
   return (
-    <div className="changelog-entry" lang="en">
+    <div className="changelog-entry" lang={htmlLang(locale)}>
       {entry.summary.map((text) => (
         <p key={text} className="changelog-summary">
           <RichText text={text} />
@@ -35,7 +42,7 @@ export function ChangelogEntry({ entry }: { entry: ChangelogVersion }) {
         return (
           <div key={section.title || "changes"} className="changelog-section">
             {section.title && (
-              <h4 data-kind={section.title.toLowerCase()}>{key ? t(key) : section.title}</h4>
+              <h4 data-kind={section.title.toLowerCase()}>{key ? t(key) : (extraTitles[section.title.toLowerCase()]?.[locale] ?? section.title)}</h4>
             )}
             <ul>
               {section.items.map((item) => (
@@ -77,8 +84,7 @@ export function VersionChanges({ changelog }: { changelog: ChangelogVersion[] })
           <SelectContent>
             {changelog.map((item) => (
               <SelectItem key={item.version} value={item.version} className="font-mono text-xs">
-                v{item.version}
-                {item.unreleased ? ` · ${t("changelog_unreleased")}` : item.date ? ` · ${item.date}` : ""}
+                {item.unreleased ? t("changelog_unreleased") : `v${item.version}${item.date ? ` · ${item.date}` : ""}`}
               </SelectItem>
             ))}
           </SelectContent>
@@ -90,11 +96,11 @@ export function VersionChanges({ changelog }: { changelog: ChangelogVersion[] })
       </div>
       <details open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
         <summary>
-          <span>{t("changelog_whats_new", { version: `v${entry.version}` })}</span>
+          <span>{entry.unreleased ? t("changelog_unreleased") : t("changelog_whats_new", { version: `v${entry.version}` })}</span>
           <span className="badge">{t("changelog_changes", { count: changeCount(entry) })}</span>
         </summary>
         <ChangelogEntry entry={entry} />
-        <p className="changelog-note">{t("changelog_english")}</p>
+
       </details>
     </section>
   );

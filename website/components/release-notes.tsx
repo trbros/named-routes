@@ -9,7 +9,7 @@ import { FlapText } from "./flap-text";
 import { Icon } from "./icon";
 import { useSiteLocale } from "./use-site-locale";
 
-/** Translated one-line summaries; the full entries come from CHANGELOG.md. */
+/** Translated one-line summaries; the full entries come from the localized catalog. */
 const notes: Record<string, string> = {
   "1.0.0": "release_v100_note_7b2c94",
   "1.1.0": "release_v110_note",
@@ -19,7 +19,7 @@ const notes: Record<string, string> = {
 
 export function ReleaseNotes({ changelog }: { changelog: ChangelogVersion[] }) {
   const { t } = useSiteLocale();
-  const timeline = [...changelog].reverse();
+  const timeline = changelog.filter((item) => !item.unreleased).reverse();
   return (
     <article className="doc-article page-article release-page">
       <div className="doc-breadcrumb">
@@ -55,13 +55,13 @@ export function ReleaseNotes({ changelog }: { changelog: ChangelogVersion[] }) {
       <section className="release-changelog" aria-labelledby="changelog">
         <h2 id="changelog">{t("changelog_title")}</h2>
         <p>
-          {t("changelog_lead")} {t("changelog_english")}
+          {t("changelog_lead")}
         </p>
         {changelog.map((entry) => (
           <section key={entry.version} id={versionAnchor(entry.version)} className="changelog-version">
             <header>
               <h3>
-                <a href={`#${versionAnchor(entry.version)}`}>v{entry.version}</a>
+                <a href={`#${versionAnchor(entry.version)}`}>{entry.unreleased ? t("changelog_unreleased") : `v${entry.version}`}</a>
               </h3>
               {entry.unreleased ? (
                 <span className="badge">{t("changelog_unreleased")}</span>

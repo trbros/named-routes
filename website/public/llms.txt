@@ -1,0 +1,40 @@
+# Named Routes
+
+> Type-safe routes, URLs and public assets for seven frameworks. Documentation version 2.2.0.
+
+Read the agent contract first. Always check the installed version and generated route names. Named Routes builds URLs; it does not replace framework routers or perform HTTP requests.
+
+## Essential context
+
+- [Agent contract](llms/agent-contract.md): conventions, imports, base paths, framework integration, API boundaries and safety.
+- [Full English reference](llms-full.txt): complete offline-readable guide including examples.
+
+## Documentation by subject
+
+- [Start here](llms/en/groups/start.md): What it does, Installation, Choose your framework, Your first named route (Next.js), Automatic naming rules, Read the generated manifest, Compared with alternatives, How generation works
+- [Next.js](llms/en/groups/framework-nextjs.md): Next.js: setup, File conventions & discovery, Links & navigation, Base path & deployment, Public assets, Localized links, HTTP endpoints, App Router recipes, Pages Router recipes, Typed hrefs for Next.js typedRoutes, App Router — programmatic navigation, App Router — redirect()
+- [Nuxt](llms/en/groups/framework-nuxt.md): Nuxt: setup, File conventions & discovery, Links & navigation, Navigation — navigateTo(), Base path & deployment, Public assets, Localized links, HTTP endpoints
+- [Vue Router](llms/en/groups/framework-vue.md): Vue Router: setup, File conventions & discovery, Links & navigation, Navigation — router.push(), Base path & deployment, Public assets, Localized links, HTTP boundaries
+- [SvelteKit](llms/en/groups/framework-sveltekit.md): SvelteKit: setup, File conventions & discovery, Links & navigation, Navigation — goto(), Base path & deployment, Public assets, Localized links, HTTP endpoints
+- [Astro](llms/en/groups/framework-astro.md): Astro: setup, File conventions & discovery, Links & navigation, Navigation — Astro.redirect(), Base path & deployment, Public assets, Localized links, HTTP endpoints
+- [React Router / Remix](llms/en/groups/framework-react-router.md): React Router / Remix: setup, File conventions & discovery, Links & navigation, Navigation — useNavigate(), Base path & deployment, Public assets, Localized links, HTTP boundaries
+- [TanStack Router](llms/en/groups/framework-tanstack-router.md): TanStack Router: setup, File conventions & discovery, Links & navigation, Navigation — window.location.assign(), Base path & deployment, Public assets, Localized links, HTTP boundaries
+- [Manual routing](llms/en/groups/framework-manual.md): Manual routes (React, Vue, any router)
+- [Build URLs & name routes](llms/en/groups/routing.md): route(), route.url() — public URLs, Required parameters & encoding, Optional route parameters, Catch-all parameters, Mixed route segments, Query strings, URL fragments (hash), Base path — internal vs public URL, Absolute URLs & origin, Trailing slashes, Semantic route names and groups, Optional stable names, TypeScript and Next typedRoutes
+- [Route reference & inspection](llms/en/groups/route-helpers.md): Reverse routing and active routes, route.match(), route.is(), route.breadcrumbs(), route.has(), route.names(), route.pattern(), createRoutes(), route.withDefaults(), parsePattern(), formatPattern(), patternParameters()
+- [Typed queries & URL updates](llms/en/groups/queries.md): Typed query parameters, Connect a query schema, Use typed queries, defineQuery(), defineQuery.type<T>(), route.parseQuery(), route.withQuery()
+- [Internationalization](llms/en/groups/i18n.md): Locales and i18n, Generate a localized URL, route.localize(), route.locales(), route.forLocale()
+- [Assets & CDN](llms/en/groups/public-assets.md): asset() / route.asset(), route.asset(), assetBase & CDN, Absolute asset URLs, Typed assets, asset.has() / paths() / info(), asset.has(), asset.paths(), asset.info(), Asset versioning
+- [SEO & metadata](llms/en/groups/seo.md): route.canonical(), route.alternates()
+- [HTTP endpoints](llms/en/groups/endpoints.md): Generated api — HTTP descriptors, route.endpoint(), Dynamic endpoint parameters
+- [Configuration & runtime reference](llms/en/groups/reference.md): Runtime API reference, Generator configuration, Discovery & directories, Generated output & exports, Naming conventions, URL defaults, Add explicit routes, Enable API discovery, Watch & development options
+- [Generator & tooling API](llms/en/groups/generator.md): Programmatic generator API, discoverRoutes(), generateRoutes(), validateOptions()
+- [CLI, CI & troubleshooting](llms/en/groups/advanced.md): CLI and CI, init, generate, list, check, watch, Diagnostics: named-routes doctor, Audit routes and assets, migrate --to 2, Discovery edge cases, Automatic development updates, Errors and troubleshooting, Rewrites and boundaries
+- [AI agents & MCP](llms/en/groups/ai-mcp.md): AI agents & MCP, Install and start MCP, Connect a local project, Claude Desktop and Claude Code, Cursor configuration, Codex configuration, VS Code / GitHub Copilot, Windows and direct Node launcher, Tools and resources, Example: build a link from real routes, Security and scope, Inspector and troubleshooting
+- [Project & releases](llms/en/groups/project.md): Documentation website, Try it: framework demos, Contribute step by step, Versions and upgrades, Upgrading from 1.x, Helpers playground
+
+## Optional
+
+- [Full reference (pt)](llms/pt/llms-full.txt): translated documentation; shared English agent contract.
+- [Full reference (es)](llms/es/llms-full.txt): translated documentation; shared English agent contract.
+- [Full reference (ja)](llms/ja/llms-full.txt): translated documentation; shared English agent contract.

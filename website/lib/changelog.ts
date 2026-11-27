@@ -1,26 +1,24 @@
-import { release } from "./release";
-
 export type ChangelogSection = { title: string; items: string[] };
 export type ChangelogVersion = {
   version: string;
   date?: string;
-  /** The "Unreleased" heading, shown as the package.json version until it gets its own heading. */
+  /** Unreleased changes have their own stable identity, never a published version. */
   unreleased?: boolean;
   summary: string[];
   sections: ChangelogSection[];
 };
 
 /** Anchor id of a version on the releases page: 2.0.0 → v2-0-0. */
-export const versionAnchor = (version: string) => `v${version.replaceAll(".", "-")}`;
+export const versionAnchor = (version: string) => version === "unreleased" ? "unreleased" : `v${version.replaceAll(".", "-")}`;
 
 /** Parses the repository CHANGELOG.md ("## x.y.z - date", "### Section", "- item"), newest first. */
-export function parseChangelog(markdown: string, current = release.version): ChangelogVersion[] {
+export function parseChangelog(markdown: string): ChangelogVersion[] {
   const versions: ChangelogVersion[] = [];
   for (const block of markdown.split(/^## /m).slice(1)) {
     const [heading, ...lines] = block.split(/\r?\n/);
     const [name, date] = heading.split(" - ").map((part) => part.trim());
     const unreleased = /^unreleased$/i.test(name);
-    const entry: ChangelogVersion = { version: unreleased ? current : name, date, unreleased, summary: [], sections: [] };
+    const entry: ChangelogVersion = { version: unreleased ? "unreleased" : name, date, unreleased, summary: [], sections: [] };
     let section: ChangelogSection | undefined;
     for (const line of lines) {
       const text = line.trim();
@@ -40,8 +38,6 @@ export function parseChangelog(markdown: string, current = release.version): Cha
         entry.summary.push(text);
       }
     }
-    // An "Unreleased" block whose version already has a heading would duplicate it.
-    if (unreleased && markdown.includes(`\n## ${current}`)) continue;
     versions.push(entry);
   }
   return versions;

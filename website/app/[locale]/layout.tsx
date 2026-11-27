@@ -1,3 +1,4 @@
+import { seoConfig } from "../../lib/seo-urls.mjs";
 import { notFound } from "next/navigation";
 import { isLocale } from "../../lib/locales";
 import type { Metadata } from "next";
@@ -8,6 +9,9 @@ import { MotionObserver } from "../../components/motion";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ui");
   return {
+    metadataBase: new URL(seoConfig.origin),
+    robots: { index: seoConfig.indexable, follow: true },
+    ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
     title: {
       default: `Named Routes — ${t("site_tagline_5e1f02")}`,
       template: "%s · triooo Named Routes",

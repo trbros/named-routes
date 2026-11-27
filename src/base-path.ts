@@ -1,9 +1,10 @@
 /** Node-only bridge between framework configuration and standalone generation. */
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { FrameworkId, GeneratorOptions } from "./generator.js";
 import { NamedRouteError, parsePattern } from "./index.js";
+import { renameWithRetry } from "./rename-retry.js";
 
 export const FRAMEWORK_BASE_DIR = ".named-routes";
 
@@ -101,7 +102,7 @@ export async function writeFrameworkBase(
 	const temporary = `${target}.${randomUUID()}.tmp`;
 	try {
 		await writeFile(temporary, content, { encoding: "utf8", flag: "wx" });
-		await rename(temporary, target);
+		await renameWithRetry(temporary, target);
 	} finally {
 		await unlink(temporary).catch((error: NodeJS.ErrnoException) => {
 			if (error.code !== "ENOENT") throw error;
