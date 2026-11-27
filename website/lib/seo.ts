@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import config from "../../docs/locales.json";
-import { type Locale } from "./locales";
+import { defaultLocale, type Locale } from "./locales";
 import { languageAlternates, localizedUrl, seoConfig } from "./seo-urls.mjs";
 
 const ogLocales: Record<Locale, string> = { en: "en_US", pt: "pt_BR", es: "es_ES", ja: "ja_JP" };
@@ -25,7 +25,14 @@ export function pageMetadata(locale: Locale, path: string, title: string, descri
   const summary = descriptionText(description);
   return {
     title: { absolute: fullTitle }, description: summary,
-    alternates: { canonical: url, languages: languageAlternates(path, config.locales, config.source) },
+    alternates: {
+      canonical: url,
+      languages: languageAlternates(
+        path,
+        config.locales,
+        defaultLocale,
+      ),
+    },
     robots: { index: seoConfig.indexable, follow: true },
     openGraph: { type: "website", url, siteName: "Named Routes", title: fullTitle, description: summary, locale: ogLocales[locale], alternateLocale: config.locales.filter(item => item.code !== locale).map(item => ogLocales[item.code as Locale]) },
     twitter: { card: "summary", title: fullTitle, description: summary },

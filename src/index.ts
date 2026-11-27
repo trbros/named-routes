@@ -1515,15 +1515,16 @@ export function createRoutes(
 			const found = best(attempt.raw, attempt.pool);
 			if (!found) continue;
 			const query: Record<string, string | string[]> = {};
-			for (const [key, value] of located.url.searchParams) {
+			located.url.searchParams.forEach((value, key) => {
 				const previous = query[key];
+
 				query[key] =
 					previous === undefined
 						? value
 						: Array.isArray(previous)
 							? [...previous, value]
 							: [previous, value];
-			}
+			});
 			let hash = located.url.hash.replace(/^#/, "");
 			try {
 				hash = decodeURIComponent(hash);
@@ -2024,15 +2025,16 @@ function readQuery(input: unknown): Record<string, string | string[]> {
 			"parseQuery expects a URL, a query string, URLSearchParams or a matched query object",
 		);
 	const query: Record<string, string | string[]> = {};
-	for (const [key, value] of params) {
+	params.forEach((value, key) => {
 		const previous = query[key];
+
 		query[key] =
 			previous === undefined
 				? value
 				: Array.isArray(previous)
 					? [...previous, value]
 					: [previous, value];
-	}
+	});
 	return query;
 }
 

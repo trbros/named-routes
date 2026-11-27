@@ -4,7 +4,6 @@ import { locales, defaultLocale } from "../lib/locales";
 export const routing = defineRouting({
   locales,
   defaultLocale,
-  localePrefix: "always",
-  // Page metadata and the sitemap own the reciprocal hreflang links.
+  localePrefix: "as-needed",
   alternateLinks: false,
 });

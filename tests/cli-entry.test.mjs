@@ -52,7 +52,7 @@ test("launcher resolves CLI beside itself, preserving cwd and arguments", async 
 	const output = JSON.parse(result.stdout);
 	assert.deepEqual(output.args, ["list", "--root", "another project"]);
 	// On some OSes tmpdir resolves through a symbolic link.
-	assert.equal(output.cwd, await realpath(project));
+	assert.equal(await realpath(output.cwd), await realpath(project));
 	await rm(join(installed, "dist", "cli.js"));
 	const missing = run(launcher, ["list"], project);
 	assert.equal(missing.status, 1, missing.stderr);

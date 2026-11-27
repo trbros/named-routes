@@ -15,7 +15,7 @@ async function request(url){
   assert.equal(response.status,200,`${response.status} ${url.pathname}`);
   return response;
 }
-const expected=sitemapEntries(sections.map(x=>x.id),locales.locales,locales.source,config);
+const expected=sitemapEntries(sections.map(x=>x.id),locales.locales,"pt",config);
 const xml=await (await request(new URL(publicUrl('/sitemap.xml',config)))).text();
 const actual=[...xml.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map(x=>x[1].trim());
 assert.equal(actual.length,new Set(actual).size,'duplicate sitemap URLs');
@@ -30,15 +30,15 @@ for(const page of pages){
   const canonicals=links.filter(tag=>attr(tag,'rel')==='canonical');
   assert.equal(canonicals.length,1,`${page}: expected exactly one canonical`);
   assert.equal(attr(canonicals[0],'href'),page,`${page}: incorrect canonical`);
-  const path=url.pathname.slice(config.basePath.length).split('/').slice(2).join('/');
-  const alternates=languageAlternates(path?`/${path}`:'',locales.locales,locales.source,config);
+  const path = url.pathname.slice(config.basePath.length).replace(/^\/(?:en|es|ja)(?=\/|$)/, "").replace(/\/$/, "");
+  const alternates=languageAlternates(path,locales.locales,"pt",config);
   for(const [lang,href] of Object.entries(alternates)) assert.ok(links.some(tag=>attr(tag,'rel')==='alternate'&&attr(tag,'hreflang')===lang&&attr(tag,'href')===href),`${page}: missing ${lang} hreflang`);
   const robots=(html.match(/<meta\b[^>]*>/gi)??[]).filter(tag=>attr(tag,'name')==='robots');
   assert.ok(!robots.some(tag=>/noindex/i.test(attr(tag,'content')??'')),`${page}: unexpected noindex`);
   assert.match(html,/<title>[^<]+<\/title>/i,`${page}: missing title`);
   assert.ok((html.match(/<meta\b[^>]*>/gi)??[]).some(tag=>attr(tag,'name')==='description'&&attr(tag,'content')?.trim()),`${page}: missing description`);
 }
-const demo=await (await request(new URL(localizedUrl(locales.source,'/users/demo',config)))).text();
+const demo=await (await request(new URL(localizedUrl("pt",'/users/demo',config)))).text();
 assert.ok((demo.match(/<meta\b[^>]*>/gi)??[]).some(tag=>attr(tag,'name')==='robots'&&/noindex/i.test(attr(tag,'content')??'')),'demo must be noindex');
 const llms=await request(new URL(publicUrl('/llms.txt',config)));
 assert.match(llms.headers.get('x-robots-tag')??'',/noindex/i,'llms mirror should be noindex, not blocked');
